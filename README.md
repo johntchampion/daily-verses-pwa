@@ -1,4 +1,4 @@
-# Verse Memorize — Progressive Web App
+# Daily Verses — Progressive Web App
 
 A mobile-first, installable PWA for daily scripture memorization. Users work
 through a fixed bank of 100 verses, three at a time: new verses are drilled

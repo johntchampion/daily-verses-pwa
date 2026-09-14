@@ -21,8 +21,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Verse Memorize',
-        short_name: 'Verses',
+        name: 'Daily Verses',
+        short_name: 'Daily Verses',
         description: 'Daily scripture memorization — three verses at a time.',
         theme_color: '#fff6ea',
         background_color: '#fff6ea',

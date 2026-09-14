@@ -56,7 +56,7 @@ export default function Today() {
     <Screen
       layout='tabbed'
       className='today-shell'
-      leading={<span className='wordmark'>Verse Memorize</span>}
+      leading={<span className='wordmark'>Daily Verses</span>}
       trailing={
         <>
           {/* Shown at zero too — that's when saying so is worth most. */}

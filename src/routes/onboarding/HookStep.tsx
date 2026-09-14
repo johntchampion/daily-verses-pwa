@@ -9,7 +9,7 @@ export default function HookStep({
 }) {
   return (
     <main className='onboard-hero onboard-step'>
-      <p className='onboard-brand'>Verse Memorize</p>
+      <p className='onboard-brand'>Daily Verses</p>
       <h1 className='onboard-title'>Memorize Bible Verses Every Day</h1>
       <p className='onboard-sub'>
         A curated path through 100 verses behind core Christian doctrine.
