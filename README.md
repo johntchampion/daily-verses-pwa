@@ -162,7 +162,7 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   book.
 - Session state (current index, taps so far) is purely local; only submitted
   attempts hit the server. Whatever `/api/attempt` reports surfaces as a brief
-  toast and as a line on the completion screen — downgrades and relearning
+  toast and as a line on the completion screen — lost mastery and relearning
   included, not just wins. Queue exhaustion calls `POST /api/session/complete`.
 - **Progress through the day is the server's, not the runner's.** The day's
   plan is persisted, and every exercise `GET /api/session/today` returns says
@@ -230,19 +230,22 @@ The rules live in the backend service; three of their consequences are easy to g
 here.
 
 **A learning tier advances on 3 correct in a row _within one calendar day_, and
-drops on 3 wrong in a row within one calendar day.** Both runs carry across days
-in the database but are dead for tier changes once `streak_date` isn't today —
-and one `streak_date` covers both directions — so any "N / 3" or "one more miss"
-the UI draws has to be gated on that date. See `SlotRow` and `ProgressCard`. The
-day is the _user's_, from their profile timezone: `lib/dates.ts` mirrors the
-server's `todayInTimezone`, and comparing against the browser's own day would
-disagree for anyone travelling. (Review demotion is the exception: 2 missed due
-dates, and those _do_ span days.)
+never falls.** A miss costs the run and nothing else, however many of them there
+are, so the UI says nothing about misses in a slot — the rail emptying is the
+whole feedback. The correct run carries across days in the database but is dead
+for an upgrade once `streak_date` isn't today, so any "N / 3" the UI draws has to
+be gated on that date. See `SlotRow` and `ProgressCard`. The day is the _user's_,
+from their profile timezone: `lib/dates.ts` mirrors the server's
+`todayInTimezone`, and comparing against the browser's own day would disagree for
+anyone travelling. (Backward movement is review's alone: 2 missed due dates, and
+those _do_ span days.) `consecutive_incorrect` still arrives on both
+`/api/me` and the verse row — it is just inert in a slot.
 
-**A verse can change tier at most once per day, either direction.** After that
-the extra correct answers are practice, and `/api/me` reports
-`tierChangeUsedToday` so the slot card can say so instead of showing a progress
-bar that can't fill.
+**A verse can move up at most once per day.** After that the extra correct
+answers are practice, and `/api/me` reports `tierChangeUsedToday` so the slot
+card can say so instead of showing a progress bar that can't fill. Since an
+upgrade is now the only thing that can spend the cap, the card names the
+direction.
 
 **A verse pulled out of review still reports `status: 'review'`.** Two failed
 reviews set `needsRelearning` and park the verse — no `due_at`, out of the

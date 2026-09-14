@@ -2,18 +2,13 @@ import { Link } from 'react-router-dom'
 import type { SlotVerse } from '../api/types'
 import { Skeleton, SkeletonText } from './Skeleton'
 import { truncate } from '../lib/verses'
-import {
-  LEARNING_ORDER,
-  STAGE_LABELS,
-  TIER_ADVANCE_THRESHOLD,
-  TIER_DOWNGRADE_THRESHOLD,
-} from '../lib/exercise'
+import { STAGE_LABELS, TIER_ADVANCE_THRESHOLD } from '../lib/exercise'
 
 interface Props {
   slot: number
   verse: SlotVerse | null
   snippet: string | null
-  /** The user's local date, for judging whether either run is still live. */
+  /** The user's local date, for judging whether the correct run is still live. */
   today: string
 }
 
@@ -21,13 +16,6 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
   if (verse) {
     const live = verse.streakDate === today
     const run = live ? verse.consecutiveCorrect : 0
-    const misses = live ? verse.consecutiveIncorrect : 0
-
-    // learning_light is the floor — nothing below it to warn about.
-    const tier = LEARNING_ORDER.indexOf(verse.stage)
-    const nextDown = tier > 0 ? LEARNING_ORDER[tier - 1] : null
-    const missesLeft = TIER_DOWNGRADE_THRESHOLD - misses
-    const atRisk = nextDown !== null && misses > 0 && !verse.tierChangeUsedToday
 
     return (
       <Link
@@ -46,11 +34,9 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
         )}
 
         {verse.tierChangeUsedToday ? (
-          // One tier change per verse per day, so a progress bar would lie.
-          // `/api/me` doesn't say which direction it moved, so neither do we.
           <div className='advance-row'>
             <span className='advance-label'>
-              Tier changed today · next change tomorrow
+              Moved up today · next upgrade tomorrow
             </span>
           </div>
         ) : (
@@ -70,14 +56,6 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
               {run} / {TIER_ADVANCE_THRESHOLD} today to upgrade
             </span>
           </div>
-        )}
-
-        {atRisk && (
-          <p className='slot-risk'>
-            {missesLeft === 1
-              ? `One more miss today drops to ${STAGE_LABELS[nextDown].toLowerCase()}`
-              : `${missesLeft} more misses today drop to ${STAGE_LABELS[nextDown].toLowerCase()}`}
-          </p>
         )}
       </Link>
     )

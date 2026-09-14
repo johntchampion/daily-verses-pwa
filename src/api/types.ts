@@ -25,20 +25,20 @@ export interface UserVerse {
   /** Zeroed by any wrong answer; in a learning tier the run must also land
       inside one calendar day — see `streak_date`. */
   consecutive_correct: number
-  /** Zeroed by any correct answer; in a learning tier the run must also land
-      inside one calendar day, mirroring the correct run — see `streak_date`.
-      In review it still spans due dates. */
+  /** Zeroed by any correct answer. Still counted per day in a learning tier,
+      but nothing acts on it there — a slotted tier never falls. Only review
+      reads it, where it spans due dates. */
   consecutive_incorrect: number
-  /** Local date whichever run is active — correct or incorrect — was accrued
-      on; learning stages only. */
+  /** Local date the active run was accrued on; learning stages only. Gates the
+      correct run: one from an earlier day no longer counts toward an upgrade. */
   streak_date: string | null
   /** review/mastered only; null in a learning slot or while queued. */
   interval_days: number | null
   /** Local date (YYYY-MM-DD); null = not scheduled. */
   due_at: string | null
-  /** Local dates capping tier changes at one per day, either direction. */
+  /** Local date capping tier changes at one per day. Learning tiers only move
+      up, so this is the upgrade cap. */
   last_upgrade_date: string | null
-  last_downgrade_date: string | null
   /** 1 = pulled out of review, waiting for a learning slot to free up. */
   needs_relearning: 0 | 1
   relearning_queued_at: string | null
@@ -77,10 +77,12 @@ export interface SlotVerse {
   reference: string | null
   stage: Stage
   consecutiveCorrect: number
+  /** Reported, but nothing in a slotted tier acts on it — misses cost the
+      correct run and nothing more. */
   consecutiveIncorrect: number
-  /** Either run, from an earlier day, no longer counts toward changing tier. */
+  /** A correct run from an earlier day no longer counts toward an upgrade. */
   streakDate: string | null
-  /** Already changed tier today, so it can't change again until tomorrow. */
+  /** Already moved up today, so it can't move again until tomorrow. */
   tierChangeUsedToday: boolean
 }
 
@@ -106,6 +108,8 @@ export interface MeResponse {
 /** What a verse did during a session, as the server recorded it. */
 export type SessionEventKind =
   | 'tier_up'
+  /** Still declared by the service, but no longer reachable: learning tiers
+      only move up. Kept so an older server can't hand us an unknown kind. */
   | 'tier_down'
   | 'graduated'
   | 'mastered'

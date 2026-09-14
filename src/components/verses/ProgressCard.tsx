@@ -5,7 +5,6 @@ import {
   REVIEW_DEMOTION_THRESHOLD,
   STAGE_LABELS,
   TIER_ADVANCE_THRESHOLD,
-  TIER_DOWNGRADE_THRESHOLD,
   isLearningStage,
 } from '../../lib/exercise'
 
@@ -38,13 +37,9 @@ function progressCopy(userVerse: UserVerse, today: string | null): string {
 
   if (isLearningStage(userVerse.stage)) {
     const live = today !== null && userVerse.streak_date === today
-    if (live && wrong > 0) {
-      const left = TIER_DOWNGRADE_THRESHOLD - wrong
-      return `${wrong} missed in a row today — ${left} more drops it a tier. Three right in one day moves it up.`
-    }
     return live && right > 0
       ? `${right} of ${TIER_ADVANCE_THRESHOLD} right in a row today. All three in one day moves it up a tier.`
-      : `Three right in a row within one day moves it up a tier, three wrong drops it one — both runs reset each morning.`
+      : `Three right in a row within one day moves it up a tier. A miss only resets the run — it never drops back.`
   }
 
   if (userVerse.stage === 'mastered') {

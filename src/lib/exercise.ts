@@ -123,9 +123,9 @@ export function randomIndex(exclusiveMax: number): number {
 }
 
 /** Display-only mirrors of the service's `domain/progression.ts` — they must
-    agree with it, so they live here rather than at call sites. */
+    agree with it, so they live here rather than at call sites. There is no
+    downgrade threshold: a slotted tier only ever moves up. */
 export const TIER_ADVANCE_THRESHOLD = 3
-export const TIER_DOWNGRADE_THRESHOLD = 3
 export const REVIEW_ADVANCE_THRESHOLD = 3
 export const REVIEW_DEMOTION_THRESHOLD = 2
 
@@ -140,7 +140,7 @@ export const STAGE_SEQUENCE: Stage[] = [
   'mastered',
 ]
 
-/** The three slotted tiers, in order — `learning_light` is the floor. */
+/** The three slotted tiers, in order. */
 export const LEARNING_ORDER: Stage[] = [
   'learning_light',
   'learning_medium',
