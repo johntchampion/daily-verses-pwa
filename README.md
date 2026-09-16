@@ -15,7 +15,7 @@ model; it never decides a transition itself. See
 [Progression model](#progression-model) below for what the UI has to know.
 
 The backend service manages and serves the data for this PWA is
-in [this GitHub repo](https://github.com/johntchampion/verse-memorize-service).
+in [this GitHub repo](https://github.com/johntchampion/daily-verses-service).
 
 ## Stack
 
