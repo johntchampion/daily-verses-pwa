@@ -1,9 +1,9 @@
 import { useSearchParams } from 'react-router-dom'
+import ExerciseSkeleton from '../components/session/ExerciseSkeleton'
 import SessionComplete from '../components/session/SessionComplete'
 import SessionEmpty from '../components/session/SessionEmpty'
 import SessionErrorAlert from '../components/session/SessionErrorAlert'
 import SessionHeader from '../components/session/SessionHeader'
-import SessionSkeleton from '../components/session/SessionSkeleton'
 import TileExercise from '../components/session/TileExercise'
 import TypedExercise from '../components/session/TypedExercise'
 import { useSessionRunner } from '../hooks/useSessionRunner'
@@ -23,15 +23,6 @@ export default function Session() {
     <SessionErrorAlert error={session.error} onDismiss={session.clearError} />
   )
 
-  if (session.phase === 'loading') {
-    return (
-      <>
-        <SessionSkeleton />
-        {errorAlert}
-      </>
-    )
-  }
-
   if (session.phase === 'empty') return <SessionEmpty practice={practice} />
 
   if (session.phase === 'done' && session.completion) {
@@ -48,9 +39,12 @@ export default function Session() {
     )
   }
 
+  const loading = session.phase === 'loading'
   const wrapping = session.phase === 'wrapping'
+  const advancing = session.advancing
+  const opening = session.exerciseKey === 0
   const Exercise =
-    session.exercise.exerciseType === 'tile_fill_blank'
+    session.exercise?.exerciseType === 'tile_fill_blank'
       ? TileExercise
       : TypedExercise
 
@@ -60,31 +54,42 @@ export default function Session() {
     // something rather than after a gap.
     <main
       className={cx(
-        'shell stack shell-full',
+        'shell stack shell-full session-view',
+        opening && 'session-opening',
+        advancing && 'session-advancing',
         wrapping && 'session-wrapping',
         session.leaving && 'session-leaving',
       )}
+      aria-busy={loading}
     >
+      {loading && (
+        <span className='sr-only' role='status'>
+          Preparing today&rsquo;s session…
+        </span>
+      )}
+
       <SessionHeader
-        done={session.done + (wrapping ? 1 : 0)}
+        done={session.done + (advancing || wrapping ? 1 : 0)}
         total={session.dayTotal}
       />
 
-      <Exercise
-        key={session.exerciseKey}
-        exercise={session.exercise}
-        fullText={session.fullText}
-        translation={session.translation}
-        isLast={session.isLast}
-        pending={session.submitting}
-        onComplete={(correct) => void session.submit(correct)}
-      />
+      {loading ? (
+        <ExerciseSkeleton />
+      ) : (
+        <Exercise
+          key={session.exerciseKey}
+          exercise={session.exercise}
+          fullText={session.fullText}
+          translation={session.translation}
+          isLast={session.isLast}
+          pending={session.submitting}
+          onComplete={(correct) => void session.submit(correct)}
+        />
+      )}
 
-      {/* Only ever seen when the recording outlasts the hold: its delay is
-          longer than the pause it would otherwise interrupt. */}
-      {wrapping && (
+      {((wrapping && !session.leaving) || advancing) && (
         <p className='wrap-note' role='status'>
-          Wrapping up…
+          {wrapping ? 'Wrapping up…' : 'Saving…'}
         </p>
       )}
       {errorAlert}

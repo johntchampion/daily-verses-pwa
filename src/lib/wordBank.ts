@@ -141,7 +141,7 @@ export function showOneMoreTile(bank: BankWindow): BankWindow {
 
 /** The pressed lip falls outside offsetHeight, so the bottom row needs this
     much extra or `.word-bank`'s `overflow: hidden` clips it. */
-const TILE_SHADOW_HEIGHT = 3
+export const TILE_SHADOW_HEIGHT = 3
 
 export function heightOfRows(
   container: HTMLElement,
