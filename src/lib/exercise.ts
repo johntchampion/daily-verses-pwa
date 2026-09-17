@@ -20,13 +20,8 @@ export interface TextSegment {
 export interface BlankSegment {
   kind: 'blank'
   punctBefore: string
-  /** The hidden remainder of the word — sizes the rendered gap. */
-  hidden: string
   punctAfter: string
-  /** The word the user must supply (original casing, no punctuation). */
   answer: string
-  /** The complete original token, rendered once the blank is filled. */
-  filledRaw: string
 }
 
 export type ExerciseSegment = TextSegment | BlankSegment
@@ -58,10 +53,8 @@ export function parseExercise(
     return {
       kind: 'blank',
       punctBefore,
-      hidden: answer,
       punctAfter: fullRaw.slice(match.index + answer.length),
       answer,
-      filledRaw: fullRaw,
     }
   })
 }
