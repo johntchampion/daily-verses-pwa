@@ -598,7 +598,8 @@ a.btn:hover {
 .word-bank {
     display: flex;
     flex-wrap: wrap;
-    align-content: flex-start;
+    justify-content: center;
+    align-content: center;
     gap: 11px;
     margin-top: 12px;
     /* TileExercise locks the height to exactly BANK_ROWS rows; tiles that
