@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 export default function WordTile({
   label,
   isSpent,
@@ -11,12 +13,17 @@ export default function WordTile({
   disabled: boolean
   onTap: () => void
 }) {
+  const [isArriving, setIsArriving] = useState(true)
+
   const state = isSpent ? ' tile-used' : isWrong ? ' tile-wrong' : ''
   return (
     <button
       type='button'
-      className={`tile tile-in${state}`}
+      className={`tile${isArriving ? ' tile-in' : ''}${state}`}
       disabled={disabled}
+      onAnimationEnd={(event) => {
+        if (event.animationName === 'tile-in') setIsArriving(false)
+      }}
       onClick={onTap}
     >
       {label}
