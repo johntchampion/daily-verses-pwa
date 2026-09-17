@@ -28,7 +28,9 @@ export default function VerseBody({
           return (
             <span key={index}>
               {space}
-              <span className='blank-filled'>{chunk.blank.filledRaw}</span>
+              {chunk.blank.punctBefore}
+              <span className='blank-filled'>{chunk.blank.answer}</span>
+              {chunk.blank.punctAfter}
             </span>
           )
         }
@@ -43,7 +45,7 @@ export default function VerseBody({
               className={isCurrent ? 'blank blank-current' : 'blank'}
               aria-label='blank'
             >
-              {chunk.blank.hidden}
+              {chunk.blank.answer}
             </span>
             {chunk.blank.punctAfter}
           </span>
