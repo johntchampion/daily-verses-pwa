@@ -1,4 +1,5 @@
 import type { RefObject } from 'react'
+import { useTileShift } from '../../hooks/useTileShift'
 import WordTile from './WordTile'
 
 export default function WordBank({
@@ -20,6 +21,8 @@ export default function WordBank({
   bankRef: RefObject<HTMLDivElement | null>
   onTap: (tileId: number, position: number) => void
 }) {
+  useTileShift(bankRef, tileIds, labels)
+
   return (
     <div
       className='word-bank'
