@@ -15,7 +15,19 @@ export interface SessionError {
 
 /** Long enough for the progress rail to close (320ms) and be seen closed. */
 const WRAP_HOLD_MS = 520
-const EXIT_MS = 160
+/**
+ * The session's own fade, plus the same frame's cushion `ADVANCE_MS` carries:
+ * a timer set to the fade's own duration hands over to the recap while the
+ * session is still faintly on screen.
+ */
+const EXIT_MS = 200
+
+/**
+ * The verse card's exit, plus a frame's cushion. The CSS animation's clock only
+ * starts on the style pass after the class lands, so a timer set to the exit's
+ * own duration swaps the card out while it is still faintly there.
+ */
+const ADVANCE_MS = 200
 
 /**
  * The exercise runner. Answers are judged client-side against the full verse
@@ -44,6 +56,12 @@ export function useSessionRunner(practice: boolean) {
   } | null>(null)
   /** The last beat of the hold: the session fades before the recap arrives. */
   const [leaving, setLeaving] = useState(false)
+  /**
+   * The exercise on its way out, held as an index rather than a flag: it can
+   * then never outlive the card it belongs to, whatever order the commits land
+   * in, because advancing the index is itself what clears it.
+   */
+  const [leavingIndex, setLeavingIndex] = useState<number | null>(null)
 
   const loadTokenRef = useRef(0)
 
@@ -83,6 +101,7 @@ export function useSessionRunner(practice: boolean) {
       setTexts(byId)
       setTranslation(today.translation)
       setIndex(0)
+      setLeavingIndex(null)
       setPhase('running')
     } catch (err) {
       if (loadTokenRef.current !== token) return
@@ -143,24 +162,29 @@ export function useSessionRunner(practice: boolean) {
     if (submitting) return
     setSubmitting(true)
     const exercise = queue[index]
+    const last = index + 1 >= queue.length
+    // The last answer has a wrap-up of its own; this beat is only for the swap.
+    if (!last) setLeavingIndex(index)
     try {
-      const outcome = await api.attempt(
-        exercise.userVerseId,
-        exercise.exerciseType,
-        correct,
-      )
+      const [outcome] = await Promise.all([
+        api.attempt(exercise.userVerseId, exercise.exerciseType, correct),
+        last ? Promise.resolve() : hold(ADVANCE_MS),
+      ])
       if (correct) setCorrectCount((n) => n + 1)
-      // Held for the recap, not announced mid-answer. Nothing is derived from
-      // `exercise.stage`: it goes stale as soon as a repetition upgrades it.
+
       if (outcome.events.length > 0) {
         setEvents((prev) => [...prev, ...outcome.events.map(presentEvent)])
       }
-      if (index + 1 < queue.length) {
-        setIndex(index + 1)
-      } else {
+      if (last) {
         await finish()
+      } else {
+        window.scrollTo({ top: 0 })
+        setIndex(index + 1)
       }
     } catch (err) {
+      // The card comes back to carry the error, as the alert's own comment
+      // promises — the same reason `finish()` resets `leaving` in its catch.
+      setLeavingIndex(null)
       setError({
         message: messageOf(err, 'Could not save that answer.'),
         retry: () => {
@@ -190,6 +214,7 @@ export function useSessionRunner(practice: boolean) {
     events,
     completion,
     leaving,
+    advancing: leavingIndex === index,
     exerciseKey: index,
   }
 }

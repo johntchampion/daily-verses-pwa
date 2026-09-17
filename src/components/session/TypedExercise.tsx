@@ -77,7 +77,7 @@ export default function TypedExercise({
   }
 
   return (
-    <div className='stack'>
+    <div className='stack exercise-rise'>
       <div style={{ display: 'flex' }}>
         <StageChip exercise={exercise} reviewLabel='Review · from memory' />
       </div>

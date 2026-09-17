@@ -119,7 +119,7 @@ export default function TileExercise({
 
   return (
     <div className='exercise-pane'>
-      <div className='chip-row'>
+      <div className='chip-row exercise-rise'>
         <StageChip exercise={exercise} />
         <ScoreChip
           filled={drill.phase ? drill.filled : filledBlanks}
@@ -131,7 +131,7 @@ export default function TileExercise({
         />
       </div>
 
-      <div className='verse-card'>
+      <div className='verse-card exercise-rise'>
         <div className='verse-card-head'>
           {drill.phase ? (
             <ReferenceLine steps={drill.phase} filled={drill.filled} />
