@@ -498,6 +498,10 @@ a.btn:hover {
     text-wrap: pretty;
 }
 
+.blank-group {
+    white-space: nowrap;
+}
+
 .blank {
     --rule: 3px;
     display: inline-block;

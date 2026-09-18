@@ -28,9 +28,11 @@ export default function VerseBody({
           return (
             <span key={index}>
               {space}
-              {chunk.blank.punctBefore}
-              <span className='blank-filled'>{chunk.blank.answer}</span>
-              {chunk.blank.punctAfter}
+              <span className='blank-group'>
+                {chunk.blank.punctBefore}
+                <span className='blank-filled'>{chunk.blank.answer}</span>
+                {chunk.blank.punctAfter}
+              </span>
             </span>
           )
         }
@@ -39,15 +41,17 @@ export default function VerseBody({
         return (
           <span key={index}>
             {space}
-            {chunk.blank.punctBefore}
-            <span
-              ref={isCurrent ? currentBlankRef : undefined}
-              className={isCurrent ? 'blank blank-current' : 'blank'}
-              aria-label='blank'
-            >
-              {chunk.blank.answer}
+            <span className='blank-group'>
+              {chunk.blank.punctBefore}
+              <span
+                ref={isCurrent ? currentBlankRef : undefined}
+                className={isCurrent ? 'blank blank-current' : 'blank'}
+                aria-label='blank'
+              >
+                {chunk.blank.answer}
+              </span>
+              {chunk.blank.punctAfter}
             </span>
-            {chunk.blank.punctAfter}
           </span>
         )
       })}

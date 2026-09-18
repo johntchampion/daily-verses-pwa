@@ -36,15 +36,17 @@ export default function TasterVerse({
           }
           const current = showCurrent && blankIndex === filled
           return (
-            <span key={i} style={{ whiteSpace: 'nowrap' }}>
+            <span key={i}>
               {space}
-              <span
-                className={current ? 'blank blank-current' : 'blank'}
-                aria-label='blank'
-              >
-                {part.word}
+              <span className='blank-group'>
+                <span
+                  className={current ? 'blank blank-current' : 'blank'}
+                  aria-label='blank'
+                >
+                  {part.word}
+                </span>
+                {part.after}
               </span>
-              {part.after}
             </span>
           )
         })}
