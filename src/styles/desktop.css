@@ -10,9 +10,9 @@
  * 2. Nothing here may put transform, will-change, contain or filter on
  *    .nav-stack, .nav-layer or .nav-layer-inner — see .nav-transit above.
  *
- * Only the three tab classes widen; .shell itself stays at 480px. No rule in
- * here may introduce an animation: the reduced-motion blocks are above it and
- * would no longer cover it.
+ * Only the three tab classes and the session widen; .shell itself stays at
+ * 480px. No rule in here may introduce an animation: the reduced-motion blocks
+ * are above it and would no longer cover it.
  */
 
 @media (min-width: 1024px) {
@@ -253,11 +253,117 @@
         box-shadow: 0 4px 0 var(--coral-deep);
     }
 
+    /* --- Desktop: the session --------------------------------------------- */
+
+    /* Scoped to .session-view rather than .shell-full: that class is the
+       onboarding taster too, and it keeps its phone layout. */
+
+    .session-view {
+        --session-measure: 840px;
+
+        max-width: 1280px;
+        padding-top: calc(env(safe-area-inset-top) + 22px);
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .session-view .session-head {
+        display: grid;
+        grid-template-columns: 1fr minmax(0, var(--session-measure)) 1fr;
+        justify-items: start;
+    }
+
+    .session-view .icon-btn {
+        justify-self: end;
+        width: 42px;
+        height: 42px;
+        font-size: 1rem;
+    }
+
+    .session-view .session-progress {
+        justify-self: stretch;
+    }
+
+    .session-view .progress-track {
+        height: 14px;
+    }
+
+    .session-view .progress-count {
+        font-size: 0.9rem;
+    }
+
+    .session-view .exercise-pane {
+        width: 100%;
+        max-width: var(--session-measure);
+        margin: 0 auto;
+    }
+
+    .session-view .bank-dock {
+        display: contents;
+    }
+
+    .session-view .chip-row {
+        margin-top: auto;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .session-view .exercise-pane .verse-card {
+        padding: 0;
+        margin-bottom: 0;
+        background: none;
+        border: none;
+        border-radius: 0;
+    }
+
+    .session-view .verse-ref {
+        font-size: 0.95rem;
+    }
+
+    .session-view .verse-text {
+        font-size: 1.8rem;
+        line-height: 1.6;
+    }
+
+    .session-view .bank-dock .bank-label {
+        margin-top: 34px;
+    }
+
+    .session-view .word-bank {
+        gap: 12px;
+        margin-top: 14px;
+        margin-bottom: auto;
+    }
+
+    .session-view .tile {
+        padding: 12px 22px;
+        border-radius: 18px;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 0 var(--tile-shadow);
+    }
+
+    .session-view .tile-used {
+        box-shadow: none;
+    }
+
+    .session-advancing .word-bank,
+    .session-advancing .bank-dock .btn {
+        pointer-events: none;
+    }
+
+    .session-view .btn {
+        width: auto;
+        min-width: 360px;
+        padding: 17px 42px;
+        margin-inline: auto;
+    }
+
     /* --- Desktop: hover --------------------------------------------------- */
 
     /* Guarded on a real pointer: iPad landscape is over 1024px and would
        otherwise hold the hover after a tap. */
     @media (hover: hover) {
+
         .hundred-shell .arc-row:hover,
         .practicing-shell .slot-card:hover {
             border-color: var(--coral-line);
@@ -266,6 +372,11 @@
         .practicing-shell .queue-link:hover {
             border-color: var(--coral-line);
             background: var(--coral-wash);
+        }
+
+        /* .tile-wrong is excluded: a hover would outrank its coral flash. */
+        .session-view .tile:not(:disabled):not(.tile-wrong):hover {
+            border-color: var(--coral-line);
         }
     }
 }

@@ -161,6 +161,18 @@
     color: var(--coral-text);
 }
 
+/* --- Session header ------------------------------------------------------ */
+
+.session-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.session-progress {
+    flex: 1;
+}
+
 /* --- Progress bar -------------------------------------------------------- */
 
 .progress-track {
