@@ -303,7 +303,7 @@
     }
 
     .session-view .chip-row {
-        margin-top: auto;
+        margin-top: 48px;
         justify-content: flex-start;
         gap: 12px;
     }
@@ -326,12 +326,12 @@
     }
 
     .session-view .bank-dock .bank-label {
-        margin-top: 34px;
+        display: none;
     }
 
     .session-view .word-bank {
         gap: 12px;
-        margin-top: 14px;
+        margin-top: 64px;
         margin-bottom: auto;
     }
 
