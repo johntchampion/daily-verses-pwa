@@ -21,7 +21,7 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
       <Link
         to={`/verses/${verse.verseId}`}
         className='slot-card'
-        style={{ color: 'inherit', display: 'block' }}
+        style={{ color: 'inherit' }}
       >
         <div className='slot-card-head'>
           <span className='slot-reference'>

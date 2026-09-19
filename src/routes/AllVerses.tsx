@@ -12,6 +12,7 @@ export default function AllVerses() {
   return (
     <Screen
       layout='tabbed'
+      className='hundred-shell'
       title={<h1 className='view-title'>The Hundred</h1>}
       trailing={<TranslationTag code={verses.data?.translation ?? null} />}
       sub='Every verse in the curriculum, in canon order.'

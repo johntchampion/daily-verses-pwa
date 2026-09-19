@@ -21,6 +21,7 @@ export default function Practicing() {
   return (
     <Screen
       layout='tabbed'
+      className='practicing-shell'
       title={<h1 className='view-title'>In Practice</h1>}
       trailing={<TranslationTag code={verses.data?.translation ?? null} />}
       sub='Three at a time. A verse graduates from In Practice once it’s practiced correctly three times in a row for three days.'
