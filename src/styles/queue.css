@@ -1,0 +1,206 @@
+/* --- Practice queue ------------------------------------------------------- */
+
+.queue-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 18px;
+    padding: 14px 4px;
+    color: inherit;
+}
+
+.queue-link-label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--coral-text);
+}
+
+.queue-link-count {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--locked);
+}
+
+.queue-link-chev {
+    flex: 1;
+    text-align: right;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--dash);
+}
+
+.queue-slots-card {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.queue-slot-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.queue-slot-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+}
+
+.queue-slot-row:hover {
+    color: inherit;
+}
+
+.queue-slot-dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--coral);
+}
+
+.queue-slot-ref {
+    flex: none;
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.queue-slot-text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--serif);
+    font-size: 0.81rem;
+    color: var(--locked);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.queue-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.queue-action {
+    flex: 1;
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    border-radius: 14px;
+    color: var(--coral-text);
+}
+
+.queue-action:disabled {
+    color: var(--locked);
+}
+
+.queue-waiting-label {
+    margin: 16px 0 8px;
+}
+
+.queue-empty-line {
+    margin-top: 8px;
+    font-weight: 700;
+}
+
+.queue-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.queue-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 6px 11px 13px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+}
+
+.queue-num {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--locked);
+    background: var(--line-soft);
+}
+
+.queue-row-main {
+    flex: 1;
+    min-width: 0;
+    color: inherit;
+}
+
+.queue-row-main:hover {
+    color: inherit;
+}
+
+.queue-row-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.queue-ref {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.queue-snippet {
+    display: block;
+    font-family: var(--serif);
+    font-size: 0.84rem;
+    line-height: 1.35;
+    color: var(--locked);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.queue-arrows {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+}
+
+.queue-arrow {
+    width: 38px;
+    height: 26px;
+    font-size: 0.6rem;
+    line-height: 1;
+    color: var(--soft);
+    padding: 0;
+}
+
+.queue-arrow:disabled {
+    opacity: 0.25;
+}
+
+.queue-refill-note {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1.5px solid var(--line-soft);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-wrap: pretty;
+    color: var(--locked);
+}
+

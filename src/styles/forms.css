@@ -1,0 +1,42 @@
+/* --- Forms ---------------------------------------------------------------- */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--soft);
+}
+
+.field input,
+.field select {
+    padding: 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+    font: inherit;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.field select {
+    background: var(--card-tint);
+    font-weight: 700;
+}
+
+.field input:focus,
+.field select:focus {
+    outline: none;
+    border-color: var(--coral);
+}
+
+.error-text {
+    color: var(--coral-text);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+

@@ -1,0 +1,271 @@
+/* --- Desktop ------------------------------------------------------------- */
+
+/*
+ * Two invariants this block must not break.
+ *
+ * 1. The document stays the scroller on Practicing and All 100. useScrollLock
+ *    freezes `body` and restores with window.scrollTo, so moving the scroll
+ *    onto an inner element silently breaks every sheet and alert. Today is the
+ *    standing exception — it already scrolls inside .path-scroll.
+ * 2. Nothing here may put transform, will-change, contain or filter on
+ *    .nav-stack, .nav-layer or .nav-layer-inner — see .nav-transit above.
+ *
+ * Only the three tab classes widen; .shell itself stays at 480px. No rule in
+ * here may introduce an animation: the reduced-motion blocks are above it and
+ * would no longer cover it.
+ */
+
+@media (min-width: 1024px) {
+    /* --- Desktop: the shared shell ---------------------------------------- */
+
+    /* Longhands, not the shorthand: .shell-tabbed's padding-bottom clears the tab
+       bar and must survive untouched. */
+    .today-shell,
+    .practicing-shell,
+    .hundred-shell {
+        max-width: 1280px;
+        padding-top: calc(env(safe-area-inset-top) + 30px);
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .practicing-shell .view-title,
+    .hundred-shell .view-title {
+        font-size: 2rem;
+    }
+
+    /* Scoped: .view-sub is shared with the pushed screens, which don't widen. */
+    .practicing-shell .view-sub,
+    .hundred-shell .view-sub {
+        font-size: 0.94rem;
+    }
+
+    /* --- Desktop: All tab ------------------------------------------------- */
+
+    .hundred-shell .arc-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+        margin-top: 22px;
+    }
+
+    /* The `border` shorthand is load-bearing — it wipes the mobile divider. Every
+       state keeps the same 2px width and swaps only the colour. */
+    .hundred-shell .arc-row {
+        align-items: flex-start;
+        gap: 10px;
+        padding: 17px 19px 15px;
+        background: var(--card);
+        border: 2px solid var(--track);
+        border-radius: 20px;
+    }
+
+    .hundred-shell .arc-main {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .hundred-shell .arc-ref {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.97rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /*
+     * One line of ellipsis becomes two lines of clamp. white-space: normal is
+     * load-bearing — without it there is only ever one line to clamp.
+     */
+    .hundred-shell .arc-snippet {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: clip;
+        margin-top: 0;
+        color: var(--soft);
+    }
+
+    .hundred-shell .arc-row:has(.arc-dot-practicing) {
+        background: var(--coral-wash);
+        border-color: var(--coral);
+    }
+
+    .hundred-shell .arc-row:has(.arc-dot-relearn) {
+        border-color: var(--coral-line);
+    }
+
+    .hundred-shell .arc-row:not(:has(.chip)) .arc-ref {
+        color: var(--soft);
+    }
+
+    .hundred-shell .arc-row:not(:has(.chip)) .arc-snippet {
+        color: var(--locked);
+    }
+
+    /* --- Desktop: Practicing tab ------------------------------------------ */
+
+    /* auto-fit, not repeat(3): slots.max is served by the API. */
+    .practicing-shell .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-top: 24px;
+    }
+
+    .practicing-shell .slot-card,
+    .practicing-shell .slot-empty {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 24px 26px;
+        border-radius: 24px;
+        box-shadow: 0 2px 0 var(--track);
+    }
+
+    .practicing-shell .slot-empty {
+        justify-content: center;
+    }
+
+    .practicing-shell .slot-reference {
+        min-width: 0;
+        font-size: 1.3rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .practicing-shell .slot-snippet {
+        font-size: 0.97rem;
+        margin-top: 0;
+    }
+
+    .practicing-shell .advance-row {
+        margin-top: auto;
+    }
+
+    .practicing-shell .queue-link {
+        margin-top: 24px;
+        padding: 20px 24px;
+        background: var(--neutral-wash);
+        border: 1.5px solid var(--line);
+        border-radius: 22px;
+    }
+
+    /* On the label, not the count — the count is a Skeleton on first paint. */
+    .practicing-shell .queue-link-label {
+        flex: 1;
+        font-size: 0.97rem;
+    }
+
+    .practicing-shell .queue-link-chev {
+        flex: none;
+    }
+
+    /* --- Desktop: Today tab ----------------------------------------------- */
+
+    .today-shell .path-head {
+        font-size: 2rem;
+    }
+
+    .today-shell .path-sub {
+        font-size: 0.94rem;
+    }
+
+    /* Both mask declarations move together, and both stops must stay at or under
+       FADE (30) in PathList.tsx. */
+    .today-shell .path-scroll {
+        padding: 26px 0;
+        mask-image: linear-gradient(180deg,
+                transparent 0,
+                #000 26px,
+                #000 calc(100% - 26px),
+                transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg,
+                transparent 0,
+                #000 26px,
+                #000 calc(100% - 26px),
+                transparent 100%);
+    }
+
+    /* --path-group is the eyebrow's line-height as well as a term in the rail's
+       `top`, so it moves with the font size. */
+    .today-shell .path-list {
+        --path-circle: 62px;
+        --path-gap: 14px;
+        --path-group: 16px;
+
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    .today-shell .path-group {
+        font-size: 0.75rem;
+    }
+
+    .today-shell .path-step+.path-step .path-group {
+        margin-top: 16px;
+    }
+
+    .today-shell .path-ref {
+        font-size: 1.16rem;
+    }
+
+    .today-shell .path-meta {
+        font-size: 0.88rem;
+    }
+
+    .today-shell .path-row-done .path-ref {
+        color: var(--ink);
+    }
+
+    /* The negative margin is what lets the card have padding: the marker has to
+       stay on the rail, so the card bleeds outwards by what it pads inwards. */
+    .today-shell .path-row-current {
+        margin: 0 -18px;
+        padding: 16px 18px;
+        background: var(--coral-wash);
+        border-radius: 22px;
+        box-shadow: 0 4px 0 var(--coral-line);
+    }
+
+    .today-shell .path-row-current .path-ref {
+        font-size: 1.3rem;
+    }
+
+    .today-shell .path-row-current .path-meta {
+        font-size: 0.9rem;
+    }
+
+    .today-shell .path-pill {
+        padding: 13px 26px;
+        border-radius: 16px;
+        background: var(--coral);
+        color: var(--on-accent);
+        font-size: 1rem;
+        letter-spacing: normal;
+        text-transform: none;
+        box-shadow: 0 4px 0 var(--coral-deep);
+    }
+
+    /* --- Desktop: hover --------------------------------------------------- */
+
+    /* Guarded on a real pointer: iPad landscape is over 1024px and would
+       otherwise hold the hover after a tap. */
+    @media (hover: hover) {
+        .hundred-shell .arc-row:hover,
+        .practicing-shell .slot-card:hover {
+            border-color: var(--coral-line);
+        }
+
+        .practicing-shell .queue-link:hover {
+            border-color: var(--coral-line);
+            background: var(--coral-wash);
+        }
+    }
+}

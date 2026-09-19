@@ -1,0 +1,85 @@
+/* --- All tab: the hundred -------------------------------------------------- */
+
+.hundred-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 99px;
+    background: var(--track);
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.hundred-bar-memorized {
+    background: var(--green);
+}
+
+.hundred-bar-practicing {
+    background: var(--amber);
+}
+
+.arc-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+}
+
+.arc-row {
+    display: flex;
+    gap: 12px;
+    padding: 15px 2px;
+    border-bottom: 1px solid var(--track);
+}
+
+.arc-dot {
+    width: 9px;
+    height: 9px;
+    flex: none;
+    border-radius: 50%;
+    margin-top: 7px;
+    background: var(--dash);
+}
+
+.arc-dot-memorized {
+    background: var(--green);
+}
+
+.arc-dot-practicing {
+    background: var(--amber);
+}
+
+.arc-dot-relearn {
+    background: var(--coral);
+}
+
+.arc-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.arc-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.arc-ref {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.arc-row-locked .arc-ref {
+    color: var(--locked);
+}
+
+.arc-snippet {
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--locked);
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+

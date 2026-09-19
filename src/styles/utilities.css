@@ -1,0 +1,98 @@
+/* --- Skeletons ------------------------------------------------------------ */
+
+.sk {
+    display: block;
+    background: var(--track);
+    border-radius: 8px;
+    animation: sk-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.sk-text {
+    border-radius: 6px;
+    height: 0.72em;
+    margin: 0.39em 0;
+    flex: none;
+}
+
+.sk-circle {
+    border-radius: 50%;
+}
+
+.sk-chip {
+    border-radius: 99px;
+}
+
+@keyframes sk-pulse {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.45;
+    }
+}
+
+/* --- Screen-reader utilities ---------------------------------------------- */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --- Screen push / pop ---------------------------------------------------- */
+
+/*
+ * Out of transit these three are plain block boxes, and that is load-bearing:
+ * a transform — or even a bare `will-change: transform` — on any of them makes
+ * it the containing block for every `position: fixed` descendant, which here
+ * is the tab bar. So all the positioning below is scoped to `.nav-transit`.
+ */
+
+.nav-transit {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    /* Below the sheets, which portal to the body and stay above all of this. */
+    z-index: 1;
+}
+
+.nav-transit .nav-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    will-change: transform;
+    /* Opaque, or the two screens read through each other as they cross. */
+    background: var(--cream);
+}
+
+.nav-transit .nav-layer-inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.nav-transit .nav-layer[data-role='under'] {
+    z-index: 0;
+}
+
+.nav-transit .nav-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nav-transit .nav-layer[data-role='over'] {
+    z-index: 2;
+    box-shadow: -10px 0 30px rgb(0 0 0 / 0.13);
+}
+

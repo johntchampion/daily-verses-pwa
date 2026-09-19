@@ -1,0 +1,197 @@
+/* --- Session complete ----------------------------------------------------- */
+
+.complete-screen {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 32px) 24px calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
+}
+
+@property --sweep {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes ring-sweep {
+    from {
+        --sweep: 0deg;
+    }
+
+    to {
+        --sweep: 360deg;
+    }
+}
+
+.complete-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--card);
+    box-shadow: inset 0 0 0 5px var(--amber-line);
+    display: grid;
+    place-items: center;
+}
+
+.complete-circle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--amber) var(--sweep), transparent 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+    animation: ring-sweep 560ms cubic-bezier(0.22, 0.61, 0.36, 1) 120ms both;
+}
+
+.complete-circle-count {
+    font-family: var(--serif);
+    font-size: 3.25rem;
+    font-weight: 700;
+    color: var(--amber-deep);
+    line-height: 1;
+    animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.complete-roll {
+    display: grid;
+    overflow: hidden;
+    padding: 0.1em;
+    margin: -0.1em;
+}
+
+.complete-roll>span {
+    grid-area: 1 / 1;
+}
+
+/* Both halves need the same duration, delay and easing — they are two marks on
+   one wheel and have to hold a constant distance. */
+.complete-roll-out,
+.complete-roll-in {
+    animation-duration: 460ms;
+    animation-delay: 680ms;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation-fill-mode: both;
+}
+
+.complete-roll-out {
+    animation-name: roll-out;
+}
+
+.complete-roll-in {
+    animation-name: roll-in;
+}
+
+@keyframes roll-out {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-126%);
+    }
+}
+
+@keyframes roll-in {
+    from {
+        transform: translateY(126%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.complete-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber-soft);
+    margin-top: 14px;
+}
+
+.complete-title {
+    font-family: var(--serif);
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-top: 14px;
+}
+
+.complete-sub {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--amber-text);
+    margin-top: 6px;
+}
+
+.complete-events {
+    width: 100%;
+    margin-top: 24px;
+    background: var(--card);
+    border: 1.5px solid var(--amber-line);
+    border-radius: 22px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.complete-event {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.complete-event+.complete-event {
+    border-top: 1.5px solid var(--line-soft);
+    padding-top: 14px;
+}
+
+.complete-event-icon {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+}
+
+.complete-event-title {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.complete-event-detail {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Each block carries its own --enter delay from the markup. */
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.complete-rise {
+    animation: rise-in 420ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--enter, 0ms) both;
+}
+

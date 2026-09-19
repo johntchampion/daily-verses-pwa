@@ -1,0 +1,313 @@
+/* --- Today tab: the path -------------------------------------------------- */
+
+.today-shell {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.path-intro-alone {
+    margin: auto 0;
+    text-align: center;
+}
+
+.path-head {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-top: 18px;
+}
+
+.path-sub {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--soft);
+    margin-top: 7px;
+    text-wrap: pretty;
+}
+
+/*
+ * The padding matches the opaque part of the mask, and both stops must stay at
+ * or under FADE in PathList.tsx — that is the margin its scroll-into-view
+ * check uses.
+ */
+.path-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 22px 0 26px;
+    mask-image: linear-gradient(180deg,
+            transparent 0,
+            #000 22px,
+            #000 calc(100% - 26px),
+            transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg,
+            transparent 0,
+            #000 22px,
+            #000 calc(100% - 26px),
+            transparent 100%);
+
+    scrollbar-width: none;
+}
+
+.path-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/*
+ * The rail is one line behind the whole list, so its ends are pinned to the
+ * first and last circle centres: every step is [heading?][row] in a column of
+ * one gap. The ::before arithmetic below depends on that shape and on all
+ * three custom properties.
+ */
+.path-list {
+    --path-circle: 56px;
+    --path-gap: 12px;
+    --path-group: 14px;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--path-gap);
+}
+
+.path-list::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--path-circle) / 2 - 1.5px);
+    top: calc(var(--path-group) + var(--path-gap) + var(--path-circle) / 2);
+    bottom: calc(var(--path-circle) / 2);
+    border-left: 3px dashed var(--dash);
+}
+
+.path-step {
+    display: flex;
+    flex-direction: column;
+    gap: var(--path-gap);
+}
+
+.path-group {
+    display: block;
+    padding-left: calc(var(--path-circle) + 20px);
+    font-size: 0.66rem;
+    line-height: var(--path-group);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--locked);
+}
+
+.path-step+.path-step .path-group {
+    margin-top: 6px;
+}
+
+/* Positioned, so the rows paint over the rail rather than under it. */
+.path-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+}
+
+.path-mark {
+    flex: none;
+    width: var(--path-circle);
+    height: var(--path-circle);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px dashed var(--dash);
+    color: var(--tile-used-text);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.path-row-done .path-mark {
+    background: var(--amber);
+    border: none;
+    color: var(--on-accent);
+    font-size: 1.35rem;
+    box-shadow: 0 3px 0 var(--tile-shadow);
+}
+
+.path-row-current .path-mark {
+    background: var(--coral);
+    border: 3px solid var(--coral-line);
+    color: var(--on-accent);
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    box-shadow: 0 5px 0 var(--coral-deep);
+    animation: bob 2.6s ease-in-out infinite;
+}
+
+.path-row-current:active .path-mark {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--coral-deep);
+    animation: none;
+}
+
+.path-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.path-ref {
+    display: block;
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--locked);
+}
+
+.path-row-done .path-ref {
+    color: var(--soft);
+}
+
+.path-row-current .path-ref {
+    color: var(--ink);
+}
+
+.path-meta {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--locked);
+    margin-top: 2px;
+}
+
+.path-row-current .path-meta {
+    color: var(--soft);
+}
+
+.path-pill {
+    flex: none;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--coral-wash);
+    color: var(--coral-text);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.path-dock {
+    flex: none;
+    margin-top: 28px;
+}
+
+.cta-center {
+    padding: 22px;
+    border-radius: 26px;
+    text-align: center;
+}
+
+.cta-center .cta-title {
+    font-size: 1.45rem;
+}
+
+.cta-center .cta-sub {
+    margin-top: 3px;
+}
+
+.cta-outline {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--coral-text);
+    box-shadow: 0 5px 0 var(--line);
+}
+
+.cta-outline:active {
+    box-shadow: 0 2px 0 var(--line);
+}
+
+.cta-outline .cta-sub {
+    color: var(--soft);
+    opacity: 1;
+}
+
+.path-note {
+    padding: 22px;
+    border-radius: 26px;
+    border: 1.5px dashed var(--dash);
+    text-align: center;
+}
+
+.path-note-copy {
+    margin-top: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-wrap: pretty;
+    color: var(--locked);
+}
+
+.path-done-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.path-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 10px;
+}
+
+.path-done-check {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--amber);
+    color: var(--on-accent);
+    display: grid;
+    place-items: center;
+    font-size: 2.6rem;
+    font-weight: 800;
+    box-shadow: 0 5px 0 var(--amber-deep);
+    animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.path-done-title {
+    font-family: var(--serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-top: 22px;
+}
+
+.path-done-sub {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--amber-text);
+    margin-top: 12px;
+    line-height: 1.5;
+    text-wrap: pretty;
+}
+
+@keyframes bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .path-row-current .path-mark {
+        animation: none;
+    }
+}
+

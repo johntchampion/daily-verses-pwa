@@ -1,0 +1,131 @@
+/* --- Word bank tiles ----------------------------------------------------- */
+
+.bank-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-top: 20px;
+}
+
+.word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    gap: 11px;
+    margin-top: 12px;
+    /* TileExercise locks the height to exactly BANK_ROWS rows; tiles that
+       wrap past the last row are trimmed by measurement, never shown. */
+    overflow: hidden;
+    /* Room for the tile's box-shadow lip, which sits outside its layout box
+       and would otherwise be clipped by the overflow above. */
+    padding-bottom: 3px;
+}
+
+.ref-bank {
+    overflow: visible;
+}
+
+.tile {
+    padding: 12px 17px;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: 0 3px 0 var(--tile-shadow);
+    transition: all 140ms ease;
+}
+
+.tile-used {
+    border-style: dashed;
+    border-color: var(--dash);
+    background: transparent;
+    color: var(--tile-used-text);
+    box-shadow: none;
+    cursor: default;
+}
+
+.tile-wrong {
+    border-color: var(--coral);
+    color: var(--coral-text);
+    background: var(--coral-wash);
+    animation: shake 380ms ease;
+}
+
+@keyframes shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+
+    75% {
+        transform: translateX(-3px);
+    }
+}
+
+.tile-in {
+    animation: tile-in 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tile-in {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.bank-dock {
+    position: sticky;
+    bottom: 0;
+    margin: 18px -20px calc(-1 * (env(safe-area-inset-bottom) + var(--screen-bottom-gap)));
+    padding: 2px 20px calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
+    background: var(--cream);
+    border-top: 1.5px solid var(--line);
+    box-shadow: 0 -10px 24px -14px var(--lift);
+}
+
+.shell-full {
+    min-height: 100dvh;
+}
+
+.exercise-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.exercise-pane .verse-card {
+    margin-bottom: 18px;
+}
+
+.exercise-pane .bank-dock {
+    margin-top: auto;
+}
+
+.bank-dock .bank-label {
+    margin-top: 12px;
+}
+
+.bank-dock .hint {
+    margin-top: 14px;
+    min-height: 66px;
+}
+

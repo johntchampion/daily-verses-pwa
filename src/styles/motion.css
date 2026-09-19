@@ -1,0 +1,48 @@
+/* --- Motion --------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    /* The blanket rule above only shortens the duration; an infinite alternate
+       animation would still resample its phase every frame and strobe. Skeletons
+       need a real resting state. */
+    .sk {
+        animation: none !important;
+        opacity: 0.7;
+    }
+
+    /* The blanket rule doesn't shorten the *delay* either, and the recap's
+       entrance is built out of delays. */
+    .complete-rise {
+        animation: none;
+    }
+
+    /* Same for the exercise swap and the session's arrival. `pointer-events`
+       survives this. */
+    .session-view,
+    .exercise-rise,
+    .session-opening .exercise-rise,
+    .session-advancing .exercise-rise {
+        animation: none;
+    }
+
+    .complete-circle::before {
+        animation: none;
+        --sweep: 360deg;
+    }
+
+    /* With the movement gone, only the number it turns into should be in the
+       ring. */
+    .complete-roll-out {
+        display: none;
+    }
+
+    .complete-roll-in {
+        animation: none;
+    }
+}
