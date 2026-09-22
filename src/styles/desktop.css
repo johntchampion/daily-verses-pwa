@@ -260,6 +260,10 @@
 
     .session-view {
         --session-measure: 840px;
+        --verse-size: 1.8rem;
+        --verse-leading: 1.6;
+        --verse-reserve: calc(5 * var(--verse-size) * var(--verse-leading) + 46px);
+        --bank-measure: 480px;
 
         max-width: 1280px;
         padding-top: calc(env(safe-area-inset-top) + 22px);
@@ -309,6 +313,7 @@
     }
 
     .session-view .exercise-pane .verse-card {
+        min-height: var(--verse-reserve);
         padding: 0;
         margin-bottom: 0;
         background: none;
@@ -321,8 +326,8 @@
     }
 
     .session-view .verse-text {
-        font-size: 1.8rem;
-        line-height: 1.6;
+        font-size: var(--verse-size);
+        line-height: var(--verse-leading);
     }
 
     .session-view .bank-dock .bank-label {
@@ -331,8 +336,10 @@
 
     .session-view .word-bank {
         gap: 12px;
-        margin-top: 64px;
+        max-width: var(--bank-measure);
+        margin-top: 40px;
         margin-bottom: auto;
+        margin-inline: auto;
     }
 
     .session-view .tile {
