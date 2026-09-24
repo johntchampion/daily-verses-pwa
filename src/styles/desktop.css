@@ -168,22 +168,117 @@
         margin-top: auto;
     }
 
-    .practicing-shell .queue-link {
-        margin-top: 24px;
-        padding: 20px 24px;
+    /* --- Desktop: Practicing tab — the waiting line ----------------------- */
+
+    .practicing-shell .queue-panel {
+        margin-top: 26px;
         background: var(--neutral-wash);
         border: 1.5px solid var(--line);
         border-radius: 22px;
     }
 
-    /* On the label, not the count — the count is a Skeleton on first paint. */
-    .practicing-shell .queue-link-label {
-        flex: 1;
-        font-size: 0.97rem;
+    .practicing-shell .queue-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 20px 14px;
     }
 
-    .practicing-shell .queue-link-chev {
+    .practicing-shell .queue-panel-lede {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .practicing-shell .queue-panel-title {
+        display: block;
+        font-size: 0.97rem;
+        font-weight: 800;
+        color: var(--soft);
+    }
+
+    .practicing-shell .queue-panel-sub {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--locked);
+    }
+
+    .practicing-shell .queue-actions {
         flex: none;
+        gap: 8px;
+        margin-top: 0;
+    }
+
+    /* width: auto is load-bearing — .btn-ghost is a full-width block button. */
+    .practicing-shell .queue-action {
+        flex: none;
+        width: auto;
+        padding: 9px 14px;
+        font-size: 0.78rem;
+        border-radius: 12px;
+        background: var(--card);
+    }
+
+    .practicing-shell .queue-list {
+        gap: 6px;
+        padding: 0 20px 18px;
+    }
+
+    .practicing-shell .queue-empty-line {
+        margin-top: 0;
+        padding: 0 20px 18px;
+    }
+
+    .practicing-shell .queue-row {
+        gap: 14px;
+        padding: 9px 12px;
+        border-radius: 12px;
+    }
+
+    .practicing-shell .queue-row-main {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+    }
+
+    .practicing-shell .queue-row-head {
+        flex: none;
+        max-width: 40%;
+    }
+
+    /* The skeleton's reference is a percentage width, and a shrink-to-fit head
+       gives it nothing to resolve against. Real rows stay ragged. */
+    .practicing-shell .queue-row-head:has(.sk) {
+        min-width: 140px;
+    }
+
+    /* .sk-text is flex: none, so the snippet placeholder would otherwise run
+       under the arrows. */
+    .practicing-shell .queue-row-main>.sk-text {
+        flex: 0 1 auto;
+        min-width: 0;
+        margin-top: 0;
+    }
+
+    .practicing-shell .queue-ref {
+        white-space: nowrap;
+    }
+
+    .practicing-shell .queue-snippet {
+        flex: 1;
+        min-width: 0;
+        margin-top: 0;
+    }
+
+    .practicing-shell .queue-num {
+        width: 22px;
+        height: auto;
+        background: none;
+    }
+
+    .practicing-shell .queue-arrows {
+        flex-direction: row;
     }
 
     /* --- Desktop: Today tab ----------------------------------------------- */
@@ -391,13 +486,9 @@
     @media (hover: hover) {
 
         .hundred-shell .arc-row:hover,
-        .practicing-shell .slot-card:hover {
+        .practicing-shell .slot-card:hover,
+        .practicing-shell .queue-row:hover {
             border-color: var(--coral-line);
-        }
-
-        .practicing-shell .queue-link:hover {
-            border-color: var(--coral-line);
-            background: var(--coral-wash);
         }
 
         /* .tile-wrong is excluded: a hover would outrank its coral flash. */

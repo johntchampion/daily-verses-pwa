@@ -4,10 +4,14 @@ import TranslationTag from '../components/TranslationTag'
 import QueueLink from '../components/practicing/QueueLink'
 import RelearnCard from '../components/practicing/RelearnCard'
 import SlotList from '../components/practicing/SlotList'
+import QueuePanel from '../components/queue/QueuePanel'
 import { combineApi, useApi } from '../hooks/useApi'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 
-/** The Practicing tab: the learning slots and a link to the queue. */
+/** The Practicing tab: the learning slots, then the waiting line — a link to
+    its own screen on mobile, the line itself on desktop. */
 export default function Practicing() {
+  const desktop = useIsDesktop()
   const me = useApi(() => api.me())
   const verses = useApi(() => api.verses())
   const all = combineApi(me, verses)
@@ -34,7 +38,7 @@ export default function Practicing() {
       onRetry={all.refetch}
     >
       <SlotList profile={profile} verses={verseList} />
-      <QueueLink verses={verseList} />
+      {desktop ? <QueuePanel /> : <QueueLink verses={verseList} />}
       <RelearnCard verses={verseList} />
     </Screen>
   )

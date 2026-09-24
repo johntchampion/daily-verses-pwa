@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, type Location } from 'react-router-dom'
 import { tokenIsExpired } from './api/client'
 import NavStack from './components/NavStack'
 import { useAuth } from './context/auth'
+import { useIsDesktop } from './hooks/useIsDesktop'
 import AllVerses from './routes/AllVerses'
 import Login from './routes/Login'
 import Onboarding from './routes/onboarding/Onboarding'
@@ -34,6 +35,14 @@ function RequireAuth({
     return <Navigate to={signedOut ? '/login' : fallback} replace />
   }
   return children
+}
+
+/** The queue has no screen of its own at desktop widths — it is a panel on the
+    Practicing tab there. */
+function QueueRoute() {
+  const desktop = useIsDesktop()
+  if (desktop) return <Navigate to='/practicing' replace />
+  return <Queue />
 }
 
 function RedirectIfAuthed({ children }: { children: React.ReactNode }) {
@@ -102,7 +111,7 @@ function AppRoutes({ location }: { location: Location }) {
         path='/queue'
         element={
           <RequireAuth>
-            <Queue />
+            <QueueRoute />
           </RequireAuth>
         }
       />
