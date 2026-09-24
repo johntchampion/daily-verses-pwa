@@ -1,9 +1,10 @@
 import { api } from '../api/client'
 import Screen from '../components/Screen'
+import SettingsLink from '../components/SettingsLink'
 import { Skeleton } from '../components/Skeleton'
+import StreakChip from '../components/StreakChip'
 import PathCta from '../components/today/PathCta'
 import PathList from '../components/today/PathList'
-import SettingsLink from '../components/today/SettingsLink'
 import { combineApi, useApi } from '../hooks/useApi'
 import { buildPath, minutesLabel, type Path } from '../lib/path'
 
@@ -59,17 +60,13 @@ export default function Today() {
       leading={<span className='wordmark'>Daily Verses</span>}
       trailing={
         <>
-          {/* Shown at zero too — that's when saying so is worth most. */}
-          {me.data && (
-            <span
-              className={`chip chip-streak streak-badge${me.data.completedToday ? '' : ' streak-badge-pending'}`}
-            >
-              {me.data.streak} day streak
-            </span>
-          )}
+          {me.data && <StreakChip me={me.data} />}
           <SettingsLink />
         </>
       }
+      // The whole header is hidden at desktop widths — the nav bar carries all
+      // three of these already.
+      me={me.data}
       loading={both.pending}
       loadingLabel='Loading today’s path…'
       error={both.error}

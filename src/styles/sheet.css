@@ -1,0 +1,249 @@
+/* --- Bottom sheet --------------------------------------------------------- */
+
+.sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: var(--lift);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    /* Starts at 0 because Sheet.tsx flips the value — otherwise the first paint
+       flashes. */
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+
+.sheet-riser {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    transform-origin: 50% 0;
+    transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.sheet-riser-back {
+    transform: scale(0.94);
+    transition: transform 260ms ease;
+}
+
+.sheet-riser-back .sheet-handle {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sheet-riser,
+    .sheet-handle {
+        transition: none;
+    }
+}
+
+/* The panel's transform belongs to the spring in Sheet.tsx. Nothing here may
+   animate it, or a drag can no longer interrupt it. */
+.sheet {
+    --sheet-step: calc(var(--sheet-depth, 0) * 26px);
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+    border-radius: 26px 26px 0 0;
+    will-change: transform;
+}
+
+.sheet:focus {
+    outline: none;
+}
+
+.sheet-auto {
+    max-height: calc(85dvh - var(--sheet-step));
+}
+
+.sheet-tall {
+    height: calc(85dvh - var(--sheet-step));
+}
+
+.sheet-full {
+    height: calc(95dvh - var(--sheet-step));
+}
+
+.sheet-plain {
+    padding-top: 22px;
+}
+
+/* Carries the panel's surface below the screen edge, so the spring's overshoot
+   doesn't open a gap under it. */
+.sheet::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: var(--cream);
+}
+
+.sheet-grip {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 37px;
+    cursor: grab;
+    touch-action: none;
+}
+
+.sheet-grip:active {
+    cursor: grabbing;
+}
+
+.sheet-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 99px;
+    background: var(--dash);
+    transition: opacity 200ms ease;
+}
+
+/* Everything above the docked footer scrolls; the frame itself does not.
+   `contain` stops a flick that runs out of content from scrolling the page
+   behind, and pan-y leaves the drag free to take over at the top. */
+.sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    padding: 0 22px calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.sheet-body-docked {
+    padding-bottom: 4px;
+}
+
+.sheet-footer {
+    flex: none;
+    padding: 14px 22px calc(env(safe-area-inset-bottom) + 24px);
+    background: var(--cream);
+    touch-action: none;
+}
+
+.sheet-footer-cut {
+    border-top: 1.5px solid var(--line-soft);
+}
+
+.sheet-title {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: pretty;
+}
+
+.sheet-copy {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--soft);
+    margin-top: 7px;
+    line-height: 1.45;
+    text-wrap: pretty;
+}
+
+.theme-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 18px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    text-align: left;
+    transition: border-color 150ms ease, background 150ms ease;
+}
+
+.theme-option-on {
+    border-color: var(--coral);
+    background: var(--coral-wash);
+}
+
+.theme-option-alt:not(.theme-option-on) {
+    border-style: dashed;
+    border-color: var(--dash);
+    background: transparent;
+}
+
+.theme-option-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.theme-name {
+    display: block;
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.theme-option-on .theme-name {
+    color: var(--coral-text);
+}
+
+.theme-count {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--locked);
+    margin-top: 2px;
+}
+
+.theme-option-on .theme-count {
+    color: var(--coral-text);
+}
+
+.theme-mark {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--on-accent);
+    border: 1.5px solid var(--dash);
+    background: transparent;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.theme-mark-on {
+    background: var(--coral);
+    border-color: var(--coral);
+}
+
+.sooner-card {
+    padding: 17px 19px;
+    background: var(--amber-wash);
+    border: 1.5px solid var(--amber-line);
+    border-radius: 22px;
+}
+
+.sooner-copy {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--amber-text);
+    margin-top: 7px;
+    line-height: 1.45;
+    text-wrap: pretty;
+}
+

@@ -12,11 +12,11 @@ export default function SessionHeader({
   total: number
 }) {
   return (
-    <header style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <header className='session-head'>
       <Link to='/' className='icon-btn' aria-label='Exit session'>
         ✕
       </Link>
-      <div style={{ flex: 1 }}>
+      <div className='session-progress'>
         <ProgressBar done={done} total={total} />
       </div>
       {total === 0 ? (

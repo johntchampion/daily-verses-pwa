@@ -1,0 +1,167 @@
+/* --- Practicing tab: review-due card -------------------------------------- */
+
+.due-card {
+    margin-top: 22px;
+    padding: 17px 19px;
+    background: var(--amber-wash);
+    border: 1.5px solid var(--amber-line);
+    border-radius: 22px;
+}
+
+.due-row {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin-top: 8px;
+}
+
+.due-count {
+    font-family: var(--serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--amber-text);
+    line-height: 1;
+}
+
+.due-what {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--amber-text);
+}
+
+.due-copy {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--amber-soft);
+    margin-top: 7px;
+    line-height: 1.45;
+}
+
+.relearn-card {
+    margin-top: 14px;
+    padding: 17px 19px;
+    background: var(--coral-wash);
+    border: 1.5px solid var(--coral-line);
+    border-radius: 22px;
+}
+
+.relearn-copy {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--coral-text);
+    margin-top: 7px;
+    line-height: 1.45;
+}
+
+.relearn-list {
+    list-style: none;
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.relearn-ref {
+    display: inline-block;
+    font-family: var(--serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--coral-text);
+    background: var(--paper);
+    border: 1.5px solid var(--coral-line);
+    border-radius: 99px;
+    padding: 4px 11px;
+}
+
+/* --- Slots --------------------------------------------------------------- */
+
+.section-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: -4px;
+}
+
+.slot-grid {
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.slot-card {
+    display: block;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+}
+
+.slot-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.slot-reference {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.slot-snippet {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--soft);
+    margin-top: 8px;
+    text-wrap: pretty;
+}
+
+.advance-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.advance-seg {
+    height: 8px;
+    flex: 1;
+    border-radius: 99px;
+    background: var(--track);
+}
+
+.advance-seg-filled {
+    background: var(--amber);
+}
+
+.advance-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--soft);
+    flex: none;
+}
+
+.slot-empty {
+    border: 1.5px dashed var(--dash);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.slot-empty-title {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--locked);
+}
+
+.slot-empty-copy {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--locked);
+}
+

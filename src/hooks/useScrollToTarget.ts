@@ -4,10 +4,23 @@ import { reducedMotion } from '../lib/motion'
 /** Clearance the current target needs above the dock before the page scrolls. */
 const SCROLL_MARGIN_PX = 12
 
+/**
+ * Where the dock starts covering the screen. The desktop session dissolves the
+ * dock with `display: contents`, leaving it boxless — nothing covers the bottom
+ * there, so the viewport floor stands in for it.
+ */
+function dockTop(dock: HTMLElement | null): number {
+  if (!dock) return window.innerHeight
+  const rect = dock.getBoundingClientRect()
+  return rect.height === 0 ? window.innerHeight : rect.top
+}
+
 function isOutOfView(target: HTMLElement, dock: HTMLElement | null): boolean {
-  const dockTop = dock?.getBoundingClientRect().top ?? window.innerHeight
   const rect = target.getBoundingClientRect()
-  return rect.bottom > dockTop - SCROLL_MARGIN_PX || rect.top < SCROLL_MARGIN_PX
+  return (
+    rect.bottom > dockTop(dock) - SCROLL_MARGIN_PX ||
+    rect.top < SCROLL_MARGIN_PX
+  )
 }
 
 /**
@@ -59,9 +72,9 @@ export function useScrollToTarget({
     // viewport: the dock is a sticky element the browser doesn't know covers the
     // bottom of the screen, and on a short iOS viewport a plain viewport-centre
     // under-scrolls, landing the blank behind the dock instead of clear of it.
-    const dockTop = dock?.getBoundingClientRect().top ?? window.innerHeight
+    const floor = dockTop(dock)
     const rect = target.getBoundingClientRect()
     const targetCenter = rect.top + rect.height / 2
-    window.scrollBy({ top: targetCenter - dockTop / 2, behavior })
+    window.scrollBy({ top: targetCenter - floor / 2, behavior })
   }, [filledBlanks, filledRefSteps, inReferencePhase, targetRef, dockRef])
 }

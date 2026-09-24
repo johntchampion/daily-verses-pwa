@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { BlankSegment } from '../lib/exercise'
 import { shuffle } from '../lib/exercise'
 import {
@@ -36,6 +36,12 @@ export function useBankWindow(
   const isRotating = useRef(false)
   /** Blocks top-ups after a trim so trim and top-up can't ping-pong. */
   const windowIsFull = useRef(false)
+
+  useEffect(() => {
+    const remeasure = () => setBankHeight(null)
+    window.addEventListener('resize', remeasure)
+    return () => window.removeEventListener('resize', remeasure)
+  }, [])
 
   // Measure first, then fit: the height can only be read once tiles have been
   // laid out, and the fit can only be judged against a locked-down height.

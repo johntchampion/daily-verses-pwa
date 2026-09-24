@@ -20,8 +20,7 @@ export default function SlotList({
 
   return (
     <section
-      className='stack'
-      style={{ gap: 12, marginTop: 20 }}
+      className='stack slot-grid'
       aria-label='Learning slots'
     >
       {profile

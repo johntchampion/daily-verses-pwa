@@ -1,0 +1,136 @@
+/* --- Verse typesetting (the signature) ---------------------------------- */
+
+.verse-card {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px;
+}
+
+.verse-ref {
+    font-family: var(--serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--coral-text);
+    margin-bottom: 10px;
+}
+
+.verse-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.verse-card-head .verse-ref {
+    margin-bottom: 0;
+}
+
+.translation-tag {
+    flex-shrink: 0;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--soft);
+    background: var(--card-tint);
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    padding: 3px 9px;
+}
+
+.verse-text {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    line-height: 1.9;
+    color: var(--ink);
+    text-wrap: pretty;
+}
+
+.blank-group {
+    white-space: nowrap;
+}
+
+.blank {
+    --rule: 3px;
+    display: inline-block;
+    box-shadow: inset 0 calc(-1 * var(--rule)) 0 var(--dash);
+    border-radius: 0;
+    color: transparent;
+    white-space: pre;
+}
+
+.blank-current {
+    box-shadow: inset 0 calc(-1 * var(--rule)) 0 var(--coral);
+    background: var(--coral-wash);
+    border-radius: 9px 9px 0 0;
+}
+
+.blank-filled {
+    display: inline-block;
+    background: var(--green-wash);
+    color: var(--ink);
+    padding: 0 7px;
+    border-radius: 9px;
+    animation: pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.verse-text .blank,
+.verse-text .blank-filled {
+    padding: 0 7px;
+    min-width: 2.2ch;
+    text-align: center;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0.86);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.06);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* --- Reference blanks (the second phase) --------------------------------- */
+
+.ref-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    min-width: 0;
+    /* The phase scrolls this line to `block: 'start'`, which would otherwise
+       put it flush against the top edge with the card's own top cropped off. */
+    scroll-margin-top: 40px;
+}
+
+.ref-slot {
+    min-width: 2.6ch;
+    text-align: center;
+}
+
+.ref-book.blank {
+    min-width: 8ch;
+}
+
+.ref-line .blank {
+    --rule: 2px;
+}
+
+.ref-locus {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+

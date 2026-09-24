@@ -1,0 +1,207 @@
+/* --- Cards & buttons ---------------------------------------------------- */
+
+.card {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border-radius: 22px;
+    background: var(--coral);
+    color: var(--on-accent);
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-align: center;
+    box-shadow: 0 5px 0 var(--coral-deep);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--coral-deep);
+}
+
+.btn:disabled {
+    background: var(--track);
+    color: var(--locked);
+    box-shadow: none;
+    transform: none;
+    cursor: default;
+}
+
+/* The password-reset screens use a link as their primary action ("Back to sign
+   in", "Send a new link"). Without this, the global a:hover wins on specificity
+   and repaints the label coral — onto its own coral background. */
+a.btn:hover {
+    color: var(--on-accent);
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: btn-spin 700ms linear infinite;
+}
+
+@keyframes btn-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.toggle-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toggle-track {
+    flex: none;
+    position: relative;
+    width: 56px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--track);
+    border: 1.5px solid var(--line);
+    transition: background 120ms ease, border-color 120ms ease;
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: var(--card);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 120ms ease;
+}
+
+.toggle-input:checked+.toggle-track {
+    background: var(--coral);
+    border-color: var(--coral-deep);
+}
+
+.toggle-input:checked+.toggle-track .toggle-thumb {
+    transform: translateX(24px);
+}
+
+.toggle-input:focus-visible+.toggle-track {
+    outline: 2px solid var(--coral);
+    outline-offset: 2px;
+}
+
+.toggle-input:disabled+.toggle-track {
+    opacity: 0.6;
+}
+
+.toggle-label {
+    font-weight: 800;
+}
+
+.btn-ghost {
+    display: block;
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 18px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.btn-quiet {
+    color: var(--soft);
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 8px 0;
+    text-align: center;
+}
+
+.cta {
+    display: block;
+    width: 100%;
+    padding: 20px;
+    border-radius: 24px;
+    background: var(--coral);
+    color: var(--on-accent);
+    text-align: left;
+    box-shadow: 0 5px 0 var(--coral-deep);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.cta:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--coral-deep);
+}
+
+.cta-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cta-title {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.cta-sub {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.cta-arrow {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    display: grid;
+    place-items: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.chip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+

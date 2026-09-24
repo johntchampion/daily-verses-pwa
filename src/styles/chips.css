@@ -1,0 +1,64 @@
+/* --- Status chips -------------------------------------------------------- */
+
+.chip {
+    display: inline-block;
+    flex: none;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.chip-active {
+    background: var(--coral-wash);
+    color: var(--coral-text);
+}
+
+.chip-review {
+    background: var(--indigo-wash);
+    color: var(--indigo);
+}
+
+.chip-mastered {
+    background: var(--green-wash);
+    color: var(--green-text);
+}
+
+.chip-practice {
+    background: var(--amber-wash);
+    color: var(--amber-text);
+}
+
+.chip-locked {
+    background: transparent;
+    border: 1.5px solid var(--line);
+    color: var(--locked);
+}
+
+.chip-relearn {
+    background: var(--coral-wash);
+    color: var(--coral-text);
+}
+
+.chip-streak {
+    background: var(--amber-wash);
+    color: var(--amber-deep);
+    font-size: 0.82rem;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: 5px 12px;
+}
+
+.streak-badge {
+    border: 1.5px solid var(--amber-line);
+}
+
+.streak-badge-pending {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--locked);
+}
+

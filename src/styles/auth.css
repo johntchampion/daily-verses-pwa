@@ -1,0 +1,186 @@
+/* --- Auth screens --------------------------------------------------------- */
+
+.auth-shell {
+    max-width: 400px;
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 40px) 26px calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-logo {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+}
+
+.auth-title {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+}
+
+/* --- Onboarding (first-run cold open) ------------------------------------- */
+
+.onboard-step {
+    max-width: 480px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.onboard-hero {
+    max-width: 480px;
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 40px) 26px calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.onboard-brand {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--coral-text);
+}
+
+.onboard-title {
+    font-family: var(--serif);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    margin-top: 16px;
+    text-wrap: pretty;
+}
+
+.onboard-sub {
+    font-weight: 600;
+    color: var(--soft);
+    margin-top: 12px;
+    text-wrap: pretty;
+}
+
+.onboard-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+}
+
+.onboard-taster-heading {
+    font-family: var(--serif);
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.onboard-check {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 5px solid var(--green);
+    display: grid;
+    place-items: center;
+    animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.onboard-check span {
+    font-size: 2.75rem;
+    line-height: 1;
+}
+
+.onboard-how {
+    width: 100%;
+    margin-top: 24px;
+    background: var(--card);
+    border: 1.5px solid var(--amber-line);
+    border-radius: 22px;
+    padding: 18px;
+    text-align: left;
+}
+
+.stage-pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.stage-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    padding: 8px 2px;
+    text-align: center;
+    border-radius: 11px;
+    background: var(--neutral-wash);
+    font-size: 0.6rem;
+    line-height: 1.2;
+    font-weight: 800;
+    color: var(--locked);
+    overflow-wrap: anywhere;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.stage-step-current {
+    background: var(--coral-wash);
+    color: var(--coral-text);
+}
+
+.stage-step-active {
+    background: var(--green-wash);
+    color: var(--green-text);
+}
+
+.stage-step-done {
+    background: var(--neutral-wash);
+    color: var(--ink);
+}
+
+.stage-arrow {
+    display: flex;
+    align-items: center;
+    flex: none;
+    color: var(--dash);
+    font-weight: 800;
+}
+
+.link-btn {
+    padding: 0;
+    color: var(--coral-text);
+    font-weight: 700;
+}
+
+.link-btn:hover {
+    color: var(--coral);
+}
+
+/* --- Account -------------------------------------------------------------- */
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border-radius: 16px;
+    background: var(--coral-wash);
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--coral-text);
+}
+

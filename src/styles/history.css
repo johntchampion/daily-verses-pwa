@@ -1,0 +1,63 @@
+/* --- History -------------------------------------------------------------- */
+
+.stat-tiles {
+    display: flex;
+    gap: 8px;
+}
+
+.stat-tile {
+    flex: 1;
+    background: var(--card-tint);
+    border-radius: 14px;
+    padding: 11px 13px;
+}
+
+.stat-tile-value {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.stat-tile-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--soft);
+}
+
+.history-blocks {
+    display: flex;
+    gap: 5px;
+    margin-top: 12px;
+}
+
+.history-block {
+    flex: 1;
+    height: 26px;
+    border-radius: 7px;
+}
+
+.history-block-correct {
+    background: var(--green);
+}
+
+.history-block-incorrect {
+    background: var(--coral);
+}
+
+.attempt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-top: 1.5px solid var(--line-soft);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.attempt-correct {
+    color: var(--green-text);
+}
+
+.attempt-incorrect {
+    color: var(--coral-text);
+}
+

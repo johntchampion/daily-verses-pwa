@@ -1,8 +1,10 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import type { MeResponse } from '../api/types'
 import Alert from './Alert'
 import TabBar from './TabBar'
+import TopNav from './TopNav'
 
 /**
  * The frame every data screen shares. It knows nothing about loading *content*:
@@ -23,11 +25,10 @@ interface Props {
   className?: string
 
   leading?: ReactNode
-  /** The route supplies its own heading element: tab titles and pushed-screen
-      titles are a real design distinction. */
   title?: ReactNode
   trailing?: ReactNode
   sub?: ReactNode
+  me?: MeResponse | null
   subStyle?: CSSProperties
 
   /** First load only. Drives `aria-busy` and one announcement per screen. */
@@ -50,6 +51,7 @@ export default function Screen({
   trailing,
   sub,
   subStyle,
+  me = null,
   loading = false,
   loadingLabel,
   error = null,
@@ -109,6 +111,7 @@ export default function Screen({
   if (layout !== 'tabbed') return main
   return (
     <>
+      <TopNav me={me} />
       {main}
       <TabBar />
     </>
