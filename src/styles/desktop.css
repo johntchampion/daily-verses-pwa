@@ -20,7 +20,7 @@
  * are above it and would no longer cover it.
  */
 
-@media (min-width: 1024px) {
+@media (min-width: 744px) {
     /* --- Desktop: the shared shell ---------------------------------------- */
 
     .tab-bar {
@@ -481,8 +481,8 @@
 
     /* --- Desktop: hover --------------------------------------------------- */
 
-    /* Guarded on a real pointer: iPad landscape is over 1024px and would
-       otherwise hold the hover after a tap. */
+    /* Guarded on a real pointer: an iPad clears this breakpoint in either
+       orientation and would otherwise hold the hover after a tap. */
     @media (hover: hover) {
 
         .hundred-shell .arc-row:hover,

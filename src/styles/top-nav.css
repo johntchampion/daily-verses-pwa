@@ -20,7 +20,7 @@
     display: none;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 744px) {
     .top-nav {
         display: block;
         position: fixed;
@@ -95,8 +95,8 @@
         gap: 12px;
     }
 
-    /* Guarded: iPad landscape is over 1024px and would otherwise hold the hover
-       after a tap. */
+    /* Guarded: an iPad clears this breakpoint in either orientation and would
+       otherwise hold the hover after a tap. */
     @media (hover: hover) {
         .top-nav-tab:not(.top-nav-tab-active):hover {
             color: var(--ink);

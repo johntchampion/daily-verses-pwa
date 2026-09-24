@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
 /** Kept in sync by hand with the one breakpoint in desktop.css and top-nav.css. */
-const QUERY = '(min-width: 1024px)'
+const QUERY = '(min-width: 744px)'
 
 function subscribe(onChange: () => void) {
   const mql = window.matchMedia(QUERY)
