@@ -24,6 +24,7 @@ export default function Practicing() {
       className='practicing-shell'
       title={<h1 className='view-title'>In Practice</h1>}
       trailing={<TranslationTag code={verses.data?.translation ?? null} />}
+      me={me.data}
       sub='Three at a time. A verse graduates from In Practice once it’s practiced correctly three times in a row for three days.'
       loading={all.pending}
       loadingLabel='Loading your practice slots…'

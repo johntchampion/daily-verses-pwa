@@ -1,14 +1,19 @@
 /* --- Desktop ------------------------------------------------------------- */
 
 /*
- * Two invariants this block must not break.
+ * Three invariants this block must not break.
  *
- * 1. The document stays the scroller on Practicing and All 100. useScrollLock
- *    freezes `body` and restores with window.scrollTo, so moving the scroll
- *    onto an inner element silently breaks every sheet and alert. Today is the
- *    standing exception — it already scrolls inside .path-scroll.
+ * 1. The document stays the scroller on Practicing and the Library.
+ *    useScrollLock freezes `body` and restores with window.scrollTo, so moving
+ *    the scroll onto an inner element silently breaks every sheet and alert.
+ *    Today is the standing exception — it already scrolls inside .path-scroll.
  * 2. Nothing here may put transform, will-change, contain or filter on
- *    .nav-stack, .nav-layer or .nav-layer-inner — see .nav-transit above.
+ *    .nav-stack, .nav-layer or .nav-layer-inner — see .nav-transit above. That
+ *    now covers .top-nav as well as .tab-bar: both are fixed.
+ * 3. Navigation swaps at this breakpoint — the bottom tab bar hides and
+ *    .top-nav takes over (top-nav.css). So the shells below have to clear a
+ *    fixed bar at the top that didn't exist before, and .shell-tabbed's
+ *    padding-bottom is now reserving space for a bar that isn't there.
  *
  * Only the three tab classes and the session widen; .shell itself stays at
  * 480px. No rule in here may introduce an animation: the reduced-motion blocks
@@ -18,15 +23,29 @@
 @media (min-width: 1024px) {
     /* --- Desktop: the shared shell ---------------------------------------- */
 
-    /* Longhands, not the shorthand: .shell-tabbed's padding-bottom clears the tab
-       bar and must survive untouched. */
+    .tab-bar {
+        display: none;
+    }
+
+    /* Still longhands, but the reason has flipped: padding-bottom is no longer
+       being protected, it is being reset. .shell-tabbed reserves 96px for the
+       tab bar, and with the bar gone that is dead space under every tab screen. */
     .today-shell,
     .practicing-shell,
     .hundred-shell {
         max-width: 1280px;
-        padding-top: calc(env(safe-area-inset-top) + 30px);
+        padding-top: calc(env(safe-area-inset-top) + var(--top-nav-h) + 30px);
         padding-left: 40px;
         padding-right: 40px;
+        padding-bottom: calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
+    }
+
+    /* The nav bar already carries the wordmark, the streak and the settings
+       button, which is this header's entire contents. Practicing and the
+       Library keep theirs: those hold a page title and the translation tag,
+       which are screen content rather than app chrome. */
+    .today-shell .screen-header {
+        display: none;
     }
 
     .practicing-shell .view-title,

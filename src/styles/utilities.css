@@ -51,8 +51,9 @@
 /*
  * Out of transit these three are plain block boxes, and that is load-bearing:
  * a transform — or even a bare `will-change: transform` — on any of them makes
- * it the containing block for every `position: fixed` descendant, which here
- * is the tab bar. So all the positioning below is scoped to `.nav-transit`.
+ * it the containing block for every `position: fixed` descendant — here the
+ * tab bar and, at desktop widths, the top nav. So all the positioning below is
+ * scoped to `.nav-transit`.
  */
 
 .nav-transit {

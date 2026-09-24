@@ -1,0 +1,105 @@
+/* --- Top navigation bar (desktop/tablet) ---------------------------------- */
+
+/*
+ * The desktop counterpart to the bottom tab bar. Both are always rendered; this
+ * file and the .tab-bar rule in desktop.css swap them at the one breakpoint the
+ * project has. Below it this bar costs a single `display: none`.
+ *
+ * --top-nav-h is read by desktop.css to pad the tab shells clear of the bar, so
+ * it has to stay on :root rather than on .top-nav.
+ */
+
+/* Unconditional, though only the desktop rules read it: a custom property that
+   went undefined would invalidate desktop.css's whole padding-top calc rather
+   than just that one term. */
+:root {
+    --top-nav-h: 64px;
+}
+
+.top-nav {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .top-nav {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--cream);
+        /* Mirrors the tab bar's border-top, same weight and token. */
+        border-bottom: 1.5px solid var(--track);
+        z-index: 5;
+    }
+
+    /* The inset is padding, not height, so the bar's own ground still fills the
+       notch area on a landscape phone-sized window. */
+    .top-nav-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        height: calc(env(safe-area-inset-top) + var(--top-nav-h));
+        padding: env(safe-area-inset-top) 40px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .top-nav-brand {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .top-nav-mark {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        display: block;
+    }
+
+    .top-nav-tabs {
+        display: flex;
+        gap: 4px;
+        margin-left: 28px;
+    }
+
+    /* Not a variant of .tab: that one is a vertical icon-over-label stack, and
+       unwinding it costs more rules than starting here. */
+    .top-nav-tab,
+    .top-nav-tab:hover {
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        color: var(--soft);
+        /* Colour only. desktop.css sits below the reduced-motion blocks, but
+           this file sits above them — keep it that way and no rule here needs
+           to be a transform. */
+        transition: color 160ms ease;
+    }
+
+    .top-nav-tab-active,
+    .top-nav-tab-active:hover {
+        color: var(--coral-text);
+        background: var(--coral-wash);
+    }
+
+    .top-nav-actions {
+        margin-left: auto;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Guarded: iPad landscape is over 1024px and would otherwise hold the hover
+       after a tap. */
+    @media (hover: hover) {
+        .top-nav-tab:not(.top-nav-tab-active):hover {
+            color: var(--ink);
+        }
+    }
+}

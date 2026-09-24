@@ -6,7 +6,7 @@ const DEPTHS: Array<[RegExp, number]> = [
   // Tab roots. Switching between them is a swap, not a push.
   [/^\/$/, 0],
   [/^\/practicing\/?$/, 0],
-  [/^\/all\/?$/, 0],
+  [/^\/library\/?$/, 0],
   [/^\/queue\/?$/, 1],
   [/^\/settings\/?$/, 1],
   [/^\/verses\/[^/]+\/?$/, 2],

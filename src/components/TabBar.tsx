@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 const TABS = [
   { to: '/', icon: '◉', label: 'Today' },
   { to: '/practicing', icon: '☰', label: 'Practicing' },
-  { to: '/all', icon: '⌗', label: 'All 100' },
+  { to: '/library', icon: '⌗', label: 'Library' },
 ]
 
 /** Bottom tab bar shared by the three home views. */
