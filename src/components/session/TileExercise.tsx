@@ -109,7 +109,11 @@ export default function TileExercise({
     <div className='exercise-pane'>
       <div className='chip-row exercise-rise'>
         <StageChip exercise={exercise} />
-        <SlipHearts budget={budget} misses={misses} />
+        <SlipHearts
+          budget={budget}
+          misses={misses}
+          className='slip-hearts-head'
+        />
       </div>
 
       <div className='verse-card exercise-rise'>
@@ -129,13 +133,20 @@ export default function TileExercise({
       </div>
 
       <div className='bank-dock' ref={dockRef}>
-        {/* A live region: this only changes when the drill asks for the next
-            part of the reference. */}
-        <p className='bank-label' role='status'>
-          {drill.board
-            ? REFERENCE_PROMPTS[drill.board.kind]
-            : 'Tap the missing words'}
-        </p>
+        <div className='bank-label-row'>
+          {/* A live region: this only changes when the drill asks for the next
+              part of the reference. */}
+          <p className='bank-label' role='status'>
+            {drill.board
+              ? REFERENCE_PROMPTS[drill.board.kind]
+              : 'Tap the missing words'}
+          </p>
+          <SlipHearts
+            budget={budget}
+            misses={misses}
+            className='slip-hearts-dock'
+          />
+        </div>
 
         {drill.board ? (
           <ReferenceBank

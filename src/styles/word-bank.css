@@ -58,6 +58,7 @@
 }
 
 @keyframes shake {
+
     0%,
     100% {
         transform: translateX(0);
@@ -120,12 +121,19 @@
     margin-top: auto;
 }
 
-.bank-dock .bank-label {
+.bank-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     margin-top: 12px;
+}
+
+.bank-label-row .bank-label {
+    margin-top: 0;
 }
 
 .bank-dock .hint {
     margin-top: 14px;
     min-height: 66px;
 }
-

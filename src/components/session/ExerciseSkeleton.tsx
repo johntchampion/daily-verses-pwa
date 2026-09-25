@@ -21,7 +21,12 @@ export default function ExerciseSkeleton() {
     <div className='exercise-pane'>
       <div className='chip-row'>
         <Skeleton variant='chip' w={132} h={30} />
-        <Skeleton variant='chip' w={64} h={16} />
+        <Skeleton
+          variant='chip'
+          w={64}
+          h={16}
+          className='slip-hearts slip-hearts-head'
+        />
       </div>
 
       <div className='verse-card'>
@@ -33,7 +38,15 @@ export default function ExerciseSkeleton() {
       </div>
 
       <div className='bank-dock'>
-        <p className='bank-label'>Tap the missing words</p>
+        <div className='bank-label-row'>
+          <p className='bank-label'>Tap the missing words</p>
+          <Skeleton
+            variant='chip'
+            w={64}
+            h={16}
+            className='slip-hearts slip-hearts-dock'
+          />
+        </div>
         <div
           className='word-bank'
           aria-hidden='true'

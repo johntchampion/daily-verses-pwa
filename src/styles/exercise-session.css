@@ -41,9 +41,18 @@
 /* --- Slip hearts ---------------------------------------------------------- */
 
 .slip-hearts {
-    display: inline-flex;
+    display: none;
     align-items: center;
     flex: none;
+}
+
+.slip-hearts-dock {
+    display: inline-flex;
+}
+
+.slip-hearts-row {
+    display: inline-flex;
+    align-items: center;
     gap: 4px;
     color: var(--coral);
 }

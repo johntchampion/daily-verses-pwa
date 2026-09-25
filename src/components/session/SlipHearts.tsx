@@ -1,3 +1,5 @@
+import { cx } from '../../lib/cx'
+
 /** Above this many, a row of glyphs stops reading as a count and starts
     reading as decoration. */
 const HEART_CAP = 6
@@ -28,29 +30,36 @@ function Heart({ full }: { full: boolean }) {
 export default function SlipHearts({
   budget,
   misses,
+  className,
 }: {
   budget: number
   misses: number
+  className?: string
 }) {
   const left = Math.max(0, budget - misses)
 
   return (
-    <span
-      key={misses}
-      className={'slip-hearts' + (misses > 0 ? ' slip-hearts-lost' : '')}
-      role='status'
-      aria-label={`${left} of ${budget} slip${budget === 1 ? '' : 's'} left`}
-    >
-      {budget > HEART_CAP ? (
-        <>
-          <Heart full={left > 0} />
-          <span className='heart-count'>×{left}</span>
-        </>
-      ) : (
-        Array.from({ length: budget }, (_, i) => (
-          <Heart key={i} full={i >= budget - left} />
-        ))
-      )}
+    <span className={cx('slip-hearts', className)} role='status'>
+      <span className='sr-only'>
+        {left} of {budget} slip{budget === 1 ? '' : 's'} left
+      </span>
+
+      <span
+        key={misses}
+        className={cx('slip-hearts-row', misses > 0 && 'slip-hearts-lost')}
+        aria-hidden='true'
+      >
+        {budget > HEART_CAP ? (
+          <>
+            <Heart full={left > 0} />
+            <span className='heart-count'>×{left}</span>
+          </>
+        ) : (
+          Array.from({ length: budget }, (_, i) => (
+            <Heart key={i} full={i >= budget - left} />
+          ))
+        )}
+      </span>
     </span>
   )
 }
