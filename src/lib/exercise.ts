@@ -160,12 +160,10 @@ export const STAGE_SHORT_LABELS: Record<Stage, string> = {
   mastered: 'Mastered',
 }
 
-/** One wrong tap forgiven per this many blanks, so a 75-blank review exercise
-    isn't graded as harshly per-slip as a 4-blank learning one. */
-export const TILE_SLIP_PER_BLANKS = 20
+export const SLIP_PER_BLANKS = 20
 
-export function missTolerance(blankCount: number): number {
-  return Math.floor(blankCount / TILE_SLIP_PER_BLANKS)
+export function slipBudget(blankCount: number, hasReference: boolean): number {
+  return 1 + (hasReference ? 1 : 0) + Math.floor(blankCount / SLIP_PER_BLANKS)
 }
 
 /** Every stage but the gentlest: at `learning_light` the words themselves are
@@ -173,7 +171,3 @@ export function missTolerance(blankCount: number): number {
 export function usesReferencePhase(stage: Stage): boolean {
   return stage !== 'learning_light'
 }
-
-/** Tracked against its own budget rather than the text's, since a short
-    exercise earns no slip from `missTolerance` at all. */
-export const REFERENCE_SLIP_PER_STEP = 1

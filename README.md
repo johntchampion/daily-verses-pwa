@@ -138,12 +138,21 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   `review`**, which blanks every word. They validate on tap: a correct tile
   fills the next blank and dims; a wrong tile shakes and changes nothing. When
   all blanks are filled the Next button activates.
-- Tile grading forgives **one wrong tap per 20 blanks** (`missTolerance` in
-  `lib/exercise.ts`). A full-density review on a long verse is 70+ taps, and two
-  missed reviews pull a verse out of review entirely — treating one slip there
-  the same as a slip on a 4-blank learning exercise made demotion far too easy.
-  Short exercises earn no slips, so learning grading is unchanged in practice.
-  The remaining budget is shown in the header chip once a slip is spent.
+- Tile grading forgives a budget of wrong taps: **one for the verse text, one
+  for the reference when that phase runs, plus one more per 20 blanks**
+  (`slipBudget` in `lib/exercise.ts`). So a 10-blank exercise gets two, a
+  20-blank one gets three, and a `learning_light` exercise — which has no
+  reference phase — gets one. The per-20 term exists because a full-density
+  review on a long verse is 70+ taps, and two missed reviews pull a verse out of
+  review entirely; treating one slip there the same as a slip on a 4-blank
+  learning exercise made demotion far too easy.
+- **One budget covers both phases.** The text and the reference spend from the
+  same pool and are judged together, because they are one attempt — grading them
+  separately meant the header chip described a different budget depending on
+  which phase the user happened to be in. The whole budget sits in the exercise
+  header as a row of hearts from the first render, emptying as slips are spent,
+  so the forgiveness is legible before it is needed rather than only after.
+  Above five, the hearts collapse to a glyph and a count.
 - _Typed exercises_ (`type_fill_blank`) are reached **only at `mastered`**. They
   validate on "Check": one free-text input compared against the full verse,
   forgiving case, punctuation, and whitespace (`normalizeTypedText`).
@@ -155,11 +164,6 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   the chapter or verse). The API sends `reference` as one opaque string, so the
   split and the decoys are derived client-side in `lib/reference.ts` — a
   reference that won't parse silently skips the phase.
-- Reference grading has its **own** budget of one wrong tap per step
-  (`REFERENCE_SLIP_PER_STEP`), checked alongside the text's rather than folded
-  into it: `missTolerance` is a rate over blanks, and a 4-blank exercise earns
-  no slip at all, so a shared budget would fail an attempt on one mistapped
-  book.
 - Session state (current index, taps so far) is purely local; only submitted
   attempts hit the server. Whatever `/api/attempt` reports surfaces as a brief
   toast and as a line on the completion screen — lost mastery and relearning

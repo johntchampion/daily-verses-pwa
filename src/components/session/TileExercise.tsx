@@ -1,16 +1,17 @@
 import { useMemo, useRef, useState } from 'react'
 import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
-import { missTolerance, splitIntoChunks, wordsMatch } from '../../lib/exercise'
+import { slipBudget, splitIntoChunks, wordsMatch } from '../../lib/exercise'
 import type { ReferenceStepKind } from '../../lib/reference'
 import { useBankWindow } from '../../hooks/useBankWindow'
 import { useFlashTimers } from '../../hooks/useFlashTimers'
 import { useReferenceDrill } from '../../hooks/useReferenceDrill'
 import { useScrollToTarget } from '../../hooks/useScrollToTarget'
-import { ScoreChip, StageChip } from './ExerciseChips'
+import { StageChip } from './ExerciseChips'
 import NextButton from './NextButton'
 import ReferenceBank from './ReferenceBank'
 import ReferenceLine from './ReferenceLine'
+import SlipHearts from './SlipHearts'
 import VerseBody from './VerseBody'
 import WordBank from './WordBank'
 
@@ -31,11 +32,7 @@ const REFERENCE_PROMPTS: Record<ReferenceStepKind, string> = {
 
 /**
  * Tile exercise: validates on tap. A correct tile fills the next empty blank; a
- * wrong tile shakes, breaks the combo and changes nothing. The attempt is
- * graded on wrong taps, forgiving one per `missTolerance` blanks.
- *
- * Filling the last blank starts the reference drill, which is graded against a
- * budget of its own.
+ * wrong tile shakes and changes nothing.
  */
 export default function TileExercise({
   exercise,
@@ -52,7 +49,6 @@ export default function TileExercise({
 
   const [filledBlanks, setFilledBlanks] = useState(0)
   const [wrongTileId, setWrongTileId] = useState<number | null>(null)
-  const [combo, setCombo] = useState(0)
   const [misses, setMisses] = useState(0)
 
   const currentBlankRef = useRef<HTMLSpanElement | null>(null)
@@ -60,11 +56,12 @@ export default function TileExercise({
   const flash = useFlashTimers()
 
   const textDone = filledBlanks >= blanks.length
-  const slipBudget = missTolerance(blanks.length)
 
   const bank = useBankWindow(exercise.wordBank, blanks, filledBlanks)
   const drill = useReferenceDrill(exercise.stage, exercise.reference, textDone)
   const isComplete = textDone && drill.step === null
+
+  const budget = slipBudget(blanks.length, drill.hasSteps)
 
   useScrollToTarget({
     filledBlanks,
@@ -74,16 +71,10 @@ export default function TileExercise({
     dockRef,
   })
 
-  /** Callers add the miss to whichever counter their phase is graded on. */
   function rejectTap(tileId: number) {
-    setCombo(0)
+    setMisses((count) => count + 1)
     setWrongTileId(tileId)
     flash(() => setWrongTileId(null))
-  }
-
-  function acceptTap() {
-    setCombo((count) => count + 1)
-    setWrongTileId(null)
   }
 
   function tapTile(tileId: number, position: number) {
@@ -91,13 +82,12 @@ export default function TileExercise({
 
     const answer = blanks[filledBlanks].answer
     if (!wordsMatch(bank.labels[tileId], answer)) {
-      setMisses((count) => count + 1)
       rejectTap(tileId)
       return
     }
 
     bank.spendTile(tileId, position, answer)
-    acceptTap()
+    setWrongTileId(null)
     setFilledBlanks(filledBlanks + 1)
   }
 
@@ -107,13 +97,11 @@ export default function TileExercise({
     if (!drill.step) return
 
     if (choice !== drill.step.answer) {
-      drill.addMiss()
       rejectTap(position)
       return
     }
 
-    // The combo runs on through the phase change — it's one unbroken streak.
-    acceptTap()
+    setWrongTileId(null)
     drill.advance()
   }
 
@@ -121,14 +109,7 @@ export default function TileExercise({
     <div className='exercise-pane'>
       <div className='chip-row exercise-rise'>
         <StageChip exercise={exercise} />
-        <ScoreChip
-          filled={drill.phase ? drill.filled : filledBlanks}
-          total={drill.phase ? drill.phase.length : blanks.length}
-          noun={drill.phase ? 'steps' : 'blanks'}
-          combo={combo}
-          misses={drill.phase ? drill.misses : misses}
-          slipBudget={drill.phase ? drill.slipBudget : slipBudget}
-        />
+        <SlipHearts budget={budget} misses={misses} />
       </div>
 
       <div className='verse-card exercise-rise'>
@@ -182,9 +163,7 @@ export default function TileExercise({
           pending={pending}
           disabled={!isComplete}
           style={{ marginTop: 20 }}
-          onClick={() =>
-            onComplete(misses <= slipBudget && drill.misses <= drill.slipBudget)
-          }
+          onClick={() => onComplete(misses <= budget)}
         />
       </div>
     </div>

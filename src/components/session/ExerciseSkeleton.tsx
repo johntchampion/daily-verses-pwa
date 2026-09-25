@@ -21,7 +21,7 @@ export default function ExerciseSkeleton() {
     <div className='exercise-pane'>
       <div className='chip-row'>
         <Skeleton variant='chip' w={132} h={30} />
-        <Skeleton variant='chip' w={110} h={30} />
+        <Skeleton variant='chip' w={64} h={16} />
       </div>
 
       <div className='verse-card'>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Stage } from '../api/types'
-import { REFERENCE_SLIP_PER_STEP, usesReferencePhase } from '../lib/exercise'
+import { usesReferencePhase } from '../lib/exercise'
 import { buildReferenceSteps, type ReferenceStep } from '../lib/reference'
 
 /**
@@ -18,13 +18,9 @@ export function useReferenceDrill(
     usesReferencePhase(stage) ? buildReferenceSteps(reference) : null,
   )
   const [filled, setFilled] = useState(0)
-  const [misses, setMisses] = useState(0)
 
-  /** The steps once it is the user's turn at them; null skips the phase. */
   const phase = textDone ? steps : null
   const step = phase && filled < phase.length ? phase[filled] : null
-  // Outlives `step` by one: the last board stays on screen, frozen, rather than
-  // the dock emptying out while the user reaches for Next.
   const board = phase ? phase[Math.min(filled, phase.length - 1)] : null
 
   return {
@@ -32,9 +28,7 @@ export function useReferenceDrill(
     step,
     board,
     filled,
-    misses,
-    slipBudget: (steps?.length ?? 0) * REFERENCE_SLIP_PER_STEP,
+    hasSteps: steps !== null,
     advance: () => setFilled(filled + 1),
-    addMiss: () => setMisses((count) => count + 1),
   }
 }

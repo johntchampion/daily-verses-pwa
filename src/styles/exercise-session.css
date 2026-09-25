@@ -38,6 +38,51 @@
     color: var(--amber-text);
 }
 
+/* --- Slip hearts ---------------------------------------------------------- */
+
+.slip-hearts {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    gap: 4px;
+    color: var(--coral);
+}
+
+.heart {
+    display: block;
+    width: 16px;
+    height: 16px;
+}
+
+.heart-empty {
+    color: var(--dash);
+}
+
+.heart-count {
+    margin-left: 3px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--soft);
+}
+
+.slip-hearts-lost {
+    animation: heart-lost 260ms ease-out;
+}
+
+@keyframes heart-lost {
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.14);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
 /* --- Typed exercise ------------------------------------------------------ */
 
 .typed-input {
@@ -293,4 +338,3 @@
     color: var(--soft);
     animation: rise-in 200ms ease 600ms backwards;
 }
-
