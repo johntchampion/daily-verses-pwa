@@ -81,6 +81,7 @@ export default function Session() {
           exercise={session.exercise}
           fullText={session.fullText}
           translation={session.translation}
+          today={session.today}
           isLast={session.isLast}
           pending={session.submitting}
           onComplete={(correct) => void session.submit(correct)}

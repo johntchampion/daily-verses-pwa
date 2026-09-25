@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
 import type { SessionExercise } from '../api/types'
+import { todayInTimezone } from '../lib/dates'
 import { messageOf } from '../lib/errors'
 import { hold } from '../lib/motion'
 import { clearDailyReminder } from '../lib/push'
@@ -45,6 +46,7 @@ export function useSessionRunner(practice: boolean) {
   const [dayVerses, setDayVerses] = useState(0)
   const [texts, setTexts] = useState<Record<string, string>>({})
   const [translation, setTranslation] = useState('')
+  const [timezone, setTimezone] = useState<string | null>(null)
   const [index, setIndex] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<SessionError | null>(null)
@@ -79,7 +81,12 @@ export function useSessionRunner(practice: boolean) {
       }
       // The full text is the answer key for both exercise types.
       const ids = [...new Set(outstanding.map((e) => e.verseId))]
-      const details = await Promise.all(ids.map((id) => api.verse(id)))
+      const [details, profile] = await Promise.all([
+        Promise.all(ids.map((id) => api.verse(id))),
+        // Only wanted for its timezone. A failure here costs the upgrade
+        // meter its numbers, which is not worth failing the session over.
+        api.me().catch(() => null),
+      ])
       const byId: Record<string, string> = {}
       for (const detail of details) {
         if (!detail.verse.text) throw new Error('verse text unavailable')
@@ -100,6 +107,7 @@ export function useSessionRunner(practice: boolean) {
       setCorrectCount(today.correctCount)
       setTexts(byId)
       setTranslation(today.translation)
+      setTimezone(profile?.user.timezone ?? null)
       setIndex(0)
       setLeavingIndex(null)
       setPhase('running')
@@ -172,6 +180,14 @@ export function useSessionRunner(practice: boolean) {
       ])
       if (correct) setCorrectCount((n) => n + 1)
 
+      setQueue((prev) =>
+        prev.map((item) =>
+          item.userVerseId === outcome.userVerse.id
+            ? { ...item, userVerse: outcome.userVerse }
+            : item,
+        ),
+      )
+
       if (outcome.events.length > 0) {
         setEvents((prev) => [...prev, ...outcome.events.map(presentEvent)])
       }
@@ -202,6 +218,7 @@ export function useSessionRunner(practice: boolean) {
     exercise: queue[index],
     fullText: texts[queue[index]?.verseId],
     translation,
+    today: timezone === null ? null : todayInTimezone(timezone),
     isLast: index === queue.length - 1,
     submitting,
     submit,

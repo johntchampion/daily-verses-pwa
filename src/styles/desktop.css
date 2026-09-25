@@ -429,13 +429,30 @@
 
     .session-view .chip-row {
         margin-top: 48px;
-        justify-content: flex-start;
-        gap: 12px;
+        gap: 16px;
         position: sticky;
         top: calc(var(--session-head-h) + var(--session-head-gap));
         z-index: 1;
         padding-bottom: 10px;
         background: var(--cream);
+    }
+
+    .session-view .upgrade-meter {
+        gap: 12px;
+    }
+
+    .session-view .upgrade-segs {
+        gap: 5px;
+    }
+
+    .session-view .upgrade-seg {
+        width: 19px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .session-view .upgrade-label {
+        font-size: 0.86rem;
     }
 
     .session-view .exercise-pane .verse-card {
@@ -462,6 +479,20 @@
 
     .session-view .slip-hearts-head {
         display: inline-flex;
+    }
+
+    .session-view .slip-hearts-head .slip-hearts-row {
+        gap: 6px;
+    }
+
+    .session-view .slip-hearts-head .heart {
+        width: 22px;
+        height: 22px;
+    }
+
+    .session-view .slip-hearts-head .heart-count {
+        margin-left: 5px;
+        font-size: 1rem;
     }
 
     .session-view .word-bank {

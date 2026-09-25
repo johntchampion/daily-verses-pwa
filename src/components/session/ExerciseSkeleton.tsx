@@ -1,4 +1,5 @@
 import { Skeleton, SkeletonText } from '../Skeleton'
+import { UpgradeMeterEmpty } from './UpgradeMeter'
 import { BANK_ROWS, TILE_SHADOW_HEIGHT } from '../../lib/wordBank'
 
 /** Tile widths for the word-bank placeholder — varied, so it reads as words. */
@@ -20,7 +21,10 @@ export default function ExerciseSkeleton() {
   return (
     <div className='exercise-pane'>
       <div className='chip-row'>
-        <Skeleton variant='chip' w={132} h={30} />
+        <span className='upgrade-meter'>
+          <UpgradeMeterEmpty />
+          <Skeleton variant='text' w={148} h={14} style={{ margin: 0 }} />
+        </span>
         <Skeleton
           variant='chip'
           w={64}

@@ -238,18 +238,22 @@ never falls.** A miss costs the run and nothing else, however many of them there
 are, so the UI says nothing about misses in a slot — the rail emptying is the
 whole feedback. The correct run carries across days in the database but is dead
 for an upgrade once `streak_date` isn't today, so any "N / 3" the UI draws has to
-be gated on that date. See `SlotRow` and `ProgressCard`. The day is the _user's_,
-from their profile timezone: `lib/dates.ts` mirrors the server's
-`todayInTimezone`, and comparing against the browser's own day would disagree for
-anyone travelling. (Backward movement is review's alone: 2 missed due dates, and
-those _do_ span days.) `consecutive_incorrect` still arrives on both
-`/api/me` and the verse row — it is just inert in a slot.
+be gated on that date. See `SlotRow`, `ProgressCard` and the session's
+`UpgradeMeter`. The day is the _user's_, from their profile timezone:
+`lib/dates.ts` mirrors the server's `todayInTimezone`, and comparing against the
+browser's own day would disagree for anyone travelling. (Backward movement is
+review's alone: 2 missed due dates, and those _do_ span days.)
+`consecutive_incorrect` still arrives on both `/api/me` and the verse row — it
+is just inert in a slot.
 
 **A verse can move up at most once per day.** After that the extra correct
 answers are practice, and `/api/me` reports `tierChangeUsedToday` so the slot
 card can say so instead of showing a progress bar that can't fill. Since an
 upgrade is now the only thing that can spend the cap, the card names the
-direction.
+direction. `UpgradeMeter` reads `last_upgrade_date` for the same thing, and the
+scheduled regimes want the equivalent guard for a different reason: review moves
+once per _due date_, so a verse whose `due_at` is already past today has spent
+its move too, however many exercises for it the day still holds.
 
 **A verse pulled out of review still reports `status: 'review'`.** Two failed
 reviews set `needsRelearning` and park the verse — no `due_at`, out of the

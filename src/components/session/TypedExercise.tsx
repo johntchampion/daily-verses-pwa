@@ -3,18 +3,19 @@ import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
 import { normalizeTypedText, usesReferencePhase } from '../../lib/exercise'
 import { referencesMatch } from '../../lib/reference'
-import { StageChip } from './ExerciseChips'
 import NextButton from './NextButton'
 import TypedResult, {
   type ReferenceOutcome,
   type TypedOutcome,
 } from './TypedResult'
 import ReferencePrompt from './ReferencePrompt'
+import UpgradeMeter from './UpgradeMeter'
 
 interface Props {
   exercise: SessionExercise
   fullText: string
   translation: string
+  today: string | null
   isLast: boolean
   pending: boolean
   onComplete: (correct: boolean) => void
@@ -47,6 +48,7 @@ export default function TypedExercise({
   exercise,
   fullText,
   translation,
+  today,
   isLast,
   pending,
   onComplete,
@@ -78,8 +80,8 @@ export default function TypedExercise({
 
   return (
     <div className='stack exercise-rise'>
-      <div style={{ display: 'flex' }}>
-        <StageChip exercise={exercise} reviewLabel='Review · from memory' />
+      <div className='chip-row'>
+        <UpgradeMeter exercise={exercise} today={today} />
       </div>
 
       <div className='verse-card'>

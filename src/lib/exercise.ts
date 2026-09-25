@@ -1,4 +1,4 @@
-import type { Stage } from '../api/types'
+import type { Stage, UserVerse } from '../api/types'
 
 /**
  * The API sends `blankedText` but never an answer key, so answers are derived
@@ -170,4 +170,98 @@ export function slipBudget(blankCount: number, hasReference: boolean): number {
     still new, so the reference would be a second unlearned thing at once. */
 export function usesReferencePhase(stage: Stage): boolean {
   return stage !== 'learning_light'
+}
+
+export const MAX_INTERVAL_DAYS =
+  INTERVAL_PROGRESSION[INTERVAL_PROGRESSION.length - 1]
+
+/** Null at the top of the learning ladder, which is the signal to graduate. */
+export function nextLearningStage(stage: Stage): Stage | null {
+  const tier = LEARNING_ORDER.indexOf(stage)
+  if (tier === -1 || tier === LEARNING_ORDER.length - 1) return null
+  return LEARNING_ORDER[tier + 1]
+}
+
+/** The rung a passed review run moves the interval to. */
+function nextInterval(current: number): number {
+  return INTERVAL_PROGRESSION.find((days) => days > current) ?? MAX_INTERVAL_DAYS
+}
+
+/**
+ * What the next correct answers are worth, in the terms the session's upgrade
+ * meter draws them.
+ *
+ * `run` is a live run that can still be extended today; `spent` is a verse
+ * whose move for the day is already made, so further answers are plain
+ * practice; `rule` states the requirement without the numbers, for when the
+ * profile timezone hasn't arrived and the same-day gates can't be read.
+ */
+export type UpgradeProgress =
+  | {
+      kind: 'run'
+      done: number
+      needed: number
+      total: number
+      /** Where the run leads: a tier name, or the interval it stretches to. */
+      target: string
+      sameDay: boolean
+    }
+  | { kind: 'spent'; sameDay: boolean }
+  | { kind: 'rule'; sameDay: boolean }
+  | { kind: 'top' }
+
+/** Another display-only mirror of the service's `advance()`, under the same
+    obligation as the thresholds above: it has to agree with it. `today` is the
+    user's local date, null while the profile is still loading. */
+export function upgradeProgress(
+  userVerse: UserVerse,
+  today: string | null,
+): UpgradeProgress {
+  const { stage } = userVerse
+
+  // The ceiling, and the one answer that needs no date to be sure of.
+  if (stage === 'mastered') return { kind: 'top' }
+
+  const sameDay = isLearningStage(stage)
+  if (today === null) return { kind: 'rule', sameDay }
+
+  if (sameDay) {
+    // It's the upgrade that spends the day's one tier change, so a verse that
+    // has already taken it can't move again however the run goes.
+    if (userVerse.last_upgrade_date === today) return { kind: 'spent', sameDay }
+
+    // A run from an earlier day is dead for an upgrade, so it counts as none.
+    const live = userVerse.streak_date === today
+    const done = live ? userVerse.consecutive_correct : 0
+    return {
+      kind: 'run',
+      done,
+      needed: Math.max(1, TIER_ADVANCE_THRESHOLD - done),
+      total: TIER_ADVANCE_THRESHOLD,
+      // Graduation is the top tier's upgrade, and review is where it lands.
+      target: STAGE_SHORT_LABELS[nextLearningStage(stage) ?? 'review'],
+      sameDay,
+    }
+  }
+
+  // Review moves once per due date, not once per exercise: with `due_at`
+  // already pushed past today the rest of the day's answers change nothing.
+  if (userVerse.due_at === null || userVerse.due_at > today) {
+    return { kind: 'spent', sameDay }
+  }
+
+  const interval = userVerse.interval_days ?? 1
+  const done = userVerse.consecutive_correct
+  return {
+    kind: 'run',
+    done,
+    needed: Math.max(1, REVIEW_ADVANCE_THRESHOLD - done),
+    total: REVIEW_ADVANCE_THRESHOLD,
+    // The last rung has nowhere further to stretch to, so the bump is mastery.
+    target:
+      interval >= MAX_INTERVAL_DAYS
+        ? STAGE_SHORT_LABELS.mastered
+        : `${nextInterval(interval)}-day gap`,
+    sameDay,
+  }
 }

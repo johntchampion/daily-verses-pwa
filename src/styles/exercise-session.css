@@ -38,6 +38,50 @@
     color: var(--amber-text);
 }
 
+/* --- Upgrade meter -------------------------------------------------------- */
+
+.upgrade-meter {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.upgrade-segs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+}
+
+.upgrade-seg {
+    width: 15px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--track);
+    transform: skewX(-14deg);
+}
+
+.upgrade-seg-filled {
+    background: var(--amber);
+}
+
+.upgrade-segs-spent .upgrade-seg {
+    background: var(--amber-dash);
+}
+
+.upgrade-segs-top .upgrade-seg {
+    background: var(--green);
+}
+
+.upgrade-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--soft);
+    line-height: 1.2;
+    min-width: 0;
+}
+
 /* --- Slip hearts ---------------------------------------------------------- */
 
 .slip-hearts {

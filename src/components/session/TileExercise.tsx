@@ -7,11 +7,11 @@ import { useBankWindow } from '../../hooks/useBankWindow'
 import { useFlashTimers } from '../../hooks/useFlashTimers'
 import { useReferenceDrill } from '../../hooks/useReferenceDrill'
 import { useScrollToTarget } from '../../hooks/useScrollToTarget'
-import { StageChip } from './ExerciseChips'
 import NextButton from './NextButton'
 import ReferenceBank from './ReferenceBank'
 import ReferenceLine from './ReferenceLine'
 import SlipHearts from './SlipHearts'
+import UpgradeMeter from './UpgradeMeter'
 import VerseBody from './VerseBody'
 import WordBank from './WordBank'
 
@@ -19,6 +19,7 @@ interface Props {
   exercise: SessionExercise
   fullText: string
   translation: string
+  today: string | null
   isLast: boolean
   pending: boolean
   onComplete: (correct: boolean) => void
@@ -38,6 +39,7 @@ export default function TileExercise({
   exercise,
   fullText,
   translation,
+  today,
   isLast,
   pending,
   onComplete,
@@ -108,7 +110,7 @@ export default function TileExercise({
   return (
     <div className='exercise-pane'>
       <div className='chip-row exercise-rise'>
-        <StageChip exercise={exercise} />
+        <UpgradeMeter exercise={exercise} today={today} />
         <SlipHearts
           budget={budget}
           misses={misses}
