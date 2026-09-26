@@ -8,7 +8,7 @@ interface Props {
   slot: number
   verse: SlotVerse | null
   snippet: string | null
-  /** The user's local date, for judging whether the correct run is still live. */
+  /** The user's local date, for judging whether today's run is still live. */
   today: string
 }
 
@@ -36,13 +36,13 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
         {verse.tierChangeUsedToday ? (
           <div className='advance-row'>
             <span className='advance-label'>
-              Moved up today · next upgrade tomorrow
+              Moved up today · next one tomorrow
             </span>
           </div>
         ) : (
           <div
             className='advance-row'
-            aria-label={`${run} of ${TIER_ADVANCE_THRESHOLD} correct in a row today`}
+            aria-label={`${run} of ${TIER_ADVANCE_THRESHOLD} times through this verse today`}
           >
             {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
               <span
@@ -53,7 +53,7 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
               />
             ))}
             <span className='advance-label'>
-              {run} / {TIER_ADVANCE_THRESHOLD} today to upgrade
+              {run} / {TIER_ADVANCE_THRESHOLD} today to move up
             </span>
           </div>
         )}

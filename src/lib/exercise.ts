@@ -1,15 +1,9 @@
-import type { Stage } from '../api/types'
+import type { Stage, UserVerse } from '../api/types'
 
-/**
- * The API sends `blankedText` but never an answer key, so answers are derived
- * client-side by aligning it against the full verse text.
- */
-
-/** The backend's blank marker, as it appears in `blankedText`. */
 export const BLANK = '____'
 
 /** Word core: letters, digits, apostrophes and hyphens — matches the backend's
-    exerciseBuilder, so the two tokenize identically. */
+    exerciseBuilder tokenization. */
 const WORD_RE = /[\p{L}\p{N}'’-]+/u
 
 export interface TextSegment {
@@ -26,8 +20,6 @@ export interface BlankSegment {
 
 export type ExerciseSegment = TextSegment | BlankSegment
 
-/** Both texts came from the same source split on whitespace, so token indexes
-    correspond 1:1. */
 export function parseExercise(
   blankedText: string,
   fullText: string,
@@ -63,7 +55,6 @@ export type VerseChunk =
   | { kind: 'text'; text: string }
   | { kind: 'blank'; blankIndex: number; blank: BlankSegment }
 
-/** `parseExercise`, with the blanks also collected in fill order. */
 export function splitIntoChunks(
   blankedText: string,
   fullText: string,
@@ -79,19 +70,16 @@ export function splitIntoChunks(
   return { chunks, blanks }
 }
 
-/** Curly quotes and apostrophes are the same character to a reader. */
 const canonWord = (w: string) => w.replace(/’/g, "'")
 
 export function wordsMatch(a: string, b: string): boolean {
   return canonWord(a).toLowerCase() === canonWord(b).toLowerCase()
 }
 
-/** As `wordsMatch`, but casing has to agree too. */
 export function wordsMatchExactly(a: string, b: string): boolean {
   return canonWord(a) === canonWord(b)
 }
 
-/** Case, punctuation and extra whitespace don't count against recall. */
 export function normalizeTypedText(text: string): string {
   return text
     .toLowerCase()
@@ -101,7 +89,6 @@ export function normalizeTypedText(text: string): string {
     .trim()
 }
 
-/** Fisher-Yates, leaving the input alone. */
 export function shuffle<T>(items: T[]): T[] {
   const out = [...items]
   for (let i = out.length - 1; i > 0; i--) {
@@ -115,14 +102,10 @@ export function randomIndex(exclusiveMax: number): number {
   return Math.floor(Math.random() * exclusiveMax)
 }
 
-/** Display-only mirrors of the service's `domain/progression.ts` — they must
-    agree with it, so they live here rather than at call sites. There is no
-    downgrade threshold: a slotted tier only ever moves up. */
+/** Must mirror the service's `domain/progression.ts` — a slotted tier counts
+    repetitions, not right answers. */
 export const TIER_ADVANCE_THRESHOLD = 3
-export const REVIEW_ADVANCE_THRESHOLD = 3
-export const REVIEW_DEMOTION_THRESHOLD = 2
 
-/** The review interval ladder, in days. */
 export const INTERVAL_PROGRESSION = [1, 3, 7, 14, 30]
 
 export const STAGE_SEQUENCE: Stage[] = [
@@ -133,7 +116,6 @@ export const STAGE_SEQUENCE: Stage[] = [
   'mastered',
 ]
 
-/** The three slotted tiers, in order. */
 export const LEARNING_ORDER: Stage[] = [
   'learning_light',
   'learning_medium',
@@ -160,20 +142,70 @@ export const STAGE_SHORT_LABELS: Record<Stage, string> = {
   mastered: 'Mastered',
 }
 
-/** One wrong tap forgiven per this many blanks, so a 75-blank review exercise
-    isn't graded as harshly per-slip as a 4-blank learning one. */
-export const TILE_SLIP_PER_BLANKS = 20
+export const SLIP_RATE = 0.2
+export const MIN_SLIPS = 2
 
-export function missTolerance(blankCount: number): number {
-  return Math.floor(blankCount / TILE_SLIP_PER_BLANKS)
+export function slipBudget(blankCount: number, hasReference: boolean): number {
+  return (
+    Math.max(MIN_SLIPS, Math.ceil(blankCount * SLIP_RATE)) +
+    (hasReference ? 1 : 0)
+  )
 }
 
-/** Every stage but the gentlest: at `learning_light` the words themselves are
-    still new, so the reference would be a second unlearned thing at once. */
 export function usesReferencePhase(stage: Stage): boolean {
   return stage !== 'learning_light'
 }
 
-/** Tracked against its own budget rather than the text's, since a short
-    exercise earns no slip from `missTolerance` at all. */
-export const REFERENCE_SLIP_PER_STEP = 1
+export const MAX_INTERVAL_DAYS =
+  INTERVAL_PROGRESSION[INTERVAL_PROGRESSION.length - 1]
+
+export function nextLearningStage(stage: Stage): Stage | null {
+  const tier = LEARNING_ORDER.indexOf(stage)
+  if (tier === -1 || tier === LEARNING_ORDER.length - 1) return null
+  return LEARNING_ORDER[tier + 1]
+}
+
+export type UpgradeProgress =
+  | {
+      kind: 'run'
+      done: number
+      needed: number
+      total: number
+      target: string
+    }
+  | { kind: 'moved'; landed: string; graduated: boolean }
+  | { kind: 'rule' }
+  | { kind: 'scheduled'; label: string }
+
+/** Must mirror the service's `advance()` in `domain/progression.ts`. */
+export function upgradeProgress(
+  userVerse: UserVerse,
+  today: string | null,
+): UpgradeProgress {
+  const { stage } = userVerse
+  const learning = isLearningStage(stage)
+
+  if (today === null) {
+    return learning ? { kind: 'rule' } : { kind: 'scheduled', label: STAGE_LABELS[stage] }
+  }
+
+  if (userVerse.last_upgrade_date === today) {
+    return {
+      kind: 'moved',
+      landed: learning ? STAGE_SHORT_LABELS[stage] : STAGE_LABELS[stage],
+      graduated: !learning,
+    }
+  }
+
+  if (!learning) return { kind: 'scheduled', label: STAGE_LABELS[stage] }
+
+  const live = userVerse.streak_date === today
+  const done = live ? userVerse.consecutive_correct : 0
+  return {
+    kind: 'run',
+    done,
+    needed: Math.max(1, TIER_ADVANCE_THRESHOLD - done),
+    total: TIER_ADVANCE_THRESHOLD,
+    target: STAGE_SHORT_LABELS[nextLearningStage(stage) ?? 'review'],
+  }
+}

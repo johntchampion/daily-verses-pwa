@@ -17,7 +17,13 @@ function formatDay(iso: string): string {
   })
 }
 
-/** Every attempt on this verse. Absent until there is a first one to show. */
+/**
+ * Every attempt on this verse — a log, not a scorecard. The API still reports how
+ * each one was graded and the database still keeps it, because review scheduling
+ * reads it; showing it here would just reintroduce the score the session stopped
+ * keeping. What the user gets is the thing that actually moves a verse: how many
+ * times they have been through it, and when.
+ */
 export default function HistoryCard({
   detail,
 }: {
@@ -41,20 +47,12 @@ export default function HistoryCard({
       >
         <span className='eyebrow'>History</span>
         <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>
-          {history.correct} of {history.total} ·{' '}
-          {Math.round((history.correct / history.total) * 100)}%
+          {history.total} {history.total === 1 ? 'time' : 'times'} through
         </span>
       </div>
       <div className='history-blocks' aria-hidden='true'>
         {blocks.map((attempt) => (
-          <span
-            key={attempt.id}
-            className={
-              attempt.correct === 1
-                ? 'history-block history-block-correct'
-                : 'history-block history-block-incorrect'
-            }
-          />
+          <span key={attempt.id} className='history-block' />
         ))}
       </div>
       {blocks.length > 0 && (
@@ -75,17 +73,14 @@ export default function HistoryCard({
       <div style={{ marginTop: 12 }}>
         {recent.map((attempt) => (
           <div key={attempt.id} className='attempt-row'>
-            <span
-              className={
-                attempt.correct === 1 ? 'attempt-correct' : 'attempt-incorrect'
-              }
-            >
-              {attempt.correct === 1 ? '✓ Correct' : '✗ Missed'}
+            {/* Typed exercises only happen at mastered, so naming the kind says
+                how far the verse had got without grading the attempt. */}
+            <span className='attempt-kind'>
+              {attempt.exercise_type === 'tile_fill_blank'
+                ? 'Practised'
+                : 'Recited'}
             </span>
-            <span className='muted'>
-              {attempt.exercise_type === 'tile_fill_blank' ? '' : '👑 '}
-              {formatDate(attempt.created_at)}
-            </span>
+            <span className='muted'>{formatDate(attempt.created_at)}</span>
           </div>
         ))}
       </div>

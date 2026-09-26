@@ -33,7 +33,6 @@ export default function Session() {
         practice={practice}
         exercises={session.dayTotal}
         verses={session.dayVerses}
-        correct={session.correctCount}
         events={session.events}
       />
     )
@@ -69,7 +68,8 @@ export default function Session() {
       )}
 
       <SessionHeader
-        done={session.done + (advancing || wrapping ? 1 : 0)}
+        answered={session.answered}
+        position={session.position}
         total={session.dayTotal}
       />
 
@@ -81,13 +81,15 @@ export default function Session() {
           exercise={session.exercise}
           fullText={session.fullText}
           translation={session.translation}
+          today={session.today}
           isLast={session.isLast}
-          pending={session.submitting}
-          onComplete={(correct) => void session.submit(correct)}
+          moving={session.moving}
+          onRecord={session.record}
+          onNext={(correct) => void session.next(correct)}
         />
       )}
 
-      {((wrapping && !session.leaving) || advancing) && (
+      {((wrapping && !session.leaving) || session.saving) && (
         <p className='wrap-note' role='status'>
           {wrapping ? 'Wrapping up…' : 'Saving…'}
         </p>

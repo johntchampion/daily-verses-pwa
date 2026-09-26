@@ -22,15 +22,15 @@ export interface UserVerse {
   user_id: string
   verse_id: string
   stage: Stage
-  /** Zeroed by any wrong answer; in a learning tier the run must also land
-      inside one calendar day — see `streak_date`. */
+  /** The run toward the next advance. The name predates the rule: in a learning
+      slot it counts *attempts* recorded today, whatever they were worth, and in
+      review it counts consecutive passed due dates. */
   consecutive_correct: number
-  /** Zeroed by any correct answer. Still counted per day in a learning tier,
-      but nothing acts on it there — a slotted tier never falls. Only review
-      reads it, where it spans due dates. */
+  /** Review and mastered only. A slotted tier never reads or writes it, and
+      every route into a slot clears it, so a slotted verse's is always 0. */
   consecutive_incorrect: number
   /** Local date the active run was accrued on; learning stages only. Gates the
-      correct run: one from an earlier day no longer counts toward an upgrade. */
+      run: one from an earlier day no longer counts toward an upgrade. */
   streak_date: string | null
   /** review/mastered only; null in a learning slot or while queued. */
   interval_days: number | null
@@ -59,6 +59,8 @@ export interface Attempt {
   id: string
   user_verse_id: string
   exercise_type: ExerciseType
+  /** Still recorded, and still what drives review scheduling — but never shown:
+      the user is not told whether an exercise was right. */
   correct: 0 | 1
   created_at: string
 }
@@ -76,11 +78,13 @@ export interface SlotVerse {
   verseId: string
   reference: string | null
   stage: Stage
+  /** Repetitions recorded today, not right answers — a slotted verse advances on
+      having been practised. */
   consecutiveCorrect: number
-  /** Reported, but nothing in a slotted tier acts on it — misses cost the
-      correct run and nothing more. */
+  /** Always 0 for a slotted verse: it is a review-only counter. Still served
+      because it is the shape clients have always received. */
   consecutiveIncorrect: number
-  /** A correct run from an earlier day no longer counts toward an upgrade. */
+  /** A run from an earlier day no longer counts toward an upgrade. */
   streakDate: string | null
   /** Already moved up today, so it can't move again until tomorrow. */
   tierChangeUsedToday: boolean
@@ -146,7 +150,8 @@ export interface SessionExercise {
   /** Already answered today. The day's plan is persisted and append-only, so
       a session picked up again resumes at the first exercise still false. */
   completed: boolean
-  /** How it was answered, or null while still outstanding. */
+  /** How it was answered, or null while still outstanding. Read by nothing in
+      the client — it is the schedule's business, not the user's. */
   correct: boolean | null
   userVerse: UserVerse
 }
@@ -159,6 +164,8 @@ export interface SessionTodayResponse {
   exercises: SessionExercise[]
   count: number
   completedCount: number
+  /** Still computed by the service. Deliberately unrendered: the session recap
+      reports what was done, not how well. */
   correctCount: number
   /** The whole day, not just this client's part of it, so a resumed session
       still recaps everything. Always empty for a practice drill. */

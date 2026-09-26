@@ -36,8 +36,8 @@ export default function PathCta({
         <div className='path-note'>
           <p className='eyebrow'>Nothing in practice</p>
           <p className='path-note-copy'>
-            Every verse is in review right now. If one slips, it comes back to
-            practice and your slots fill again.
+            Every verse is in review right now. When one comes back around, it
+            returns to practice and your slots fill again.
           </p>
         </div>
       )

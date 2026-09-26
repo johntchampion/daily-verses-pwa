@@ -58,6 +58,7 @@
 }
 
 @keyframes shake {
+
     0%,
     100% {
         transform: translateX(0);
@@ -123,9 +124,3 @@
 .bank-dock .bank-label {
     margin-top: 12px;
 }
-
-.bank-dock .hint {
-    margin-top: 14px;
-    min-height: 66px;
-}
-
