@@ -122,9 +122,12 @@ API's default and change it in Settings.
 
 ## Things to understand before changing the session runner
 
-**The client judges correctness.** `POST /api/attempt` takes a
-`correct: boolean` — the server never sees the user's actual answer and never
-sends an answer key. The runner therefore fetches each queued verse's full
+**The client judges correctness, and never shows it.** `POST /api/attempt` takes
+a `correct: boolean` — the server never sees the user's actual answer and never
+sends an answer key. That judgement now reaches only the review and mastered
+schedules; a verse in a learning slot advances on having been practised, whatever
+the words did. Nothing in the UI reports it, because users were protecting a score
+instead of guessing. The runner therefore fetches each queued verse's full
 text (`GET /api/verses/:id`) and
 `lib/exercise.ts` derives per-blank answers by aligning the full text with the
 exercise's `blankedText`, token by token. The alignment relies on both sides
@@ -138,24 +141,25 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   `review`**, which blanks every word. They validate on tap: a correct tile
   fills the next blank and dims; a wrong tile shakes and changes nothing. When
   all blanks are filled the Next button activates.
-- Tile grading forgives a budget of wrong taps: **one for the verse text, one
-  for the reference when that phase runs, plus one more per 20 blanks**
-  (`slipBudget` in `lib/exercise.ts`). So a 10-blank exercise gets two, a
-  20-blank one gets three, and a `learning_light` exercise — which has no
-  reference phase — gets one. The per-20 term exists because a full-density
-  review on a long verse is 70+ taps, and two missed reviews pull a verse out of
-  review entirely; treating one slip there the same as a slip on a 4-blank
-  learning exercise made demotion far too easy.
-- **One budget covers both phases.** The text and the reference spend from the
-  same pool and are judged together, because they are one attempt — grading them
-  separately meant the header chip described a different budget depending on
-  which phase the user happened to be in. The whole budget sits in the exercise
-  header as a row of hearts from the first render, emptying as slips are spent,
-  so the forgiveness is legible before it is needed rather than only after.
-  Above five, the hearts collapse to a glyph and a count.
+- **Wrong taps are unlimited, and invisible.** Nothing is drawn, nothing is spent
+  and nothing cuts the exercise short: the only way through is still to find the
+  right tile, however many tries that takes. Guessing a word and seeing what
+  happens is the behaviour this is meant to encourage — the hearts that used to
+  sit in the header taught users to protect a budget instead, which is the
+  opposite of practising.
+- `slipBudget` in `lib/exercise.ts` survives, but only to set the `correct` this
+  reports. One budget covers the verse text and the reference phase together,
+  because they are one attempt. **Review is the only place it has any effect** —
+  a learning tier ignores correctness, and `mastered` is typed rather than tapped
+  — so it is proportional (`SLIP_RATE`, with a `MIN_SLIPS` floor) rather than a
+  flat allowance: a fixed budget of four wrong taps on a 70-blank full-density
+  review is a near-certain failure, which would reset the interval on every visit
+  and churn verses back into learning instead of letting the ladder climb.
 - _Typed exercises_ (`type_fill_blank`) are reached **only at `mastered`**. They
   validate on "Check": one free-text input compared against the full verse,
-  forgiving case, punctuation, and whitespace (`normalizeTypedText`).
+  forgiving case, punctuation, and whitespace (`normalizeTypedText`). The
+  comparison is kept — full recall can't be self-checked without it — but it is
+  one neutral card either way rather than a pass colour and a fail colour.
 - _The reference phase_ runs after the verse text on every stage but
   `learning_light` (`usesReferencePhase`). The reference turns into
   book/chapter/verse blanks and the tile bank becomes suggestions for each in
@@ -165,9 +169,29 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   split and the decoys are derived client-side in `lib/reference.ts` — a
   reference that won't parse silently skips the phase.
 - Session state (current index, taps so far) is purely local; only submitted
-  attempts hit the server. Whatever `/api/attempt` reports surfaces as a brief
-  toast and as a line on the completion screen — lost mastery and relearning
-  included, not just wins. Queue exhaustion calls `POST /api/session/complete`.
+  attempts hit the server. Whatever `/api/attempt` reports surfaces as a line on
+  the completion screen — a verse sent back for another round included, not just
+  wins. Queue exhaustion calls `POST /api/session/complete`.
+- **The attempt is recorded when the exercise is finished, not when Next is
+  tapped.** `record` fires from the tap that fills the last blank or answers the
+  last part of the reference, so the verse's new progress is back while the user
+  is still looking at what they just did — which is the only way the progression
+  chip can show the move it describes. `next` then only advances, and doubles as
+  the retry for an attempt that never landed (including the exercise that arrives
+  already complete: a one-word verse gets zero blanks, so nothing fires `record`).
+  Firing from the handler rather than an effect makes exactly-once structural —
+  the response re-renders the exercise, so a render-driven fire would post again
+  on the answer to its own request. `POST /api/attempt` is not idempotent, and a
+  duplicate now buys a tier a whole repetition early.
+- A failed `record` is silent: one retry inside the hook, then nothing on screen.
+  The user asked for nothing, so a modal over a verse they are reading would be
+  wrong. Tapping Next posts again and surfaces the alert then, and will not
+  advance past an attempt that hasn't landed — the day's plan row would be left
+  outstanding and the exercise would simply reappear.
+- **The progression chip is learning-only.** `upgradeProgress` reports a run and a
+  target for a slotted verse, and for `review`/`mastered` reports the stage label
+  and nothing else: no segments, no interval, no counting. Their schedule is the
+  server's business, and narrating it only invites the user to play to it.
 - **Progress through the day is the server's, not the runner's.** The day's
   plan is persisted, and every exercise `GET /api/session/today` returns says
   whether it has been answered. The runner loads only the ones that haven't, so
@@ -180,15 +204,15 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   `/api/attempt` and still move verses along the ladder — only the day's
   bookkeeping is untouched.
 - **The recap is the server's too.** `GET /api/session/today` returns `events`
-  (everything the day has moved) and `correctCount` alongside `count`, so the
-  completion screen reports the whole day rather than only the sitting it was
-  open for. `/api/attempt` and `/api/session/complete` return deltas, which the
+  (everything the day has moved) alongside `count`, so the completion screen
+  reports the whole day rather than only the sitting it was open for. It also
+  returns `correctCount`, which the client deliberately does not render. `/api/attempt` and `/api/session/complete` return deltas, which the
   runner appends as it goes. `lib/sessionEvents.ts` only dresses them — no
   stage comparing left in the client, which is what stopped the same upgrade
   being announced again by the two repetitions of that verse still queued
   behind it.
-- A drill's recap is drill-scoped: `?practice=true` serves no `events` and no
-  `correctCount`, so the screen shows only what that round moved. Its attempts
+- A drill's recap is drill-scoped: `?practice=true` serves no `events`, so the
+  screen shows only what that round moved. Its attempts
   are still recorded, so resuming the day's session afterwards includes them.
 
 There's a standalone cross-check script pattern worth reusing if you touch the
@@ -233,22 +257,26 @@ CSS are the same numbers and have to move together).
 The rules live in the backend service; three of their consequences are easy to get wrong
 here.
 
-**A learning tier advances on 3 correct in a row _within one calendar day_, and
-never falls.** A miss costs the run and nothing else, however many of them there
-are, so the UI says nothing about misses in a slot — the rail emptying is the
-whole feedback. The correct run carries across days in the database but is dead
-for an upgrade once `streak_date` isn't today, so any "N / 3" the UI draws has to
-be gated on that date. See `SlotRow`, `ProgressCard` and the session's
-`UpgradeMeter`. The day is the _user's_, from their profile timezone:
-`lib/dates.ts` mirrors the server's `todayInTimezone`, and comparing against the
-browser's own day would disagree for anyone travelling. (Backward movement is
-review's alone: 2 missed due dates, and those _do_ span days.)
-`consecutive_incorrect` still arrives on both `/api/me` and the verse row — it
-is just inert in a slot.
+**A learning tier advances on 3 _attempts_ within one calendar day, and never
+falls.** Correctness is not consulted in a slot at all — the repetition is the
+whole mechanism, so the UI has nothing to say about how the words went. The run
+carries across days in the database but is dead for an upgrade once `streak_date`
+isn't today, so any "N / 3" the UI draws has to be gated on that date. See
+`SlotRow`, `ProgressCard` and the session's `UpgradeMeter`. The day is the
+_user's_, from their profile timezone: `lib/dates.ts` mirrors the server's
+`todayInTimezone`, and comparing against the browser's own day would disagree for
+anyone travelling. (Backward movement is review's alone: 2 missed due dates, and
+those _do_ span days.) `consecutive_incorrect` still arrives on both `/api/me` and
+the verse row, and is now always 0 for a slotted verse.
 
-**A verse can move up at most once per day.** After that the extra correct
-answers are practice, and `/api/me` reports `tierChangeUsedToday` so the slot
-card can say so instead of showing a progress bar that can't fill. Since an
+Note that the day plans exactly three repetitions per slotted verse, which is the
+same number as the threshold: **finishing the day's session moves every slotted
+verse up one tier**, so light → medium → heavy → graduated is three days of
+showing up. `consecutive_correct` therefore never exceeds 2 between exercises.
+
+**A verse can move up at most once per day.** After that the extra repetitions are
+practice, and `/api/me` reports `tierChangeUsedToday` so the slot card can say so
+instead of showing a progress bar that can't fill. Since an
 upgrade is now the only thing that can spend the cap, the card names the
 direction. `UpgradeMeter` reads `last_upgrade_date` for the same thing, and the
 scheduled regimes want the equivalent guard for a different reason: review moves

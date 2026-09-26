@@ -10,7 +10,6 @@ import { useScrollToTarget } from '../../hooks/useScrollToTarget'
 import NextButton from './NextButton'
 import ReferenceBank from './ReferenceBank'
 import ReferenceLine from './ReferenceLine'
-import SlipHearts from './SlipHearts'
 import UpgradeMeter from './UpgradeMeter'
 import VerseBody from './VerseBody'
 import WordBank from './WordBank'
@@ -21,8 +20,9 @@ interface Props {
   translation: string
   today: string | null
   isLast: boolean
-  pending: boolean
-  onComplete: (correct: boolean) => void
+  moving: boolean
+  onRecord: (correct: boolean) => void
+  onNext: (correct: boolean) => void
 }
 
 const REFERENCE_PROMPTS: Record<ReferenceStepKind, string> = {
@@ -34,6 +34,16 @@ const REFERENCE_PROMPTS: Record<ReferenceStepKind, string> = {
 /**
  * Tile exercise: validates on tap. A correct tile fills the next empty blank; a
  * wrong tile shakes and changes nothing.
+ *
+ * Wrong taps are unlimited and uncounted as far as the user can tell. `misses`
+ * is still kept, and still decides the `correct` this reports, because review
+ * scheduling reads it — but nothing draws it. Guessing is meant to be free:
+ * there is no budget to protect, so the only way through is to try a word.
+ *
+ * The attempt is recorded from the tap that completes the exercise rather than
+ * from Next. Firing it here rather than from an effect makes exactly-once
+ * structural — the response re-renders this component, so a render-driven fire
+ * would post again on the answer to its own request.
  */
 export default function TileExercise({
   exercise,
@@ -41,8 +51,9 @@ export default function TileExercise({
   translation,
   today,
   isLast,
-  pending,
-  onComplete,
+  moving,
+  onRecord,
+  onNext,
 }: Props) {
   const { chunks, blanks } = useMemo(
     () => splitIntoChunks(exercise.blankedText, fullText),
@@ -63,7 +74,9 @@ export default function TileExercise({
   const drill = useReferenceDrill(exercise.stage, exercise.reference, textDone)
   const isComplete = textDone && drill.step === null
 
+  // Invisible: it sets the `correct` this reports and nothing else.
   const budget = slipBudget(blanks.length, drill.hasSteps)
+  const judged = () => misses <= budget
 
   useScrollToTarget({
     filledBlanks,
@@ -90,7 +103,11 @@ export default function TileExercise({
 
     bank.spendTile(tileId, position, answer)
     setWrongTileId(null)
-    setFilledBlanks(filledBlanks + 1)
+    const nextFilled = filledBlanks + 1
+    setFilledBlanks(nextFilled)
+
+    // A correct tap never moves `misses`, so this render's value is final.
+    if (nextFilled >= blanks.length && !drill.hasSteps) onRecord(judged())
   }
 
   // `wrongTileId` holds a chip position here rather than a tile id; the two
@@ -104,18 +121,13 @@ export default function TileExercise({
     }
 
     setWrongTileId(null)
-    drill.advance()
+    if (drill.advance()) onRecord(judged())
   }
 
   return (
     <div className='exercise-pane'>
       <div className='chip-row exercise-rise'>
         <UpgradeMeter exercise={exercise} today={today} />
-        <SlipHearts
-          budget={budget}
-          misses={misses}
-          className='slip-hearts-head'
-        />
       </div>
 
       <div className='verse-card exercise-rise'>
@@ -135,20 +147,13 @@ export default function TileExercise({
       </div>
 
       <div className='bank-dock' ref={dockRef}>
-        <div className='bank-label-row'>
-          {/* A live region: this only changes when the drill asks for the next
-              part of the reference. */}
-          <p className='bank-label' role='status'>
-            {drill.board
-              ? REFERENCE_PROMPTS[drill.board.kind]
-              : 'Tap the missing words'}
-          </p>
-          <SlipHearts
-            budget={budget}
-            misses={misses}
-            className='slip-hearts-dock'
-          />
-        </div>
+        {/* A live region: this only changes when the drill asks for the next
+            part of the reference. */}
+        <p className='bank-label' role='status'>
+          {drill.board
+            ? REFERENCE_PROMPTS[drill.board.kind]
+            : 'Tap the missing words'}
+        </p>
 
         {drill.board ? (
           <ReferenceBank
@@ -173,10 +178,10 @@ export default function TileExercise({
 
         <NextButton
           isLast={isLast}
-          pending={pending}
+          pending={moving}
           disabled={!isComplete}
           style={{ marginTop: 20 }}
-          onClick={() => onComplete(misses <= budget)}
+          onClick={() => onNext(judged())}
         />
       </div>
     </div>

@@ -29,6 +29,12 @@ export function useReferenceDrill(
     board,
     filled,
     hasSteps: steps !== null,
-    advance: () => setFilled(filled + 1),
+    /** True when that was the last step, so the caller can act on the drill
+        being finished without duplicating the arithmetic. */
+    advance: (): boolean => {
+      const next = filled + 1
+      setFilled(next)
+      return phase !== null && next >= phase.length
+    },
   }
 }

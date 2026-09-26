@@ -14,60 +14,44 @@ export interface SessionError {
   retry: () => void
 }
 
-/** Long enough for the progress rail to close (320ms) and be seen closed. */
 const WRAP_HOLD_MS = 520
-/**
- * The session's own fade, plus the same frame's cushion `ADVANCE_MS` carries:
- * a timer set to the fade's own duration hands over to the recap while the
- * session is still faintly on screen.
- */
 const EXIT_MS = 200
-
-/**
- * The verse card's exit, plus a frame's cushion. The CSS animation's clock only
- * starts on the style pass after the class lands, so a timer set to the exit's
- * own duration swaps the card out while it is still faintly there.
- */
 const ADVANCE_MS = 200
 
-/**
- * The exercise runner. Answers are judged client-side against the full verse
- * text; only submissions round-trip. The day's plan and its recap both live on
- * the server, so a session resumed after a quit picks up where it left off and
- * still reports the whole day.
- */
+type QueuedExercise = SessionExercise & { recorded?: boolean }
+
+type AttemptResult =
+  | { ok: true; outcome: Awaited<ReturnType<typeof api.attempt>> }
+  | { ok: false; error: unknown }
+
 export function useSessionRunner(practice: boolean) {
   const [phase, setPhase] = useState<SessionPhase>('loading')
-  const [queue, setQueue] = useState<SessionExercise[]>([])
-  /** Answered before this sitting — the progress rail counts the whole day. */
+  const [queue, setQueue] = useState<QueuedExercise[]>([])
   const [alreadyDone, setAlreadyDone] = useState(0)
   const [dayTotal, setDayTotal] = useState(0)
-  /** Distinct verses across the whole day, not just what's left of it. */
   const [dayVerses, setDayVerses] = useState(0)
   const [texts, setTexts] = useState<Record<string, string>>({})
   const [translation, setTranslation] = useState('')
   const [timezone, setTimezone] = useState<string | null>(null)
   const [index, setIndex] = useState(0)
-  const [submitting, setSubmitting] = useState(false)
+  const [moving, setMoving] = useState(false)
   const [error, setError] = useState<SessionError | null>(null)
   const [events, setEvents] = useState<SessionEvent[]>([])
-  const [correctCount, setCorrectCount] = useState(0)
   const [completion, setCompletion] = useState<{
     recorded: boolean
     streak: number | null
   } | null>(null)
-  /** The last beat of the hold: the session fades before the recap arrives. */
   const [leaving, setLeaving] = useState(false)
-  /**
-   * The exercise on its way out, held as an index rather than a flag: it can
-   * then never outlive the card it belongs to, whatever order the commits land
-   * in, because advancing the index is itself what clears it.
-   */
   const [leavingIndex, setLeavingIndex] = useState<number | null>(null)
-
   const loadTokenRef = useRef(0)
+  const attemptRef = useRef<{
+    key: string
+    promise: Promise<AttemptResult>
+  } | null>(null)
+  /** A ref, not state: two taps in one frame would both see stale state. */
+  const movingRef = useRef(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async function load() {
     const token = ++loadTokenRef.current
     setError(null)
     setPhase('loading')
@@ -79,12 +63,9 @@ export function useSessionRunner(practice: boolean) {
         setPhase('empty')
         return
       }
-      // The full text is the answer key for both exercise types.
       const ids = [...new Set(outstanding.map((e) => e.verseId))]
       const [details, profile] = await Promise.all([
         Promise.all(ids.map((id) => api.verse(id))),
-        // Only wanted for its timezone. A failure here costs the upgrade
-        // meter its numbers, which is not worth failing the session over.
         api.me().catch(() => null),
       ])
       const byId: Record<string, string> = {}
@@ -95,16 +76,13 @@ export function useSessionRunner(practice: boolean) {
         }
         byId[detail.verse.id] = detail.verse.text
       }
-      // A superseded call must never overwrite newer state — that is what let
-      // blankedText from one response pair with wordBank from another.
+      // Guards against a stale response overwriting state from a newer load.
       if (loadTokenRef.current !== token) return
       setQueue(outstanding)
       setAlreadyDone(today.completedCount)
       setDayTotal(today.count)
       setDayVerses(new Set(today.exercises.map((e) => e.verseId)).size)
-      // A drill gets nothing to seed: its recap is its own.
       setEvents(today.events.map(presentEvent))
-      setCorrectCount(today.correctCount)
       setTexts(byId)
       setTranslation(today.translation)
       setTimezone(profile?.user.timezone ?? null)
@@ -115,6 +93,8 @@ export function useSessionRunner(practice: boolean) {
       if (loadTokenRef.current !== token) return
       setError({
         message: messageOf(err, 'Could not load today’s session.'),
+        // Resolves to this function expression's own name, not the `const` it
+        // is being assigned to, so the retry isn't reading an uninitialised binding.
         retry: () => void load(),
       })
     }
@@ -130,7 +110,6 @@ export function useSessionRunner(practice: boolean) {
     setPhase('wrapping')
     try {
       const record = async () => {
-        // A drill has no session to record and no refill to trigger.
         let recorded = false
         if (!practice) {
           const result = await api.sessionComplete()
@@ -138,19 +117,16 @@ export function useSessionRunner(practice: boolean) {
           if (result.events.length > 0) {
             setEvents((prev) => [...prev, ...result.events.map(presentEvent)])
           }
-          // A failure here can't be allowed to block the completion screen.
           void clearDailyReminder().catch(() => {})
         }
         let streak: number | null = null
         try {
           streak = (await api.me()).streak
         } catch {
-          // Already recorded — don't block the completion screen on this.
+          // Ignored: the session is already recorded.
         }
         return { recorded, streak }
       }
-      // Together, not in sequence: a fast network waits out the rail and a
-      // slow one is already covered.
       const [result] = await Promise.all([record(), hold(WRAP_HOLD_MS)])
       setCompletion(result)
       setLeaving(true)
@@ -165,53 +141,113 @@ export function useSessionRunner(practice: boolean) {
     }
   }, [practice])
 
-  // A function declaration (hoisted) so the retry closure can re-invoke it.
-  async function submit(correct: boolean) {
-    if (submitting) return
-    setSubmitting(true)
+  function ensureAttempt(correct: boolean): Promise<AttemptResult> {
+    // Captured now: the `.then` below must mark the card this attempt was for
+    // even if `index` has moved on by the time it resolves.
+    const cardIndex = index
+    const key = `${loadTokenRef.current}:${index}`
+    const cached = attemptRef.current
+    if (cached?.key === key) return cached.promise
+
     const exercise = queue[index]
-    const last = index + 1 >= queue.length
-    // The last answer has a wrap-up of its own; this beat is only for the swap.
-    if (!last) setLeavingIndex(index)
+    const post = async (): Promise<AttemptResult> => {
+      try {
+        return { ok: true, outcome: await attemptOnce(exercise, correct) }
+      } catch (error) {
+        return { ok: false, error }
+      }
+    }
+
+    const promise = post().then((result) => {
+      if (result.ok) {
+        // Only `userVerse` is replaced; blankedText/wordBank/stage must survive
+        // untouched or the card would reshape mid-exercise.
+        setQueue((prev) =>
+          prev.map((item, at) => {
+            const moved =
+              item.userVerseId === result.outcome.userVerse.id
+                ? { ...item, userVerse: result.outcome.userVerse }
+                : item
+            return at === cardIndex ? { ...moved, recorded: true } : moved
+          }),
+        )
+        if (result.outcome.events.length > 0) {
+          setEvents((prev) => [
+            ...prev,
+            ...result.outcome.events.map(presentEvent),
+          ])
+        }
+      } else {
+        // Cleared so a later `next` posts again instead of replaying this failure.
+        attemptRef.current = null
+      }
+      return result
+    })
+
+    attemptRef.current = { key, promise }
+    return promise
+  }
+
+  async function attemptOnce(exercise: SessionExercise, correct: boolean) {
     try {
-      const [outcome] = await Promise.all([
-        api.attempt(exercise.userVerseId, exercise.exerciseType, correct),
+      return await api.attempt(
+        exercise.userVerseId,
+        exercise.exerciseType,
+        correct,
+      )
+    } catch {
+      return await api.attempt(
+        exercise.userVerseId,
+        exercise.exerciseType,
+        correct,
+      )
+    }
+  }
+
+  function record(correct: boolean): void {
+    void ensureAttempt(correct)
+  }
+
+  async function next(correct: boolean) {
+    if (movingRef.current) return
+    movingRef.current = true
+    setMoving(true)
+
+    const last = index + 1 >= queue.length
+    if (!last) setLeavingIndex(index)
+
+    try {
+      const [result] = await Promise.all([
+        ensureAttempt(correct),
         last ? Promise.resolve() : hold(ADVANCE_MS),
       ])
-      if (correct) setCorrectCount((n) => n + 1)
 
-      setQueue((prev) =>
-        prev.map((item) =>
-          item.userVerseId === outcome.userVerse.id
-            ? { ...item, userVerse: outcome.userVerse }
-            : item,
-        ),
-      )
-
-      if (outcome.events.length > 0) {
-        setEvents((prev) => [...prev, ...outcome.events.map(presentEvent)])
+      if (!result.ok) {
+        setLeavingIndex(null)
+        setError({
+          message: messageOf(result.error, 'Could not save that answer.'),
+          retry: () => {
+            setError(null)
+            void next(correct)
+          },
+        })
+        return
       }
+
       if (last) {
         await finish()
       } else {
         window.scrollTo({ top: 0 })
+        attemptRef.current = null
         setIndex(index + 1)
       }
-    } catch (err) {
-      // The card comes back to carry the error, as the alert's own comment
-      // promises — the same reason `finish()` resets `leaving` in its catch.
-      setLeavingIndex(null)
-      setError({
-        message: messageOf(err, 'Could not save that answer.'),
-        retry: () => {
-          setError(null)
-          void submit(correct)
-        },
-      })
     } finally {
-      setSubmitting(false)
+      movingRef.current = false
+      setMoving(false)
     }
   }
+
+  const recorded = queue[index]?.recorded === true
 
   return {
     phase,
@@ -220,14 +256,16 @@ export function useSessionRunner(practice: boolean) {
     translation,
     today: timezone === null ? null : todayInTimezone(timezone),
     isLast: index === queue.length - 1,
-    submitting,
-    submit,
+    record,
+    next,
+    moving,
+    saving: moving && !recorded,
     error,
     clearError: () => setError(null),
-    done: alreadyDone + index,
+    answered: alreadyDone + index + (recorded ? 1 : 0),
+    position: Math.min(alreadyDone + index + 1, dayTotal),
     dayTotal,
     dayVerses,
-    correctCount,
     events,
     completion,
     leaving,

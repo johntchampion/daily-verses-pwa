@@ -473,26 +473,8 @@
         line-height: var(--verse-leading);
     }
 
-    .session-view .bank-dock .bank-label-row {
+    .session-view .bank-dock .bank-label {
         display: none;
-    }
-
-    .session-view .slip-hearts-head {
-        display: inline-flex;
-    }
-
-    .session-view .slip-hearts-head .slip-hearts-row {
-        gap: 6px;
-    }
-
-    .session-view .slip-hearts-head .heart {
-        width: 22px;
-        height: 22px;
-    }
-
-    .session-view .slip-hearts-head .heart-count {
-        margin-left: 5px;
-        font-size: 1rem;
     }
 
     .session-view .word-bank {

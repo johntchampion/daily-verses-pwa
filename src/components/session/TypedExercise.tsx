@@ -17,8 +17,17 @@ interface Props {
   translation: string
   today: string | null
   isLast: boolean
-  pending: boolean
-  onComplete: (correct: boolean) => void
+  moving: boolean
+  /** Fired the instant the exercise is judged, so the attempt is in before the
+      user asks to move on. */
+  onRecord: (correct: boolean) => void
+  onNext: (correct: boolean) => void
+}
+
+/** One definition of the verdict, so the render and the handlers that record it
+    cannot drift apart. */
+function judge(result: TypedOutcome, refResult: ReferenceOutcome): boolean {
+  return result === 'correct' && refResult !== 'incorrect'
 }
 
 /** The reference line with nothing in it, so the question can be asked. */
@@ -50,8 +59,9 @@ export default function TypedExercise({
   translation,
   today,
   isLast,
-  pending,
-  onComplete,
+  moving,
+  onRecord,
+  onNext,
 }: Props) {
   const [value, setValue] = useState('')
   const [result, setResult] = useState<TypedOutcome | null>(null)
@@ -62,20 +72,35 @@ export default function TypedExercise({
   const asksReference = usesReferencePhase(exercise.stage)
   const askingReference = result !== null && asksReference && refResult === null
   const judged = result !== null && (!asksReference || refResult !== null)
-  const passed = result === 'correct' && refResult !== 'incorrect'
+  const passed = judge(result ?? 'incorrect', refResult)
+
+  // Each of these records from the step that finishes the exercise, not from
+  // Next. The `!asksReference` branches are unreachable today — a typed exercise
+  // only happens at `mastered`, which does ask — but they have to exist, or a
+  // future stage change would silently strand the card with nothing recorded.
+  function settle(outcome: TypedOutcome, reference: ReferenceOutcome) {
+    if (!asksReference) onRecord(judge(outcome, reference))
+  }
 
   function check() {
-    setResult(
+    const outcome: TypedOutcome =
       normalizeTypedText(value) === normalizeTypedText(fullText)
         ? 'correct'
-        : 'incorrect',
-    )
+        : 'incorrect'
+    setResult(outcome)
+    settle(outcome, refResult)
   }
 
   function checkReference(typed: string) {
-    setRefResult(
-      referencesMatch(typed, exercise.reference) ? 'correct' : 'incorrect',
+    const outcome: ReferenceOutcome = referencesMatch(
+      typed,
+      exercise.reference,
     )
+      ? 'correct'
+      : 'incorrect'
+    setRefResult(outcome)
+    // The reference is the last step, so the exercise is finished here.
+    onRecord(judge(result ?? 'incorrect', outcome))
   }
 
   return (
@@ -113,7 +138,10 @@ export default function TypedExercise({
             <button
               type='button'
               className='peek-btn'
-              onClick={() => setResult('shown')}
+              onClick={() => {
+                setResult('shown')
+                settle('shown', refResult)
+              }}
             >
               Show the verse
             </button>
@@ -141,12 +169,11 @@ export default function TypedExercise({
             refResult={refResult}
             fullText={fullText}
             reference={exercise.reference}
-            passed={passed}
           />
           <NextButton
             isLast={isLast}
-            pending={pending}
-            onClick={() => onComplete(passed)}
+            pending={moving}
+            onClick={() => onNext(passed)}
           />
         </>
       )}

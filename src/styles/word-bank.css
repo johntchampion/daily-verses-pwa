@@ -121,19 +121,6 @@
     margin-top: auto;
 }
 
-.bank-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+.bank-dock .bank-label {
     margin-top: 12px;
-}
-
-.bank-label-row .bank-label {
-    margin-top: 0;
-}
-
-.bank-dock .hint {
-    margin-top: 14px;
-    min-height: 66px;
 }

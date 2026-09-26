@@ -1,8 +1,6 @@
 import type { SessionExercise } from '../../api/types'
 import { cx } from '../../lib/cx'
 import {
-  MAX_INTERVAL_DAYS,
-  REVIEW_ADVANCE_THRESHOLD,
   TIER_ADVANCE_THRESHOLD,
   upgradeProgress,
   type UpgradeProgress,
@@ -18,62 +16,52 @@ interface Copy {
 function copyFor(progress: UpgradeProgress): Copy {
   switch (progress.kind) {
     case 'run': {
-      const { done, needed, total, target, sameDay } = progress
-      const unit = sameDay
-        ? done === 0
-          ? `${needed} in a row today`
-          : `${needed} more in a row`
-        : `${needed}${done === 0 ? '' : ' more'} ${needed === 1 ? 'review' : 'reviews'}`
+      const { done, needed, total, target } = progress
 
       return {
-        label: `${unit} → ${target}`,
-        spoken: sameDay
-          ? `${done} of ${total} correct in a row today. ${needed} more in a row, all within today, moves this verse up to ${target}.`
-          : `${done} of ${total} reviews passed. ${needed} more moves this verse to ${target}.`,
+        label: `${needed}${done === 0 ? '' : ' more'} today → ${target}`,
+        spoken: `${done} of ${total} times through this verse today. ${needed} more, all within today, moves it up to ${target}.`,
       }
     }
 
-    case 'spent':
-      return progress.sameDay
+    case 'moved':
+      return progress.graduated
         ? {
-            label: 'Moved up today · next tomorrow',
+            label: 'Graduated · now in review',
             spoken:
-              'This verse already moved up today. However this session goes, it can move again tomorrow.',
+              'This verse graduated out of practice today. It comes back on a review schedule from here.',
           }
         : {
-            label: 'Counted today · next on schedule',
-            spoken:
-              "This verse's move for today is already made. It comes back on its due date.",
+            label: `Moved up to ${progress.landed}`,
+            spoken: `This verse moved up to ${progress.landed} today. It can move again tomorrow.`,
           }
 
     case 'rule':
-      return progress.sameDay
-        ? {
-            label: `${TIER_ADVANCE_THRESHOLD} in a row today moves it up`,
-            spoken: `${TIER_ADVANCE_THRESHOLD} right in a row within one day moves this verse up a tier.`,
-          }
-        : {
-            label: `${REVIEW_ADVANCE_THRESHOLD} reviews → a longer gap`,
-            spoken: `${REVIEW_ADVANCE_THRESHOLD} passed reviews stretch the gap before this verse comes back.`,
-          }
-
-    case 'top':
       return {
-        label: `Mastered · back in ${MAX_INTERVAL_DAYS} days`,
-        spoken: `This verse is mastered, the top of the ladder. It comes back every ${MAX_INTERVAL_DAYS} days so it doesn't go stale.`,
+        label: `${TIER_ADVANCE_THRESHOLD} times today moves it up`,
+        spoken: `Going through this verse ${TIER_ADVANCE_THRESHOLD} times within one day moves it up a tier.`,
       }
+
+    // Unslotted: where it sits, and deliberately nothing about the schedule.
+    case 'scheduled':
+      return { label: progress.label, spoken: `This verse is ${progress.label}.` }
   }
 }
 
 /**
- * What this verse needs to move up, in the slot the stage used to hold. The
- * stage named where it already sat, which is the one thing the exercise in
- * front of the user already shows.
+ * What this verse needs to move up, in the slot the stage used to hold. The stage
+ * named where it already sat, which is the one thing the exercise in front of the
+ * user already shows.
  *
- * The segments carry the size of the goal — three, from the first answer,
- * before any of it is earned — and the label names where it leads, so the
- * ladder introduces itself rather than needing to be known. Deliberately borrows
- * the Practicing tab's advance rail: a user meets the same rule in both places.
+ * The segments carry the size of the goal — three, from the first repetition,
+ * before any of it is earned — and the label names where it leads, so the ladder
+ * introduces itself rather than needing to be known. Deliberately borrows the
+ * Practicing tab's advance rail: a user meets the same rule in both places.
+ *
+ * The attempt is recorded the moment the exercise is finished rather than on
+ * Next, so this fills in while the user is still looking at the verse they just
+ * did. `key` on the segment row replays the fill animation when the count
+ * changes — the same trick the slip hearts used for their own beat.
  */
 export default function UpgradeMeter({
   exercise,
@@ -88,27 +76,34 @@ export default function UpgradeMeter({
   const filled =
     progress.kind === 'run'
       ? progress.done
-      : progress.kind === 'rule'
-        ? 0
-        : TIER_ADVANCE_THRESHOLD
-  const total =
-    progress.kind === 'run' ? progress.total : TIER_ADVANCE_THRESHOLD
+      : progress.kind === 'moved'
+        ? TIER_ADVANCE_THRESHOLD
+        : 0
 
   return (
     <span className='upgrade-meter'>
-      <span className='sr-only'>{spoken}</span>
-
-      <span
-        className={`upgrade-segs upgrade-segs-${progress.kind}`}
-        aria-hidden='true'
-      >
-        {Array.from({ length: total }, (_, i) => (
-          <span
-            key={i}
-            className={cx('upgrade-seg', i < filled && 'upgrade-seg-filled')}
-          />
-        ))}
+      <span className='sr-only' role='status'>
+        {spoken}
       </span>
+
+      {progress.kind !== 'scheduled' && (
+        <span
+          key={filled}
+          className={cx(
+            'upgrade-segs',
+            progress.kind === 'moved' && 'upgrade-segs-moved',
+            filled > 0 && 'upgrade-segs-fill',
+          )}
+          aria-hidden='true'
+        >
+          {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
+            <span
+              key={i}
+              className={cx('upgrade-seg', i < filled && 'upgrade-seg-filled')}
+            />
+          ))}
+        </span>
+      )}
       <span className='upgrade-label' aria-hidden='true'>
         {label}
       </span>

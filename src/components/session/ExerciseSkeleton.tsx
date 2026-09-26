@@ -25,12 +25,6 @@ export default function ExerciseSkeleton() {
           <UpgradeMeterEmpty />
           <Skeleton variant='text' w={148} h={14} style={{ margin: 0 }} />
         </span>
-        <Skeleton
-          variant='chip'
-          w={64}
-          h={16}
-          className='slip-hearts slip-hearts-head'
-        />
       </div>
 
       <div className='verse-card'>
@@ -42,15 +36,7 @@ export default function ExerciseSkeleton() {
       </div>
 
       <div className='bank-dock'>
-        <div className='bank-label-row'>
-          <p className='bank-label'>Tap the missing words</p>
-          <Skeleton
-            variant='chip'
-            w={64}
-            h={16}
-            className='slip-hearts slip-hearts-dock'
-          />
-        </div>
+        <p className='bank-label'>Tap the missing words</p>
         <div
           className='word-bank'
           aria-hidden='true'
