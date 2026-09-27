@@ -74,8 +74,8 @@ export default function QueueList({
   if (ids.length === 0) {
     return (
       <p className='small muted queue-empty-line'>
-        Nothing waiting. If a verse slips in review, it comes back here for
-        practice.
+        Nothing waiting. Verses come back here when review sends them round for
+        another go.
       </p>
     )
   }

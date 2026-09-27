@@ -34,14 +34,7 @@
     flex: 1;
     height: 26px;
     border-radius: 7px;
-}
-
-.history-block-correct {
     background: var(--green);
-}
-
-.history-block-incorrect {
-    background: var(--coral);
 }
 
 .attempt-row {
@@ -53,11 +46,6 @@
     font-weight: 700;
 }
 
-.attempt-correct {
-    color: var(--green-text);
+.attempt-kind {
+    color: var(--ink);
 }
-
-.attempt-incorrect {
-    color: var(--coral-text);
-}
-

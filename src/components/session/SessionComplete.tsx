@@ -16,7 +16,6 @@ export default function SessionComplete({
   practice,
   exercises,
   verses,
-  correct,
   events,
 }: {
   streak: number | null
@@ -24,19 +23,12 @@ export default function SessionComplete({
   practice?: boolean
   exercises: number
   verses: number
-  correct: number
   events: SessionEvent[]
 }) {
-  const cleanNote =
-    correct === exercises
-      ? 'a clean sweep'
-      : correct > 0
-        ? `zero misses on ${correct} of them`
-        : 'every miss still teaches'
-
   // Recording the day is what moved the streak, so we arrived one lower. Null
   // when this session moved nothing — a day already kept has no turn to show.
-  const previous = recorded && streak !== null && streak >= 1 ? streak - 1 : null
+  const previous =
+    recorded && streak !== null && streak >= 1 ? streak - 1 : null
 
   const tail = ROWS_AT + Math.min(events.length, ROW_CAP) * ROW_STEP
 
@@ -76,7 +68,7 @@ export default function SessionComplete({
       </h1>
       <p className='complete-sub complete-rise' style={enter(280)}>
         {exercises} {exercises === 1 ? 'exercise' : 'exercises'} · {verses}{' '}
-        {verses === 1 ? 'verse' : 'verses'} · {cleanNote}
+        {verses === 1 ? 'verse' : 'verses'}
       </p>
 
       {events.length > 0 && (
@@ -110,7 +102,8 @@ export default function SessionComplete({
 
       {!recorded && (
         <p className='small complete-sub complete-rise' style={enter(tail)}>
-          Today&rsquo;s session was already counted — extra practice never hurts.
+          Today&rsquo;s session was already counted — extra practice never
+          hurts.
         </p>
       )}
       <Link

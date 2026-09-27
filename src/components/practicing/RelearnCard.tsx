@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { VerseListItem } from '../../api/types'
 
-/** Verses pulled out of review for repeated misses: no due date, out of the
+/** Verses the schedule has sent back for another round: no due date, out of the
     session entirely until a slot opens. Usually empty, so no placeholder. */
 export default function RelearnCard({
   verses,
@@ -18,9 +18,9 @@ export default function RelearnCard({
         Waiting for a slot
       </div>
       <p className='relearn-copy'>
-        {one ? 'This one' : 'These'} slipped in review and {one ? 'comes' : 'come'}{' '}
-        back to practice once a slot frees up — that happens when another verse
-        graduates.
+        {one ? 'This one is' : 'These are'} due for another round and{' '}
+        {one ? 'comes' : 'come'} back to practice once a slot frees up — that
+        happens when another verse graduates.
       </p>
       <ul className='relearn-list'>
         {relearning.map((verse) => (

@@ -1,8 +1,7 @@
 import type { UserVerse, VerseDetailResponse } from '../../api/types'
 import StageLadder from '../StageLadder'
 import {
-  REVIEW_ADVANCE_THRESHOLD,
-  REVIEW_DEMOTION_THRESHOLD,
+  MAX_INTERVAL_DAYS,
   STAGE_LABELS,
   TIER_ADVANCE_THRESHOLD,
   isLearningStage,
@@ -23,34 +22,34 @@ function chipClass(userVerse: UserVerse): string {
 }
 
 /**
- * What this verse needs next, in consecutive-answer runs rather than a score.
- * `today` is the user's local date, or null while the profile is still loading;
- * without it a learning run can't be told from a dead one carried over from
- * yesterday, so the generic copy stands in.
+ * What this verse needs next, counted in repetitions rather than scored. `today`
+ * is the user's local date, or null while the profile is still loading; without
+ * it a run can't be told from a dead one carried over from yesterday, so the
+ * generic copy stands in.
+ *
+ * A verse past practice says only where it sits and when it comes back. How its
+ * schedule is earned is deliberately not explained: it is settled in the
+ * background, and describing it only invites the user to play to it.
  */
 function progressCopy(userVerse: UserVerse, today: string | null): string {
-  const { consecutive_correct: right, consecutive_incorrect: wrong } = userVerse
+  const { consecutive_correct: run } = userVerse
 
   if (userVerse.needs_relearning === 1) {
-    return 'Missed twice in review, so it comes back to heavy blanks as soon as a slot opens.'
+    return 'Coming back around — it returns to practice as soon as a slot opens.'
   }
 
   if (isLearningStage(userVerse.stage)) {
     const live = today !== null && userVerse.streak_date === today
-    return live && right > 0
-      ? `${right} of ${TIER_ADVANCE_THRESHOLD} right in a row today. All three in one day moves it up a tier.`
-      : `Three right in a row within one day moves it up a tier. A miss only resets the run — it never drops back.`
+    return live && run > 0
+      ? `${run} of ${TIER_ADVANCE_THRESHOLD} times through it today. All three in one day moves it up a tier.`
+      : `Going through it ${TIER_ADVANCE_THRESHOLD} times within one day moves it up a tier. However the words go — the repetition is what counts.`
   }
 
   if (userVerse.stage === 'mastered') {
-    return 'Fully memorized, at the top of the ladder. It still comes back every 30 days; one miss sends it to review.'
+    return `Fully memorized, at the top of the ladder. It comes back every ${MAX_INTERVAL_DAYS} days so it stays put.`
   }
 
-  if (wrong > 0) {
-    const left = REVIEW_DEMOTION_THRESHOLD - wrong
-    return `${wrong} failed review — ${left} more and it returns to practice at heavy blanks.`
-  }
-  return `${right} of ${REVIEW_ADVANCE_THRESHOLD} correct reviews toward the next, longer interval.`
+  return 'Memorized and in review. It comes back on its own schedule, further apart each time it sticks.'
 }
 
 /** Absent until the verse has been started — there is no progress to place. */

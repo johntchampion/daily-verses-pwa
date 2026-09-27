@@ -34,20 +34,23 @@ const PRESENTATION: Record<SessionEventKind, Look> = {
     ...GREEN,
     detail: 'Mastered — fully memorized',
   },
+  // The three ways the schedule sends a verse back. Reported, because a verse
+  // reappearing in the practice slots needs explaining — but as a verse coming
+  // round again rather than as a loss, and without the ↓ these used to carry.
   lost_mastery: {
-    icon: '↓',
-    ...CORAL,
-    detail: 'Lost mastery — back in review',
+    icon: '↺',
+    ...AMBER,
+    detail: 'Coming back around in review',
   },
   demoted_to_learning: {
     icon: '↺',
-    ...CORAL,
-    detail: 'Back to practice at heavy blanks',
+    ...AMBER,
+    detail: 'Back in practice for another round',
   },
   relearning_queued: {
     icon: '↺',
-    ...CORAL,
-    detail: 'Slipped twice — waiting for a slot',
+    ...AMBER,
+    detail: 'Queued for another round of practice',
   },
   slot_filled: {
     icon: '🔓',
@@ -56,8 +59,8 @@ const PRESENTATION: Record<SessionEventKind, Look> = {
   },
   slot_returned: {
     icon: '↺',
-    ...CORAL,
-    detail: 'Picked up the open slot at heavy blanks',
+    ...AMBER,
+    detail: 'Picked up the open slot for another round',
   },
 }
 

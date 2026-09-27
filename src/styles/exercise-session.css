@@ -1,41 +1,63 @@
-/* --- Hint banner (session coaching) -------------------------------------- */
+/* --- Upgrade meter -------------------------------------------------------- */
 
-.hint {
+.upgrade-meter {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    border-radius: 20px;
-    margin-top: 20px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    line-height: 1.35;
-    transition: background 200ms ease;
+    gap: 9px;
+    min-width: 0;
 }
 
-.hint-icon {
-    font-size: 1.25rem;
+.upgrade-segs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     flex: none;
 }
 
-.hint-neutral {
-    background: var(--neutral-wash);
+.upgrade-seg {
+    width: 15px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--track);
+    transform: skewX(-14deg);
+}
+
+.upgrade-seg-filled {
+    background: var(--amber);
+}
+
+.upgrade-segs-moved .upgrade-seg {
+    background: var(--green);
+}
+
+.upgrade-seg {
+    transition: background 200ms ease;
+}
+
+.upgrade-segs-fill {
+    animation: segs-fill 300ms ease-out;
+}
+
+@keyframes segs-fill {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.16);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.upgrade-label {
+    font-size: 0.74rem;
+    font-weight: 700;
     color: var(--soft);
-}
-
-.hint-good {
-    background: var(--green-wash);
-    color: var(--green-text);
-}
-
-.hint-bad {
-    background: var(--coral-wash);
-    color: var(--coral-text);
-}
-
-.hint-combo {
-    background: var(--amber-wash);
-    color: var(--amber-text);
+    line-height: 1.2;
+    min-width: 0;
 }
 
 /* --- Typed exercise ------------------------------------------------------ */
@@ -105,16 +127,8 @@
 .result-card {
     border-radius: 22px;
     padding: 16px 18px;
-}
-
-.result-correct {
-    background: var(--green-wash);
-    border: 1.5px solid var(--green-line);
-}
-
-.result-incorrect {
-    background: var(--coral-wash);
-    border: 1.5px solid var(--coral-line);
+    background: var(--neutral-wash);
+    border: 1.5px solid var(--line);
 }
 
 .result-headline {
@@ -123,14 +137,6 @@
     gap: 10px;
     font-size: 1rem;
     font-weight: 800;
-}
-
-.result-correct .result-headline {
-    color: var(--green-text);
-}
-
-.result-incorrect .result-headline {
-    color: var(--coral-text);
 }
 
 .result-verse {
@@ -151,14 +157,6 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     margin-top: 10px;
-}
-
-.result-correct .result-reference {
-    color: var(--green-text);
-}
-
-.result-incorrect .result-reference {
-    color: var(--coral-text);
 }
 
 /* --- Session header ------------------------------------------------------ */
@@ -293,4 +291,3 @@
     color: var(--soft);
     animation: rise-in 200ms ease 600ms backwards;
 }
-

@@ -29,7 +29,7 @@ export default function Practicing() {
       title={<h1 className='view-title'>In Practice</h1>}
       trailing={<TranslationTag code={verses.data?.translation ?? null} />}
       me={me.data}
-      sub='Three at a time. A verse graduates from In Practice once it’s practiced correctly three times in a row for three days.'
+      sub='Three at a time. Go through a verse three times in a day and it moves up a tier — three days of that and it graduates out of practice.'
       loading={all.pending}
       loadingLabel='Loading your practice slots…'
       // Only the profile is load-bearing: a failed verse fetch costs a
