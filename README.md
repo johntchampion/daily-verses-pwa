@@ -125,7 +125,7 @@ API's default and change it in Settings.
 **The client judges correctness, and never shows it.** `POST /api/attempt` takes
 a `correct: boolean` — the server never sees the user's actual answer and never
 sends an answer key. That judgement now reaches only the review and mastered
-schedules; a verse in a learning slot advances on having been practised, whatever
+schedules; a verse in a learning slot advances on having been practiced, whatever
 the words did. Nothing in the UI reports it, because users were protecting a score
 instead of guessing. The runner therefore fetches each queued verse's full
 text (`GET /api/verses/:id`) and
@@ -146,7 +146,7 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   right tile, however many tries that takes. Guessing a word and seeing what
   happens is the behaviour this is meant to encourage — the hearts that used to
   sit in the header taught users to protect a budget instead, which is the
-  opposite of practising.
+  opposite of practicing.
 - `slipBudget` in `lib/exercise.ts` survives, but only to set the `correct` this
   reports. One budget covers the verse text and the reference phase together,
   because they are one attempt. **Review is the only place it has any effect** —

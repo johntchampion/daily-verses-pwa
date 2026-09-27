@@ -77,7 +77,7 @@ export default function HistoryCard({
                 how far the verse had got without grading the attempt. */}
             <span className='attempt-kind'>
               {attempt.exercise_type === 'tile_fill_blank'
-                ? 'Practised'
+                ? 'Practiced'
                 : 'Recited'}
             </span>
             <span className='muted'>{formatDate(attempt.created_at)}</span>

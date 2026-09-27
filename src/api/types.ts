@@ -79,7 +79,7 @@ export interface SlotVerse {
   reference: string | null
   stage: Stage
   /** Repetitions recorded today, not right answers — a slotted verse advances on
-      having been practised. */
+      having been practiced. */
   consecutiveCorrect: number
   /** Always 0 for a slotted verse: it is a review-only counter. Still served
       because it is the shape clients have always received. */
@@ -97,7 +97,7 @@ export interface MeResponse {
     timezone: string
     translation: string
     createdAt: string
-      remindersEnabled: boolean
+    remindersEnabled: boolean
   }
   streak: number
   completedToday: boolean
