@@ -7,16 +7,7 @@ function headline(result: TypedOutcome): string {
   return 'Here it is again:'
 }
 
-/**
- * The verse as it should have been written, so a full-recall attempt can be
- * checked against it.
- *
- * Deliberately not graded. The comparison stays — you cannot self-check recall
- * without being told what the words were — but it is one neutral card either way
- * rather than a green pass and a coral fail, and the headline describes the text
- * instead of delivering a verdict. Whether the attempt was word-perfect still
- * reaches the API; it just isn't news.
- */
+/** The verse as written, shown after a typed attempt without grading it. */
 export default function TypedResult({
   result,
   refResult,

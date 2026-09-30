@@ -22,7 +22,6 @@ export const TASTER_BANK = ['nothing', 'shepherd', 'peace', 'Lord']
 
 export const TASTER_ANSWERS = PARTS.filter((p) => p.blank).map((p) => p.word)
 
-/** Each part paired with its position among the blanks (null for plain text). */
 export const INDEXED_PARTS = PARTS.reduce<
   { part: TasterPart; blankIndex: number | null }[]
 >((acc, part) => {

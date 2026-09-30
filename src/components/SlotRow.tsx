@@ -8,7 +8,6 @@ interface Props {
   slot: number
   verse: SlotVerse | null
   snippet: string | null
-  /** The user's local date, for judging whether today's run is still live. */
   today: string
 }
 
@@ -73,8 +72,6 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
   )
 }
 
-/** The advance rail renders for real in its empty state, so the card keeps its
-    exact height and only the segments fill in when the verse arrives. */
 export function SlotRowSkeleton() {
   return (
     <div className='slot-card'>

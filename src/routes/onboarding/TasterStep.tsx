@@ -5,8 +5,7 @@ import { cx } from '../../lib/cx'
 import TasterVerse from './TasterVerse'
 import { TASTER_ANSWERS, TASTER_BANK } from './taster'
 
-/** The live taster — tap the two missing words. Demonstration only: it runs
-    entirely in local state and counts toward nothing. */
+/** A demo tile exercise that runs entirely in local state. */
 export default function TasterStep({ onDone }: { onDone: () => void }) {
   const [filled, setFilled] = useState(0)
   const [used, setUsed] = useState<ReadonlySet<number>>(new Set())

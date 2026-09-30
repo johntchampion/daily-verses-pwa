@@ -1,11 +1,5 @@
-/* ---------------------------------------------------------------------------
-   Daily Verses — stylesheet manifest.
-
-   Each import is one feature/section, in load order — the cascade depends on
-   it, especially the last two: motion.css and desktop.css both contain
-   overrides and must stay at the bottom. See styles/tokens.css for the
-   design-token contract (every colour lives in a token there).
-   --------------------------------------------------------------------------- */
+/* Order matters: motion.css and desktop.css override earlier rules and must
+   stay last. */
 
 @import './styles/tokens.css';
 @import './styles/base.css';

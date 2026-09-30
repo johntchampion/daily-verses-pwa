@@ -8,8 +8,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    /* Starts at 0 because Sheet.tsx flips the value — otherwise the first paint
-       flashes. */
+    /* useSheetSpring fades this in. */
     opacity: 0;
     transition: opacity 220ms ease;
 }
@@ -39,8 +38,7 @@
     }
 }
 
-/* The panel's transform belongs to the spring in Sheet.tsx. Nothing here may
-   animate it, or a drag can no longer interrupt it. */
+/* The spring owns the panel's transform; don't animate it in CSS. */
 .sheet {
     --sheet-step: calc(var(--sheet-depth, 0) * 26px);
     position: relative;
@@ -73,8 +71,7 @@
     padding-top: 22px;
 }
 
-/* Carries the panel's surface below the screen edge, so the spring's overshoot
-   doesn't open a gap under it. */
+/* Fills the gap below the panel when the spring overshoots. */
 .sheet::after {
     content: '';
     position: absolute;
@@ -107,9 +104,6 @@
     transition: opacity 200ms ease;
 }
 
-/* Everything above the docked footer scrolls; the frame itself does not.
-   `contain` stops a flick that runs out of content from scrolling the page
-   behind, and pan-y leaves the drag free to take over at the top. */
 .sheet-body {
     flex: 1;
     min-height: 0;

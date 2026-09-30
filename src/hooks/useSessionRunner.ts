@@ -48,18 +48,19 @@ export function useSessionRunner(practice: boolean) {
     key: string
     promise: Promise<AttemptResult>
   } | null>(null)
-  /** A ref, not state: two taps in one frame would both see stale state. */
+  // A ref, not state, so two taps in one frame can't both get through.
   const movingRef = useRef(false)
 
   const load = useCallback(async function load() {
     const token = ++loadTokenRef.current
+    const isStale = () => loadTokenRef.current !== token
     setError(null)
     setPhase('loading')
     try {
       const today = await api.sessionToday(practice)
       const outstanding = today.exercises.filter((e) => !e.completed)
       if (outstanding.length === 0) {
-        if (loadTokenRef.current !== token) return
+        if (isStale()) return
         setPhase('empty')
         return
       }
@@ -76,8 +77,7 @@ export function useSessionRunner(practice: boolean) {
         }
         byId[detail.verse.id] = detail.verse.text
       }
-      // Guards against a stale response overwriting state from a newer load.
-      if (loadTokenRef.current !== token) return
+      if (isStale()) return
       setQueue(outstanding)
       setAlreadyDone(today.completedCount)
       setDayTotal(today.count)
@@ -90,11 +90,10 @@ export function useSessionRunner(practice: boolean) {
       setLeavingIndex(null)
       setPhase('running')
     } catch (err) {
-      if (loadTokenRef.current !== token) return
+      if (isStale()) return
       setError({
         message: messageOf(err, 'Could not load today’s session.'),
-        // Resolves to this function expression's own name, not the `const` it
-        // is being assigned to, so the retry isn't reading an uninitialised binding.
+        // `load` is the named function expression, not the uninitialised const.
         retry: () => void load(),
       })
     }
@@ -123,7 +122,7 @@ export function useSessionRunner(practice: boolean) {
         try {
           streak = (await api.me()).streak
         } catch {
-          // Ignored: the session is already recorded.
+          // The streak is optional; the session is already recorded.
         }
         return { recorded, streak }
       }
@@ -142,8 +141,6 @@ export function useSessionRunner(practice: boolean) {
   }, [practice])
 
   function ensureAttempt(correct: boolean): Promise<AttemptResult> {
-    // Captured now: the `.then` below must mark the card this attempt was for
-    // even if `index` has moved on by the time it resolves.
     const cardIndex = index
     const key = `${loadTokenRef.current}:${index}`
     const cached = attemptRef.current
@@ -160,8 +157,6 @@ export function useSessionRunner(practice: boolean) {
 
     const promise = post().then((result) => {
       if (result.ok) {
-        // Only `userVerse` is replaced; blankedText/wordBank/stage must survive
-        // untouched or the card would reshape mid-exercise.
         setQueue((prev) =>
           prev.map((item, at) => {
             const moved =
@@ -178,7 +173,7 @@ export function useSessionRunner(practice: boolean) {
           ])
         }
       } else {
-        // Cleared so a later `next` posts again instead of replaying this failure.
+        // Let a retry post again rather than replay this failure.
         attemptRef.current = null
       }
       return result

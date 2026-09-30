@@ -6,12 +6,6 @@ import Alert from './Alert'
 import TabBar from './TabBar'
 import TopNav from './TopNav'
 
-/**
- * The frame every data screen shares. It knows nothing about loading *content*:
- * each block takes its data as a nullable prop and draws its own placeholder,
- * so the frame paints immediately and never tears down.
- */
-
 type Layout = 'plain' | 'stack' | 'tabbed'
 
 const SHELL: Record<Layout, string> = {
@@ -31,11 +25,9 @@ interface Props {
   me?: MeResponse | null
   subStyle?: CSSProperties
 
-  /** First load only. Drives `aria-busy` and one announcement per screen. */
   loading?: boolean
   loadingLabel?: string
 
-  /** Non-null opens the alert; the children stay put underneath. */
   error?: string | null
   onRetry?: () => void
   errorActions?: ReactNode
@@ -62,10 +54,8 @@ export default function Screen({
   const shell = className ? `${SHELL[layout]} ${className}` : SHELL[layout]
   const hasHeader = leading || title || trailing
 
-  // The error lives in the caller's hook, so a dismissal has to be remembered
-  // here or the alert pops straight back open on the next render.
-  const [dismissed, setDismissed] = useState<string | null>(null)
-  const dismiss = () => setDismissed(error)
+  const [dismissedError, setDismissedError] = useState<string | null>(null)
+  const dismiss = () => setDismissedError(error)
 
   const main = (
     <main className={shell} aria-busy={loading}>
@@ -93,13 +83,12 @@ export default function Screen({
       {children}
 
       <Alert
-        open={error !== null && error !== dismissed}
+        open={error !== null && error !== dismissedError}
         title='Something went wrong'
         message={error ?? ''}
         tone='warning'
         primaryLabel={onRetry ? 'Try again' : 'OK'}
         onPrimary={onRetry ?? dismiss}
-        // A route with its own way out doesn't need the generic dismiss too.
         secondaryLabel={onRetry && !errorActions ? 'Dismiss' : undefined}
         onSecondary={onRetry && !errorActions ? dismiss : undefined}
         onClose={dismiss}

@@ -1,8 +1,4 @@
-/**
- * The app icon, inline. Same artwork as public/favicon.svg — a blush field with
- * a coral bar along the bottom — but drawn from tokens so it follows the dark
- * theme, which a raw <img> of the favicon could not.
- */
+/** The favicon artwork, drawn from theme tokens so it follows dark mode. */
 export default function AppMark({ className }: { className?: string }) {
   return (
     <svg
@@ -11,7 +7,6 @@ export default function AppMark({ className }: { className?: string }) {
       aria-hidden='true'
       focusable='false'
     >
-      {/* All four corners, unlike the favicon: nothing masks this one. */}
       <clipPath id='app-mark-clip'>
         <rect width='1024' height='1024' rx='224' ry='224' />
       </clipPath>

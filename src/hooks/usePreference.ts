@@ -1,13 +1,8 @@
 import { useCallback, useState } from 'react'
 import { messageOf } from '../lib/errors'
 
-/**
- * One saved account preference: a local pick that only becomes the real value
- * once the server accepts it, so choosing doesn't wait on a round trip and a
- * failed save doesn't lose the pick.
- */
+/** An account preference picked locally, then saved to the server. */
 export interface Preference {
-  /** The pending pick if there is one, else what the server has. */
   value: string
   choose: (next: string) => void
   submit: () => Promise<void>

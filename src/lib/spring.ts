@@ -2,14 +2,12 @@ export interface SpringConfig {
   tension: number
   friction: number
   mass: number
-  /** Stop the moment the target is reached instead of easing into it. */
+  /** Stop on reaching the target instead of settling into it. */
   clamp?: boolean
 }
 
-/** Settling home. Damping ratio ~0.74, so it overshoots by ~3% of its travel. */
 export const SETTLE: SpringConfig = { tension: 220, friction: 22, mass: 1 }
 
-/** Leaving. Clamped because whatever it overshoots by is off-screen anyway. */
 export const CLOSE: SpringConfig = {
   tension: 320,
   friction: 30,
@@ -17,30 +15,23 @@ export const CLOSE: SpringConfig = {
   clamp: true,
 }
 
-/** Close enough to home, and slow enough, to call it done (px and px/s). */
-const REST_OFFSET = 0.5
-const REST_VELOCITY = 8
+const REST_OFFSET_PX = 0.5
+const REST_VELOCITY_PX_PER_S = 8
 
-/** One integration step; small enough that stiff configs stay stable. */
-const STEP_MS = 1000 / 120
+const INTEGRATION_STEP_MS = 1000 / 120
 
-/** A backgrounded tab hands back a huge delta — don't integrate all of it. */
+/** Caps the huge frame delta a backgrounded tab hands back. */
 const MAX_FRAME_MS = 64
 
 export interface Spring {
   set: (value: number) => void
-  /**
-   * Velocity is px/s and defaults to the velocity the spring already has, so
-   * re-targeting mid-flight stays continuous.
-   */
+  /** Velocity is px/s and defaults to the current velocity. */
   to: (target: number, velocity?: number, config?: SpringConfig) => void
   stop: () => void
   readonly value: number
   readonly moving: boolean
 }
 
-/** Semi-implicit Euler at a fixed sub-step, so tension/friction numbers match
-    what the animation libraries mean by them. */
 export function createSpring(
   onFrame: (value: number) => void,
   onRest?: () => void,
@@ -51,31 +42,29 @@ export function createSpring(
   let config = SETTLE
   let raf = 0
   let prev = 0
-  /** Which way this run is travelling, for `clamp` to recognise arrival. */
-  let heading = 0
-  /** Time left over from the last frame, so the rate is display-independent. */
-  let carry = 0
+  let direction = 0
+  let unsimulatedMs = 0
 
   const stop = () => {
     if (raf) cancelAnimationFrame(raf)
     raf = 0
-    carry = 0
+    unsimulatedMs = 0
   }
 
   const step = (now: number) => {
     raf = 0
-    carry += Math.min(now - prev, MAX_FRAME_MS)
+    unsimulatedMs += Math.min(now - prev, MAX_FRAME_MS)
     prev = now
 
     let arrived = false
-    while (carry >= STEP_MS) {
-      carry -= STEP_MS
-      const dt = STEP_MS / 1000
+    while (unsimulatedMs >= INTEGRATION_STEP_MS) {
+      unsimulatedMs -= INTEGRATION_STEP_MS
+      const dt = INTEGRATION_STEP_MS / 1000
       const force =
         -config.tension * (value - target) - config.friction * velocity
       velocity += (force / config.mass) * dt
       value += velocity * dt
-      if (config.clamp && (value - target) * heading >= 0) {
+      if (config.clamp && (value - target) * direction >= 0) {
         arrived = true
         break
       }
@@ -83,12 +72,12 @@ export function createSpring(
 
     if (
       arrived ||
-      (Math.abs(value - target) < REST_OFFSET &&
-        Math.abs(velocity) < REST_VELOCITY)
+      (Math.abs(value - target) < REST_OFFSET_PX &&
+        Math.abs(velocity) < REST_VELOCITY_PX_PER_S)
     ) {
       value = target
       velocity = 0
-      carry = 0
+      unsimulatedMs = 0
       onFrame(value)
       onRest?.()
       return
@@ -106,13 +95,13 @@ export function createSpring(
       onFrame(value)
     },
     to(next, nextVelocity = velocity, nextConfig = SETTLE) {
-      heading = Math.sign(next - value) || 1
+      direction = Math.sign(next - value) || 1
       target = next
       velocity = nextVelocity
       config = nextConfig
       if (raf) return
       prev = performance.now()
-      carry = 0
+      unsimulatedMs = 0
       raf = requestAnimationFrame(step)
     },
     stop,

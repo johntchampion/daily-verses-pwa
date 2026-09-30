@@ -7,10 +7,7 @@ import TasterStep from './TasterStep'
 
 type Step = 'hook' | 'taster' | 'aha' | 'signup'
 
-/**
- * First-run cold open: no pitch, one verse, straight in. A hook screen, a live
- * taster, the explainer, then a signup you've earned.
- */
+/** First-run flow: hook, live taster, explainer, then signup. */
 export default function Onboarding() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('hook')

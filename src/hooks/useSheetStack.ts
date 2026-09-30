@@ -18,14 +18,8 @@ interface Options {
   belowRef: RefObject<SheetLayer | undefined>
 }
 
-/**
- * Registers this sheet on the stack and takes the page away from everything
- * behind it. `inert` on the app root does the whole job of a focus trap; the
- * sheet this one opens over needs the same treatment by hand.
- *
- * Returns whether another sheet has since opened over this one — the stack is
- * the depth cue, so a covered sheet recedes rather than being swapped out.
- */
+/** Registers the sheet on the stack and makes everything behind it inert.
+    Returns whether another sheet has opened over this one. */
 export function useSheetStack({
   mounted,
   dismissible,
@@ -54,9 +48,8 @@ export function useSheetStack({
       below?.overlay.removeAttribute('inert')
       below?.cover(false)
       belowRef.current = undefined
-      // The last one out gives the page back; an inner sheet closing must not.
       if (stackDepth() === 0) root?.removeAttribute('inert')
-      // After the un-inert, so focus can land back inside the sheet below.
+      // Only after removing `inert`, so focus can land back in the sheet below.
       if (previous instanceof HTMLElement) previous.focus({ preventScroll: true })
     }
   }, [mounted, overlayRef, panelRef, belowRef])
@@ -65,7 +58,6 @@ export function useSheetStack({
     if (!mounted || !dismissible) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      // Only the sheet on top: the ones underneath stay where they are.
       if (!isTopLayer(overlayRef.current)) return
       latestClose.current()
     }

@@ -8,14 +8,12 @@ interface Props {
   open: boolean
   title: string
   message: ReactNode
-  /** A hard stop vs. something to recover from. */
   tone?: 'danger' | 'warning'
   primaryLabel: string
   onPrimary: () => void
   secondaryLabel?: string
   onSecondary?: () => void
   onClose: () => void
-  /** False for a choice that has to be made here. */
   dismissible?: boolean
   extra?: ReactNode
 }
@@ -34,7 +32,6 @@ export default function Alert({
   dismissible = true,
   extra,
 }: Props) {
-  // `open` leads; `mounted` trails it until the exit animation has played.
   const [mounted, setMounted] = useState(open)
   const [visible, setVisible] = useState(open)
 

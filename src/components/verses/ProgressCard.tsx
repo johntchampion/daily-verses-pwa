@@ -21,27 +21,17 @@ function chipClass(userVerse: UserVerse): string {
   return 'chip chip-active'
 }
 
-/**
- * What this verse needs next, counted in repetitions rather than scored. `today`
- * is the user's local date, or null while the profile is still loading; without
- * it a run can't be told from a dead one carried over from yesterday, so the
- * generic copy stands in.
- *
- * A verse past practice says only where it sits and when it comes back. How its
- * schedule is earned is deliberately not explained: it is settled in the
- * background, and describing it only invites the user to play to it.
- */
 function progressCopy(userVerse: UserVerse, today: string | null): string {
-  const { consecutive_correct: run } = userVerse
+  const { consecutive_correct: attemptsToday } = userVerse
 
   if (userVerse.needs_relearning === 1) {
     return 'Coming back around — it returns to practice as soon as a slot opens.'
   }
 
   if (isLearningStage(userVerse.stage)) {
-    const live = today !== null && userVerse.streak_date === today
-    return live && run > 0
-      ? `${run} of ${TIER_ADVANCE_THRESHOLD} times through it today. All three in one day moves it up a tier.`
+    const streakIsToday = today !== null && userVerse.streak_date === today
+    return streakIsToday && attemptsToday > 0
+      ? `${attemptsToday} of ${TIER_ADVANCE_THRESHOLD} times through it today. All three in one day moves it up a tier.`
       : `Going through it ${TIER_ADVANCE_THRESHOLD} times within one day moves it up a tier. However the words go — the repetition is what counts.`
   }
 
@@ -52,7 +42,6 @@ function progressCopy(userVerse: UserVerse, today: string | null): string {
   return 'Memorized and in review. It comes back on its own schedule, further apart each time it sticks.'
 }
 
-/** Absent until the verse has been started — there is no progress to place. */
 export default function ProgressCard({
   detail,
   today,
@@ -64,7 +53,7 @@ export default function ProgressCard({
   if (!detail || !userVerse) return null
 
   const { status, schedule, graduatedAt } = detail
-  const parked = userVerse.needs_relearning === 1
+  const awaitingSlot = userVerse.needs_relearning === 1
 
   return (
     <section className='card' aria-label='Progress'>
@@ -77,7 +66,7 @@ export default function ProgressCard({
       >
         <span className='eyebrow'>Progress</span>
         <span className={chipClass(userVerse)}>
-          {parked ? 'Relearning' : STAGE_LABELS[userVerse.stage]}
+          {awaitingSlot ? 'Relearning' : STAGE_LABELS[userVerse.stage]}
         </span>
       </div>
       <StageLadder stage={userVerse.stage} />
@@ -89,10 +78,9 @@ export default function ProgressCard({
         {progressCopy(userVerse, today)}
       </p>
 
-      {(schedule || graduatedAt || parked) && status !== 'not_started' && (
+      {(schedule || graduatedAt || awaitingSlot) && status !== 'not_started' && (
         <div className='stat-tiles' style={{ marginTop: 14 }}>
-          {parked ? (
-            // Unscheduled by design until a slot picks it up.
+          {awaitingSlot ? (
             <div className='stat-tile'>
               <div className='stat-tile-value'>Waiting</div>
               <div className='stat-tile-label'>for a slot</div>

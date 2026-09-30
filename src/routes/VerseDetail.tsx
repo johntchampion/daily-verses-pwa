@@ -12,8 +12,6 @@ import { useBack } from '../hooks/useBack'
 import { todayInTimezone } from '../lib/dates'
 import { messageOf } from '../lib/errors'
 
-/** One verse end to end: text, ladder position, attempts, and the way to pull
-    it into practice while it is still queued. */
 export default function VerseDetail() {
   const { id } = useParams<{ id: string }>()
   const back = useBack()
@@ -29,8 +27,6 @@ export default function VerseDetail() {
   const timezone = me.data?.user.timezone
   const today = timezone ? todayInTimezone(timezone) : null
 
-  // The error clears on `onExited`, so it doesn't flicker away under the
-  // sheet's exit animation.
   const closeSlotSheet = () => setSlotSheet(false)
 
   const confirmSlotAction = (verseId: string, pick: number) => {

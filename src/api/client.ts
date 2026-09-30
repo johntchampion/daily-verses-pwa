@@ -28,7 +28,6 @@ export class ApiError extends Error {
   }
 }
 
-// localStorage, so a PWA relaunch stays signed in.
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -47,7 +46,6 @@ export function clearSession(): void {
   localStorage.removeItem(USER_KEY)
 }
 
-/** Client-side check on the JWT `exp` claim, for the route guard. */
 export function tokenIsExpired(token: string): boolean {
   try {
     const payload = JSON.parse(atob(token.split('.')[1])) as { exp?: number }
@@ -57,7 +55,6 @@ export function tokenIsExpired(token: string): boolean {
   }
 }
 
-/** Set by AuthContext so a 401 anywhere logs the user out. */
 let onUnauthorized: (() => void) | null = null
 
 export function setUnauthorizedHandler(handler: (() => void) | null): void {
@@ -97,18 +94,12 @@ async function request<T>(
       ? data.error
       : null
 
-  // Both a 401 and "user not found" leave the client with a dead session.
-  // delete-account is excluded: its 401 is a wrong password, not a dead token.
-  //
-  // The reset routes need no entry of their own and must not get one: both live
-  // under /auth and are already excluded, which is right (a stale reset link
-  // must not sign out an unrelated session), while a 401 from
-  // /api/me/request-password-reset really is a dead session and should land here.
-  if (
+  // A 401 from delete-account means a wrong password, not a dead session.
+  const sessionIsDead =
     !path.startsWith('/auth') &&
     path !== '/api/me/delete-account' &&
     (res.status === 401 || message === 'user not found')
-  ) {
+  if (sessionIsDead) {
     clearSession()
     onUnauthorized?.()
     throw new ApiError(401, 'Your session has expired. Sign in again.')
@@ -136,30 +127,25 @@ export const api = {
 
   me: () => request<MeResponse>('/api/me'),
 
-  // The API rejects an empty body, so callers pass only the field they change.
   updateProfile: (patch: {
     timezone?: string
     translation?: string
     remindersEnabled?: boolean
   }) => request<MeResponse>('/api/me', { method: 'PATCH', body: patch }),
 
-  /** Answers the same whether or not the address has an account, so nothing
-      here can be used to find out which addresses are registered. */
   forgotPassword: (email: string) =>
     request<PasswordResetRequested>('/auth/forgot-password', {
       method: 'POST',
       body: { email },
     }),
 
-  /** Returns a fresh session: the reset expires every other one, including any
-      this browser was holding. */
+  /** Returns a fresh session, since the reset expires all existing ones. */
   resetPassword: (token: string, password: string) =>
     request<AuthResponse>('/auth/reset-password', {
       method: 'POST',
       body: { token, password },
     }),
 
-  /** The signed-in half — no address, because the API uses the one on file. */
   requestPasswordReset: () =>
     request<PasswordResetRequested>('/api/me/request-password-reset', {
       method: 'POST',
@@ -173,11 +159,9 @@ export const api = {
 
   translations: () => request<TranslationsResponse>('/api/translations'),
 
-  /** 503 when the deployment has no VAPID keys — the toggle reads that as
-      unavailable rather than broken. */
+  /** 503 when the server has no VAPID keys configured. */
   pushKey: () => request<PushKeyResponse>('/api/push/key'),
 
-  /** Idempotent on the subscription's endpoint, so it is safe to re-send. */
   pushSubscribe: (subscription: PushSubscriptionJSON) =>
     request<{ subscribed: true }>('/api/push/subscribe', {
       method: 'POST',
@@ -193,8 +177,6 @@ export const api = {
   pushTest: () =>
     request<PushTestResponse>('/api/push/test', { method: 'POST' }),
 
-  /** Today's plan, resumable — or with `practice`, a repeatable drill of the
-      slotted verses that counts toward nothing. */
   sessionToday: (practice = false) =>
     request<SessionTodayResponse>(
       practice ? '/api/session/today?practice=true' : '/api/session/today',
@@ -222,7 +204,6 @@ export const api = {
 
   queue: () => request<QueueResponse>('/api/queue'),
 
-  /** Takes the full list of queued verse ids. */
   setQueueOrder: (verseIds: string[]) =>
     request<QueueResponse>('/api/queue', {
       method: 'PUT',
@@ -231,7 +212,6 @@ export const api = {
 
   resetQueue: () => request<QueueResponse>('/api/queue', { method: 'DELETE' }),
 
-  /** The slots keep what they hold; they refill from the new front. */
   moveThemeToTop: (themeId: string) =>
     request<QueueResponse>('/api/queue/theme', {
       method: 'POST',
@@ -244,7 +224,7 @@ export const api = {
       body: { verseId },
     }),
 
-  /** The displaced occupant keeps its progress and rejoins the queue next up. */
+  /** The displaced verse keeps its progress and goes next in the queue. */
   replaceSlot: (verseId: string, slot: number) =>
     request<SlotReplaceResponse>('/api/slots/replace', {
       method: 'POST',

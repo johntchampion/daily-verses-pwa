@@ -9,8 +9,8 @@ import {
 import {
   isArrow,
   isFilterKey,
-  matchesQuery,
-  rowStep,
+  startsWithQuery,
+  nearestTileInAdjacentRow,
   spaceAction,
   type Arrow,
 } from '../lib/bankKeyboard'
@@ -18,7 +18,6 @@ import { useLatest } from './useLatest'
 
 export interface BankCandidate {
   label: string
-  /** Still drawn, but never cued and never a match. */
   disabled: boolean
 }
 
@@ -27,10 +26,6 @@ export interface BankKeyboard {
   cued: number | null
 }
 
-/**
- * Nothing is highlighted until the user arrows or types. A query cues its first
- * match, but that cue goes away with the query rather than becoming a cursor.
- */
 function resolveCued(
   cursor: number | null,
   eligible: number[],
@@ -39,52 +34,44 @@ function resolveCued(
   if (cursor !== null && eligible.includes(cursor)) return cursor
   if (query !== '') return eligible[0] ?? null
   if (cursor === null) return null
-  // The cursor's tile was spent; carry on from its place.
+  // The cursor's tile was used up, so move to the next one still available.
   return eligible.find((at) => at > cursor) ?? eligible.at(-1) ?? null
 }
 
-/**
- * Arrows move a cursor, typing filters the bank, Enter picks the cued tile and
- * Space the one the query spells out. Listens on `window` so the bank never
- * needs focus.
- *
- * `query` is owned by the caller because `useBankWindow` needs it first.
- */
+/** Arrows move a cursor, typing filters the bank, Enter picks the cued tile
+    and Space the typed one. Listens on `window` so the bank never needs focus. */
 export function useBankKeyboard({
   candidates,
   query,
   setQuery,
-  phase,
+  cursorResetKey,
   enabled,
   dockRef,
   onPick,
-  onShort,
-  onSubmit,
+  onIncompleteQuery,
+  onSubmitWithNothingCued,
 }: {
   candidates: BankCandidate[]
   query: string
   setQuery: Dispatch<SetStateAction<string>>
-  /** Changes when a blank is filled or the board replaced; the cursor is
-      scoped to it. */
-  phase: string
+  cursorResetKey: string
   enabled: boolean
   dockRef: RefObject<HTMLElement | null>
   onPick: (index: number) => void
-  /** Space on a query that spells no whole tile — only the start of one. */
-  onShort: () => void
-  /** Enter with nothing cued. */
-  onSubmit: (() => void) | null
+  onIncompleteQuery: () => void
+  onSubmitWithNothingCued: (() => void) | null
 }): BankKeyboard {
-  const [cursor, setCursor] = useState<{ phase: string; at: number } | null>(
-    null,
-  )
+  const [cursor, setCursor] = useState<{
+    resetKey: string
+    at: number
+  } | null>(null)
 
   const visible = useMemo(() => {
     const drawn = new Set<number>()
     candidates.forEach((candidate, at) => {
       const matches =
         query === '' ||
-        (!candidate.disabled && matchesQuery(candidate.label, query))
+        (!candidate.disabled && startsWithQuery(candidate.label, query))
       if (matches) drawn.add(at)
     })
     return drawn
@@ -98,65 +85,68 @@ export function useBankKeyboard({
     [candidates, visible],
   )
 
-  const at = cursor !== null && cursor.phase === phase ? cursor.at : null
-  const cued = resolveCued(at, eligible, query)
+  const cursorAt =
+    cursor !== null && cursor.resetKey === cursorResetKey ? cursor.at : null
+  const cued = resolveCued(cursorAt, eligible, query)
 
   const latest = useLatest({
     candidates,
     visible,
     eligible,
     cued,
-    cursorAt: at,
+    cursorAt,
     query,
-    phase,
+    cursorResetKey,
     setQuery,
     onPick,
-    onShort,
-    onSubmit,
+    onIncompleteQuery,
+    onSubmitWithNothingCued,
     dockRef,
   })
 
   useEffect(() => {
     if (!enabled) return
 
-    function tiles(): HTMLElement[] {
+    function renderedTiles(): HTMLElement[] {
       const bank = latest.current.dockRef.current?.querySelector('.word-bank')
       return bank ? (Array.from(bank.children) as HTMLElement[]) : []
     }
 
     function move(key: Arrow) {
-      const { eligible, cued, candidates, visible, phase } = latest.current
+      const { eligible, cued, candidates, visible, cursorResetKey } =
+        latest.current
       if (eligible.length === 0) return
 
-      const put = (to: number) => setCursor({ phase, at: to })
+      const moveCursorTo = (to: number) =>
+        setCursor({ resetKey: cursorResetKey, at: to })
 
       if (cued === null) {
-        put(eligible[0])
+        moveCursorTo(eligible[0])
         return
       }
 
       if (key === 'ArrowLeft' || key === 'ArrowRight') {
         const step = key === 'ArrowRight' ? 1 : -1
         const from = eligible.indexOf(cued)
-        put(eligible[(from + step + eligible.length) % eligible.length])
+        moveCursorTo(eligible[(from + step + eligible.length) % eligible.length])
         return
       }
 
-      const landed = rowStep(
-        tiles(),
+      const landed = nearestTileInAdjacentRow(
+        renderedTiles(),
         cued,
         key === 'ArrowDown' ? 1 : -1,
         (index) => visible.has(index) && candidates[index]?.disabled === false,
       )
-      if (landed !== null) put(landed)
+      if (landed !== null) moveCursorTo(landed)
     }
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return
       if (event.isComposing) return
 
-      // A dialog is up, focused or not.
-      if (document.querySelector('[aria-modal="true"]')) return
+      const dialogOpen = document.querySelector('[aria-modal="true"]') !== null
+      if (dialogOpen) return
 
       const focused = document.activeElement
       if (!(focused instanceof HTMLElement)) return
@@ -166,9 +156,8 @@ export function useBankKeyboard({
       ) {
         return
       }
-      // A focused button handles its own activation; anything else takes focus
-      // back from it.
       if (focused.tagName === 'BUTTON') {
+        // Let the button handle its own activation keys.
         if (event.key === 'Enter' || event.key === ' ') return
         focused.blur()
       }
@@ -178,10 +167,10 @@ export function useBankKeyboard({
         setQuery,
         cued,
         cursorAt,
-        phase,
+        cursorResetKey,
         onPick,
-        onShort,
-        onSubmit,
+        onIncompleteQuery,
+        onSubmitWithNothingCued,
         candidates,
       } = latest.current
 
@@ -189,13 +178,11 @@ export function useBankKeyboard({
         if (event.repeat) return
         if (cued !== null) {
           event.preventDefault()
-          // An arrowed cursor survives a wrong pick, for another try from
-          // where it is; a right one moves `phase` on and drops it.
-          if (cursorAt !== null) setCursor({ phase, at: cued })
+          if (cursorAt !== null) setCursor({ resetKey: cursorResetKey, at: cued })
           onPick(cued)
-        } else if (onSubmit) {
+        } else if (onSubmitWithNothingCued) {
           event.preventDefault()
-          onSubmit()
+          onSubmitWithNothingCued()
         }
         return
       }
@@ -222,9 +209,6 @@ export function useBankKeyboard({
         return
       }
 
-      // Space places the word typed, the way it would end a word in a text
-      // box. It continues a book name ("1 Samuel") instead where one does, and
-      // never starts a query.
       if (event.key === ' ') {
         event.preventDefault()
         if (query === '' || event.repeat) return
@@ -232,8 +216,8 @@ export function useBankKeyboard({
         if (action.kind === 'place') {
           setCursor(null)
           onPick(action.index)
-        } else if (action.kind === 'short') {
-          onShort()
+        } else if (action.kind === 'incomplete') {
+          onIncompleteQuery()
         } else {
           setQuery(query + ' ')
         }
@@ -244,12 +228,11 @@ export function useBankKeyboard({
       event.preventDefault()
       setQuery((current) => {
         const next = current + event.key
-        // Drop a keystroke that would leave nothing to pick.
-        const lands = candidates.some(
+        const anyTileMatches = candidates.some(
           (candidate) =>
-            !candidate.disabled && matchesQuery(candidate.label, next),
+            !candidate.disabled && startsWithQuery(candidate.label, next),
         )
-        return lands ? next : current
+        return anyTileMatches ? next : current
       })
     }
 

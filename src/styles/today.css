@@ -28,11 +28,7 @@
     text-wrap: pretty;
 }
 
-/*
- * The padding matches the opaque part of the mask, and both stops must stay at
- * or under FADE in PathList.tsx — that is the margin its scroll-into-view
- * check uses.
- */
+/* Both mask stops must stay at or under FADE_PX in PathList.tsx. */
 .path-scroll {
     flex: 1;
     min-height: 0;
@@ -56,12 +52,8 @@
     display: none;
 }
 
-/*
- * The rail is one line behind the whole list, so its ends are pinned to the
- * first and last circle centres: every step is [heading?][row] in a column of
- * one gap. The ::before arithmetic below depends on that shape and on all
- * three custom properties.
- */
+/* The ::before rail math depends on this single-gap column and the three
+   custom properties. */
 .path-list {
     --path-circle: 56px;
     --path-gap: 12px;
@@ -103,7 +95,6 @@
     margin-top: 6px;
 }
 
-/* Positioned, so the rows paint over the rail rather than under it. */
 .path-row {
     position: relative;
     display: flex;

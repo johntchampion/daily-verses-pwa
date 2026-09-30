@@ -2,8 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import Alert from '../Alert'
 import type { SessionError } from '../../hooks/useSessionRunner'
 
-/** Portals over whatever the phase below renders, so a mid-session failure
-    leaves the exercise (or skeleton) in view underneath. */
 export default function SessionErrorAlert({
   error,
   onDismiss,

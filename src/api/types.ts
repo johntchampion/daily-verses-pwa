@@ -1,8 +1,5 @@
-/**
- * Mirrors verse-memorize-api's wire format. Snake_case fields are database rows
- * returned verbatim; camelCase fields are API-composed. The progression model
- * itself is specified in the API's README.
- */
+/** Mirrors verse-memorize-api's wire format: snake_case fields are raw database
+    rows, camelCase fields are composed by the API. */
 
 export type Stage =
   | 'learning_light'
@@ -15,37 +12,27 @@ export type ExerciseType = 'tile_fill_blank' | 'type_fill_blank'
 
 export type VerseStatus = 'not_started' | 'active' | 'review' | 'mastered'
 
-/** A `user_verse` row: learning-tier state and review schedule together, since
-    a verse is only ever in one regime at a time. */
 export interface UserVerse {
   id: string
   user_id: string
   verse_id: string
   stage: Stage
-  /** The run toward the next advance. The name predates the rule: in a learning
-      slot it counts *attempts* recorded today, whatever they were worth, and in
-      review it counts consecutive passed due dates. */
+  /** Learning: attempts recorded today, right or wrong. Review: consecutive
+      passed due dates. */
   consecutive_correct: number
-  /** Review and mastered only. A slotted tier never reads or writes it, and
-      every route into a slot clears it, so a slotted verse's is always 0. */
   consecutive_incorrect: number
-  /** Local date the active run was accrued on; learning stages only. Gates the
-      run: one from an earlier day no longer counts toward an upgrade. */
+  /** Local date the learning run was accrued on; an older run doesn't count. */
   streak_date: string | null
-  /** review/mastered only; null in a learning slot or while queued. */
   interval_days: number | null
-  /** Local date (YYYY-MM-DD); null = not scheduled. */
+  /** Local date (YYYY-MM-DD). */
   due_at: string | null
-  /** Local date capping tier changes at one per day. Learning tiers only move
-      up, so this is the upgrade cap. */
   last_upgrade_date: string | null
-  /** 1 = pulled out of review, waiting for a learning slot to free up. */
+  /** 1 = pulled out of review, waiting for a learning slot. */
   needs_relearning: 0 | 1
   relearning_queued_at: string | null
-  /** 1, 2 or 3 while in an active learning slot; null once graduated. */
+  /** 1–3 while in a learning slot. */
   slot: number | null
   activated_at: string
-  /** Graduation is an event stamped here, not a stage of its own. */
   graduated_at: string | null
 }
 
@@ -59,34 +46,25 @@ export interface Attempt {
   id: string
   user_verse_id: string
   exercise_type: ExerciseType
-  /** Still recorded, and still what drives review scheduling — but never shown:
-      the user is not told whether an exercise was right. */
   correct: 0 | 1
   created_at: string
 }
 
-// POST /auth/signup, POST /auth/login
 export interface AuthResponse {
   token: string
   userId: string
 }
 
-// GET /api/me
 export interface SlotVerse {
   slot: number | null
   userVerseId: string
   verseId: string
   reference: string | null
   stage: Stage
-  /** Repetitions recorded today, not right answers — a slotted verse advances on
-      having been practiced. */
+  /** Attempts recorded today, right or wrong. */
   consecutiveCorrect: number
-  /** Always 0 for a slotted verse: it is a review-only counter. Still served
-      because it is the shape clients have always received. */
   consecutiveIncorrect: number
-  /** A run from an earlier day no longer counts toward an upgrade. */
   streakDate: string | null
-  /** Already moved up today, so it can't move again until tomorrow. */
   tierChangeUsedToday: boolean
 }
 
@@ -109,11 +87,9 @@ export interface MeResponse {
   }
 }
 
-/** What a verse did during a session, as the server recorded it. */
 export type SessionEventKind =
   | 'tier_up'
-  /** Still declared by the service, but no longer reachable: learning tiers
-      only move up. Kept so an older server can't hand us an unknown kind. */
+  /** Unreachable; kept so an older server can't send an unknown kind. */
   | 'tier_down'
   | 'graduated'
   | 'mastered'
@@ -127,82 +103,62 @@ export interface SessionEventBody {
   id: string
   kind: SessionEventKind
   verseId: string
-  /** Rendered server-side, so a slot event can name the verse. */
   reference: string
-  /** Null for slot events, which aren't a move along the ladder. */
   stageFrom: Stage | null
   stageTo: Stage | null
   slot: number | null
   createdAt: string
 }
 
-// GET /api/session/today
 export interface SessionExercise {
   verseId: string
   userVerseId: string
   exerciseType: ExerciseType
   reference: string
   blankedText: string
-  /** Empty for typed exercises — there are no tiles to show. */
   wordBank: string[]
   stage: Stage
   queue: 'review' | 'learning'
-  /** Already answered today. The day's plan is persisted and append-only, so
-      a session picked up again resumes at the first exercise still false. */
   completed: boolean
-  /** How it was answered, or null while still outstanding. Read by nothing in
-      the client — it is the schedule's business, not the user's. */
   correct: boolean | null
   userVerse: UserVerse
 }
 
 export interface SessionTodayResponse {
   translation: string
-  /** True when this is a practice drill rather than the day's plan: one
-      exercise per slotted verse, counting toward nothing. */
+  /** An ungraded drill of the slotted verses rather than the day's plan. */
   practice: boolean
   exercises: SessionExercise[]
   count: number
   completedCount: number
-  /** Still computed by the service. Deliberately unrendered: the session recap
-      reports what was done, not how well. */
   correctCount: number
-  /** The whole day, not just this client's part of it, so a resumed session
-      still recaps everything. Always empty for a practice drill. */
+  /** Covers the whole day, so a resumed session still recaps everything. */
   events: SessionEventBody[]
 }
 
-// POST /api/attempt
 export interface AttemptOutcome {
   userVerse: UserVerse
-  /** True when this attempt graduated the verse out of learning_heavy. */
   graduated: boolean
-  /** Rows slotted by the refill this attempt triggered. A row with a
-      `graduated_at` is a verse returning to practice, not a new one. */
+  /** A row with `graduated_at` set is a verse returning, not a new one. */
   slotsFilled: UserVerse[]
-  /** A delta, unlike session/today's whole day. A verse re-slotted by this
-      attempt's own refill is reported here and not again in `slotsFilled`. */
+  /** Only this attempt's changes, unlike `SessionTodayResponse.events`. */
   events: SessionEventBody[]
 }
 
-// POST /api/session/complete
 export interface SessionCompleteResponse {
   recorded: boolean
   sessionsCompleted: number
   slotsFilled: UserVerse[]
-  /** Just the slots this call topped up. */
   events: SessionEventBody[]
 }
 
-// GET /api/verses
 export interface VerseListItem {
   id: string
   reference: string
   order: number
   status: VerseStatus
   stage: Stage | null
-  /** Parked until a slot opens. Such a verse still reports `status: 'review'`,
-      so this has to be checked alongside it. */
+  /** Such a verse still reports `status: 'review'`. */
   needsRelearning: boolean
   slot: number | null
   graduatedAt: string | null
@@ -214,7 +170,6 @@ export interface VersesResponse {
   verses: VerseListItem[]
 }
 
-// GET /api/verses/:id
 export interface VerseDetailResponse {
   translation: string
   verse: {
@@ -223,9 +178,8 @@ export interface VerseDetailResponse {
     order: number
     text: string
   }
-  /** Themes this verse belongs to — possibly several, possibly none. */
   themes: { id: string; name: string }[]
-  /** 1-based (1 = next up); null when the verse holds a slot or is memorized. */
+  /** 1-based; null when the verse holds a slot or is memorized. */
   queuePosition: number | null
   status: VerseStatus
   graduatedAt: string | null
@@ -238,14 +192,11 @@ export interface VerseDetailResponse {
   }
 }
 
-// GET /api/queue — the practice queue: every verse not memorized and not
-// currently holding a slot, in the order slot refill will consume them.
 export interface QueueVerse {
   id: string
   reference: string
   order: number
   text: string
-  /** Carries saved progress (swapped out of a slot, or relearning). */
   inProgress: boolean
   relearning: boolean
   stage: Stage | null
@@ -255,26 +206,22 @@ export interface QueueVerse {
 export interface QueueTheme {
   id: string
   name: string
-  /** Verses in the theme overall vs. still waiting in the queue. */
   total: number
   queuedCount: number
 }
 
 export interface QueueResponse {
   translation: string
-  /** True once the user has stored a custom order. */
   customized: boolean
   queue: QueueVerse[]
   themes: QueueTheme[]
 }
 
-// POST /api/slots/replace
 export interface SlotReplaceResponse extends QueueResponse {
   placed: UserVerse
   displaced: UserVerse | null
 }
 
-// GET /api/translations
 export interface TranslationOption {
   code: string
   name: string
@@ -292,20 +239,15 @@ export interface PushKeyResponse {
 
 export interface PushTestResponse {
   sent: number
-  /** Endpoints the push service reported dead, now deleted. */
   removed: number
   failed: number
 }
 
-// POST /api/me/delete-account
 export interface DeleteAccountResponse {
   deleted: true
 }
 
-// POST /auth/forgot-password, POST /api/me/request-password-reset.
-// `requested` says the link was accepted for sending, not that it was sent —
-// the API does not wait for the mail, and answers the same for an address with
-// no account. POST /auth/reset-password returns an AuthResponse instead.
+/** `requested` is true even for an unknown address; the mail isn't awaited. */
 export interface PasswordResetRequested {
   requested: true
 }

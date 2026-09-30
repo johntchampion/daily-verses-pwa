@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { VerseListItem } from '../../api/types'
 
-/** Verses the schedule has sent back for another round: no due date, out of the
-    session entirely until a slot opens. Usually empty, so no placeholder. */
+/** Verses sent back to relearning, waiting for a slot. */
 export default function RelearnCard({
   verses,
 }: {

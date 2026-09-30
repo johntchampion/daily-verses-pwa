@@ -15,31 +15,25 @@ import {
 
 export type PushState =
   | 'unsupported'
-  /** iOS in a browser tab: Web Push only exists once it is on the Home Screen. */
+  /** iOS in a browser tab, where Web Push needs a Home Screen install. */
   | 'needs-install'
-  /** The deployment has no VAPID keys. */
+  /** The server has no VAPID keys. */
   | 'unavailable'
-  /** Permission was denied in the browser's own settings. */
   | 'blocked'
-  /** The account preference is on, but this browser can't receive a push:
-      permission was never asked for, or its subscription has gone missing. */
+  /** Reminders are on for the account but this browser isn't subscribed. */
   | 'needs-device'
   | 'off'
   | 'on'
 
 export interface PushReminders {
   state: PushState
-  /** True while the switch should read as on, including when this device is silent. */
   enabled: boolean
   busy: boolean
   error: string | null
-  /** Set when the switch cannot be operated at all on this platform. */
   unavailableMessage: string | null
-  /** Set when it can, but something needs saying. */
   hint: string | null
   toggle: (next: boolean) => void
-  /** Permission + subscription for this browser, leaving the preference alone.
-      Must be called straight from a click: Safari's prompt needs the gesture. */
+  /** Must be called straight from a click: Safari's prompt needs the gesture. */
   enableThisDevice: () => Promise<void>
   sendTest: () => Promise<void>
 }
@@ -58,53 +52,44 @@ const HINTS: Partial<Record<PushState, string>> = {
     'This device isn’t set up to receive them yet. Your other devices are unaffected.',
 }
 
-/** Anything that stops the switch from meaning what it says, worked out fresh
-    each time it's asked: on iOS the APIs are absent in a tab and present once
-    installed, and permission can be changed in browser settings behind our
-    back, so neither answer survives being cached across a visit. */
-function currentBlocker(): Exclude<
-  PushState,
-  'off' | 'on' | 'needs-device'
-> | null {
+type Blocker = Exclude<PushState, 'off' | 'on' | 'needs-device'>
+
+function currentBlocker(): Blocker | null {
   if (!pushSupported()) {
     return isIos() && !isStandalone() ? 'needs-install' : 'unsupported'
   }
   return notificationPermission() === 'denied' ? 'blocked' : null
 }
 
-/**
- * The daily-reminder switch. Two states of the world have to agree: an account
- * preference on the server, and a PushSubscription belonging to this browser.
- */
+/** The daily-reminder switch, reconciling the account preference with this
+    browser's push subscription. */
 export function usePushReminders(
   remindersEnabled: boolean | undefined,
   onSaved: () => void,
 ): PushReminders {
-  const [blocker, setBlocker] = useState<Exclude<
-    PushState,
-    'off' | 'on' | 'needs-device'
-  > | null>(currentBlocker)
+  const [blocker, setBlocker] = useState<Blocker | null>(currentBlocker)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [pending, setPending] = useState<boolean | null>(null)
-  /** null until the reconcile below has had its say, so the card doesn't flash
-      the button at someone whose device is fine. */
+  const [optimisticEnabled, setOptimisticEnabled] = useState<boolean | null>(
+    null,
+  )
   const [deviceReady, setDeviceReady] = useState<boolean | null>(null)
 
-  const enabled = pending ?? remindersEnabled ?? false
+  const enabled = optimisticEnabled ?? remindersEnabled ?? false
 
   useEffect(() => {
-    if (pending !== null && remindersEnabled === pending) setPending(null)
-  }, [pending, remindersEnabled])
+    if (optimisticEnabled !== null && remindersEnabled === optimisticEnabled) {
+      setOptimisticEnabled(null)
+    }
+  }, [optimisticEnabled, remindersEnabled])
 
-  /** Bumped on returning to the tab, to re-run the reconcile below. */
-  const [revision, setRevision] = useState(0)
+  const [visibilityRecheckCount, setVisibilityRecheckCount] = useState(0)
 
   useEffect(() => {
     function recheck() {
       if (document.visibilityState !== 'visible') return
       setBlocker(currentBlocker())
-      setRevision((n) => n + 1)
+      setVisibilityRecheckCount((n) => n + 1)
     }
     document.addEventListener('visibilitychange', recheck)
     return () => document.removeEventListener('visibilitychange', recheck)
@@ -123,7 +108,7 @@ export function usePushReminders(
           ready = true
         }
       } catch {
-        // Offer the button instead; this browser retries on the next visit.
+        // Leave the device unready so the enable button is offered.
       }
       if (!cancelled) setDeviceReady(ready)
     })()
@@ -131,7 +116,7 @@ export function usePushReminders(
     return () => {
       cancelled = true
     }
-  }, [remindersEnabled, blocker, revision])
+  }, [remindersEnabled, blocker, visibilityRecheckCount])
 
   const report = useCallback((err: unknown, fallback: string) => {
     if (err instanceof PermissionRefused) {
@@ -148,7 +133,7 @@ export function usePushReminders(
     (next: boolean) => {
       setBusy(true)
       setError(null)
-      setPending(next)
+      setOptimisticEnabled(next)
       void (async () => {
         try {
           if (next) {
@@ -161,8 +146,7 @@ export function usePushReminders(
           onSaved()
         } catch (err) {
           report(err, 'Could not change your reminder setting.')
-          // Nothing was saved, so the switch goes back where it was.
-          setPending(null)
+          setOptimisticEnabled(null)
         } finally {
           setBusy(false)
         }
@@ -189,8 +173,7 @@ export function usePushReminders(
     setError(null)
     try {
       const result = await api.pushTest()
-      // Nothing reached any of their devices, so the server has no working
-      // subscription for this one either. The button that appears is the fix.
+      // No device received it, so this one can't be subscribed either.
       if (result.sent === 0) setDeviceReady(false)
     } catch (err) {
       setError(messageOf(err, 'Could not send a test notification.'))

@@ -2,8 +2,7 @@ import { cx } from '../../lib/cx'
 import type { ReferenceStep } from '../../lib/reference'
 import TypedBlank from './TypedBlank'
 
-/** Placeholder for a slot with nothing in it; the CSS gives it its width. */
-const EMPTY = ' '
+const EMPTY_SLOT_TEXT = ' '
 
 function RefSlot({
   step,
@@ -31,7 +30,7 @@ function RefSlot({
       )}
       aria-label={`${step.kind} blank`}
     >
-      {isCurrent ? <TypedBlank sizer={EMPTY} typed={typed} /> : EMPTY}
+      {isCurrent ? <TypedBlank sizer={EMPTY_SLOT_TEXT} typed={typed} /> : EMPTY_SLOT_TEXT}
     </span>
   )
 }
@@ -47,7 +46,6 @@ export default function ReferenceLine({
 }: {
   steps: ReferenceStep[]
   filled: number
-  /** What the keyboard has typed so far, drawn into the current slot. */
   typed?: string
   typedWrong?: boolean
 }) {

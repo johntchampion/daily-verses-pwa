@@ -8,19 +8,16 @@ import QueuePanel from '../components/queue/QueuePanel'
 import { combineApi, useApi } from '../hooks/useApi'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 
-/** The Practicing tab: the learning slots, then the waiting line — a link to
-    its own screen on mobile, the line itself on desktop. */
+/** The learning slots, then the queue: a link on mobile, a panel on desktop. */
 export default function Practicing() {
   const desktop = useIsDesktop()
   const me = useApi(() => api.me())
   const verses = useApi(() => api.verses())
   const all = combineApi(me, verses)
 
-  // Hold every child to its skeleton until both requests have settled, so the
-  // blocks don't pop in one at a time.
-  const ready = !all.pending
-  const profile = ready ? me.data : null
-  const verseList = ready ? (verses.data?.verses ?? null) : null
+  const allLoaded = !all.pending
+  const profile = allLoaded ? me.data : null
+  const verseList = allLoaded ? (verses.data?.verses ?? null) : null
 
   return (
     <Screen
@@ -32,8 +29,7 @@ export default function Practicing() {
       sub='Three at a time. Go through a verse three times in a day and it moves up a tier — three days of that and it graduates out of practice.'
       loading={all.pending}
       loadingLabel='Loading your practice slots…'
-      // Only the profile is load-bearing: a failed verse fetch costs a
-      // snippet, not the screen.
+      // A failed verse fetch only costs the snippets.
       error={me.error}
       onRetry={all.refetch}
     >

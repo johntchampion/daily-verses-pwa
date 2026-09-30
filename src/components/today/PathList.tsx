@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom'
 import type { PathNode } from '../../lib/path'
 import { Skeleton } from '../Skeleton'
 
-/** The scroller's fade band: a stop inside it is on screen but half dissolved,
-    so it counts as out of view. Matches `.path-scroll` in index.css. */
-const FADE = 30
+/** Matches the fade band on `.path-scroll`; a stop inside it counts as hidden. */
+const FADE_PX = 30
 
 function Stop({
   node,
@@ -31,7 +30,6 @@ function Stop({
     </>
   )
 
-  // Only the live stop is a way in; the path is walked in order.
   if (node.state === 'current') {
     return (
       <Link
@@ -68,8 +66,7 @@ function PathSkeleton() {
   )
 }
 
-/** Today's stops down a single rail. The only part of the screen that scrolls,
-    and it scrolls itself to the live stop when that starts off screen. */
+/** Today's stops down a scrolling rail, centred on the current stop. */
 export default function PathList({ nodes }: { nodes: PathNode[] | null }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const currentRef = useRef<HTMLAnchorElement>(null)
@@ -84,14 +81,12 @@ export default function PathList({ nodes }: { nodes: PathNode[] | null }) {
 
     const view = scroller.getBoundingClientRect()
     const box = row.getBoundingClientRect()
-    if (box.top >= view.top + FADE && box.bottom <= view.bottom - FADE) return
+    if (box.top >= view.top + FADE_PX && box.bottom <= view.bottom - FADE_PX) return
 
-    // Centred, so the stop reads as the subject of the screen.
     scroller.scrollTop += box.top - view.top - (view.height - box.height) / 2
   }, [currentIndex])
 
   if (!nodes) return <PathSkeleton />
-  // Nothing due; the heading above has already said so.
   if (nodes.length === 0) return null
 
   return (

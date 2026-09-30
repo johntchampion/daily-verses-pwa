@@ -18,19 +18,14 @@ interface Props {
   today: string | null
   isLast: boolean
   moving: boolean
-  /** Fired the instant the exercise is judged, so the attempt is in before the
-      user asks to move on. */
   onRecord: (correct: boolean) => void
   onNext: (correct: boolean) => void
 }
 
-/** One definition of the verdict, so the render and the handlers that record it
-    cannot drift apart. */
-function judge(result: TypedOutcome, refResult: ReferenceOutcome): boolean {
+function isPassing(result: TypedOutcome, refResult: ReferenceOutcome): boolean {
   return result === 'correct' && refResult !== 'incorrect'
 }
 
-/** The reference line with nothing in it, so the question can be asked. */
 function HiddenReference() {
   return (
     <p className='verse-ref ref-line' aria-label='Reference hidden'>
@@ -44,15 +39,8 @@ function HiddenReference() {
   )
 }
 
-/**
- * Typed exercise: full recall into one free-text input, validated on "Check".
- * Case, punctuation and spacing are forgiven; the words must all be there, in
- * order. "Show the verse" trades the attempt for a re-read.
- *
- * Checking then asks for the reference, which was the *prompt* here — hiding it
- * the moment Check is pressed is what makes it a question. It is asked even
- * after a wrong or shown verse: branching would double the state machine.
- */
+/** The whole verse typed from memory, then its reference. Case, punctuation
+    and spacing are forgiven. */
 export default function TypedExercise({
   exercise,
   fullText,
@@ -67,19 +55,16 @@ export default function TypedExercise({
   const [result, setResult] = useState<TypedOutcome | null>(null)
   const [refResult, setRefResult] = useState<ReferenceOutcome>(null)
 
-  // Stage alone — unlike the tile path this needs no decomposition, since
-  // `referencesMatch` falls back to a string compare for anything odd.
   const asksReference = usesReferencePhase(exercise.stage)
   const askingReference = result !== null && asksReference && refResult === null
-  const judged = result !== null && (!asksReference || refResult !== null)
-  const passed = judge(result ?? 'incorrect', refResult)
+  const isFinished = result !== null && (!asksReference || refResult !== null)
+  const passed = isPassing(result ?? 'incorrect', refResult)
 
-  // Each of these records from the step that finishes the exercise, not from
-  // Next. The `!asksReference` branches are unreachable today — a typed exercise
-  // only happens at `mastered`, which does ask — but they have to exist, or a
-  // future stage change would silently strand the card with nothing recorded.
-  function settle(outcome: TypedOutcome, reference: ReferenceOutcome) {
-    if (!asksReference) onRecord(judge(outcome, reference))
+  function recordUnlessReferenceFollows(
+    outcome: TypedOutcome,
+    reference: ReferenceOutcome,
+  ) {
+    if (!asksReference) onRecord(isPassing(outcome, reference))
   }
 
   function check() {
@@ -88,7 +73,7 @@ export default function TypedExercise({
         ? 'correct'
         : 'incorrect'
     setResult(outcome)
-    settle(outcome, refResult)
+    recordUnlessReferenceFollows(outcome, refResult)
   }
 
   function checkReference(typed: string) {
@@ -99,8 +84,7 @@ export default function TypedExercise({
       ? 'correct'
       : 'incorrect'
     setRefResult(outcome)
-    // The reference is the last step, so the exercise is finished here.
-    onRecord(judge(result ?? 'incorrect', outcome))
+    onRecord(isPassing(result ?? 'incorrect', outcome))
   }
 
   return (
@@ -140,7 +124,7 @@ export default function TypedExercise({
               className='peek-btn'
               onClick={() => {
                 setResult('shown')
-                settle('shown', refResult)
+                recordUnlessReferenceFollows('shown', refResult)
               }}
             >
               Show the verse
@@ -162,7 +146,7 @@ export default function TypedExercise({
 
       {askingReference && <ReferencePrompt onCheck={checkReference} />}
 
-      {judged && result !== null && (
+      {isFinished && result !== null && (
         <>
           <TypedResult
             result={result}

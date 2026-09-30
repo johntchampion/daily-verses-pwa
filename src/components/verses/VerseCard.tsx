@@ -2,8 +2,6 @@ import type { VerseDetailResponse } from '../../api/types'
 import { Skeleton, SkeletonText } from '../Skeleton'
 import TranslationTag from '../TranslationTag'
 
-/** The only block on the detail screen that always exists, so it is the only
-    one with a placeholder — the rest may never arrive at all. */
 export default function VerseCard({
   detail,
 }: {

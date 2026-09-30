@@ -1,61 +1,48 @@
 import { BOOKS, bookChoices } from './books'
 import { shuffle } from './exercise'
 
-/**
- * The API sends `reference` as one display string ("1 Corinthians 15:3-4") and
- * never decomposes it, so the split, the decoys and the typed comparison are
- * all derived here. Nothing is authoritative: a reference that won't parse
- * simply turns the reference phase off.
- */
-
 export interface ParsedReference {
-  /** As written, whitespace collapsed: "1 Corinthians". */
   book: string
-  /** Digits only, leading zeros dropped: "15". */
   chapter: string
-  /** "3" or "3-4" — always a hyphen, never an en dash. */
+  /** "3" or "3-4", always with a plain hyphen. */
   verses: string
 }
 
-/** Book, chapter and verse(s). The book group is lazy with an anchored tail so
-    multi-word names land whole: "Song of Solomon 1:1" splits at the last space
-    before the chapter. `\p{L}` matches the tokenizer `lib/exercise.ts` uses. */
+/** "<book> <chapter>:<verse>[-<verse>]", e.g. "1 Corinthians 15:3-4". The book
+    group is lazy so multi-word names like "Song of Solomon" stay whole. */
 const REFERENCE_RE =
   /^([1-3]?\s*\p{L}[\p{L}\s]*?)\s+(\d+)\s*:\s*(\d+)(?:\s*-\s*(\d+))?$/u
 
-/** Every dash flavour a reference arrives with means "through". */
-const DASHES = /[‐‑‒–—−]/g
+/** Hyphen, non-breaking hyphen, figure/en/em dash and minus sign. */
+const DASH_VARIANTS = /[‐‑‒–—−]/g
 
-/** One spelling of the incidentals: no odd dashes, no periods, single spaces. */
-function tidy(reference: string): string {
+function normalizePunctuation(reference: string): string {
   return reference
-    .replace(DASHES, '-')
+    .replace(DASH_VARIANTS, '-')
     .replace(/\./g, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
 
+function stripLeadingZeros(digits: string): string {
+  return String(Number(digits))
+}
+
 export function parseReference(reference: string): ParsedReference | null {
-  const match = REFERENCE_RE.exec(tidy(reference))
+  const match = REFERENCE_RE.exec(normalizePunctuation(reference))
   if (!match) return null
 
   const [, book, chapter, start, end] = match
-  // Through Number so a stray leading zero can't fail an otherwise exact match.
-  const first = String(Number(start))
-  const last = end === undefined ? first : String(Number(end))
+  const first = stripLeadingZeros(start)
+  const last = end === undefined ? first : stripLeadingZeros(end)
 
   return {
     book: book.replace(/\s+/g, ' ').trim(),
-    chapter: String(Number(chapter)),
+    chapter: stripLeadingZeros(chapter),
     verses: last === first ? first : `${first}-${last}`,
   }
 }
 
-/**
- * Distinct positive numbers around `answer`, ascending. Which offsets get
- * picked is shuffled first: otherwise the sorted answer would land at the same
- * index every time, exactly the tell sorting was meant to avoid.
- */
 function numbersAround(
   answer: number,
   offsets: readonly number[],
@@ -70,16 +57,13 @@ function numbersAround(
   return picks.sort((a, b) => a - b)
 }
 
-/** Immediate neighbours only: a decoy far from the answer is one nobody would
-    pick, so it spends a slot without asking anything. */
 const NEAR_OFFSETS = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6]
 
 export function chapterChoices(chapter: string, count = 6): string[] {
   return numbersAround(Number(chapter), NEAR_OFFSETS, count).map(String)
 }
 
-/** Nearby verses of the *same shape*: a range answer gets range decoys of equal
-    span, so "the long one is the answer" is never a strategy. */
+/** Nearby verses; a range answer gets range decoys of the same span. */
 export function verseChoices(verses: string, count = 6): string[] {
   const [start, end] = verses.split('-').map(Number)
   const span = (Number.isFinite(end) ? end : start) - start
@@ -92,15 +76,12 @@ export type ReferenceStepKind = 'book' | 'chapter' | 'verse'
 
 export interface ReferenceStep {
   kind: ReferenceStepKind
-  /** Exactly one of `choices` — taps compare with `===`, since both sides come
-      out of this function. */
   answer: string
   choices: string[]
 }
 
-/** The three steps of the drill, or null when this reference can't be drilled
-    with tiles: it doesn't parse, or its book has no canon neighbours to draw
-    decoys from. Callers read null as "skip the phase". */
+/** The book, chapter and verse steps of the drill, or null when the reference
+    can't be drilled. */
 export function buildReferenceSteps(reference: string): ReferenceStep[] | null {
   const parsed = parseReference(reference)
   if (!parsed || !BOOKS.includes(parsed.book)) return null
@@ -120,7 +101,6 @@ export function buildReferenceSteps(reference: string): ReferenceStep[] | null {
   ]
 }
 
-/** Spellings that are the same book. */
 const BOOK_ALIASES: Record<string, string> = {
   psalms: 'psalm',
   'song of songs': 'song of solomon',
@@ -128,7 +108,7 @@ const BOOK_ALIASES: Record<string, string> = {
 }
 
 function normalizeBook(book: string): string {
-  const spelled = tidy(book)
+  const spelled = normalizePunctuation(book)
     .toLowerCase()
     .replace(/^(iii|3rd)\b/, '3')
     .replace(/^(ii|2nd)\b/, '2')
@@ -138,33 +118,25 @@ function normalizeBook(book: string): string {
   return BOOK_ALIASES[spelled] ?? spelled
 }
 
-/**
- * True when `typed` names `canonical`. A three-letter-or-longer prefix counts
- * ("Phil" for "Philippians") — there is only ever one expected book to compare
- * against, so the ambiguity costs nothing, and the floor blocks "j 3:16". The
- * numeral stays part of the string, so "John" still fails against "1 John".
- */
+const MIN_BOOK_PREFIX_LENGTH = 3
+
 function booksMatch(typed: string, canonical: string): boolean {
   const t = normalizeBook(typed)
   const c = normalizeBook(canonical)
-  return t === c || (t.length >= 3 && c.startsWith(t))
+  return t === c || (t.length >= MIN_BOOK_PREFIX_LENGTH && c.startsWith(t))
 }
 
-/** As `normalizeTypedText`, minus the one difference that matters: ':' and '-'
-    survive, because in a reference they're structure rather than punctuation. */
 function normalizeReferenceText(text: string): string {
-  return tidy(text)
+  return normalizePunctuation(text)
     .toLowerCase()
+    // Anything but letters, digits, spaces, ':' and '-' becomes a space.
     .replace(/[^\p{L}\p{N}\s:-]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
 
-/**
- * Forgiving reference comparison for typed exercises. Case, spacing, periods
- * and dash flavour don't count, nor does an abbreviated or roman-numeralled
- * book. The chapter and verse must be exact — those are what is being tested.
- */
+/** Ignores case, punctuation and abbreviated or roman-numeralled book names;
+    chapter and verse must match exactly. */
 export function referencesMatch(input: string, reference: string): boolean {
   const typed = parseReference(input)
   const answer = parseReference(reference)

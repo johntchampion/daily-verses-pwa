@@ -1,8 +1,4 @@
-/**
- * The inside of the current blank: what the keyboard has typed, laid over the
- * invisible text that sizes the blank. Both share one grid cell, so the blank
- * holds its width while typing and only grows if the typing outruns it.
- */
+/** Typed text laid over an invisible sizer that holds the blank's width. */
 export default function TypedBlank({
   sizer,
   typed,

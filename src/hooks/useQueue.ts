@@ -15,12 +15,10 @@ export function useQueue() {
     [queue.data],
   )
 
-  /** Held at the skeleton until the caller's whole screen has settled — the
-      panel waits on the queue alone, the screen on three requests. */
   const select = (
-    ready: boolean,
+    allLoaded: boolean,
   ): { ids: string[] | null; nextUp: QueueVerse | undefined } => {
-    const ids = ready ? order.ids : null
+    const ids = allLoaded ? order.ids : null
     return {
       ids,
       nextUp: ids && ids.length > 0 ? byId.get(ids[0]) : undefined,

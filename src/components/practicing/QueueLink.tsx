@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import type { VerseListItem } from '../../api/types'
 import { Skeleton } from '../Skeleton'
 
-/** Everything waiting in the practice queue: not memorized, not in a slot. */
 function waitingCount(verses: VerseListItem[]): number {
   return verses.filter(
     (v) =>
@@ -12,7 +11,6 @@ function waitingCount(verses: VerseListItem[]): number {
   ).length
 }
 
-/** The row into the queue screen, with its count. */
 export default function QueueLink({
   verses,
 }: {

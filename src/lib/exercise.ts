@@ -2,8 +2,7 @@ import type { Stage, UserVerse } from '../api/types'
 
 export const BLANK = '____'
 
-/** Word core: letters, digits, apostrophes and hyphens — matches the backend's
-    exerciseBuilder tokenization. */
+/** Letters, digits, apostrophes and hyphens, as the backend tokenizes words. */
 const WORD_RE = /[\p{L}\p{N}'’-]+/u
 
 export interface TextSegment {
@@ -70,14 +69,17 @@ export function splitIntoChunks(
   return { chunks, blanks }
 }
 
-const canonWord = (w: string) => w.replace(/’/g, "'")
+const straightenApostrophes = (w: string) => w.replace(/’/g, "'")
 
 export function wordsMatch(a: string, b: string): boolean {
-  return canonWord(a).toLowerCase() === canonWord(b).toLowerCase()
+  return (
+    straightenApostrophes(a).toLowerCase() ===
+    straightenApostrophes(b).toLowerCase()
+  )
 }
 
 export function wordsMatchExactly(a: string, b: string): boolean {
-  return canonWord(a) === canonWord(b)
+  return straightenApostrophes(a) === straightenApostrophes(b)
 }
 
 export function normalizeTypedText(text: string): string {
@@ -102,8 +104,7 @@ export function randomIndex(exclusiveMax: number): number {
   return Math.floor(Math.random() * exclusiveMax)
 }
 
-/** Must mirror the service's `domain/progression.ts` — a slotted tier counts
-    repetitions, not right answers. */
+/** Must mirror the service's `domain/progression.ts`. */
 export const TIER_ADVANCE_THRESHOLD = 3
 
 export const INTERVAL_PROGRESSION = [1, 3, 7, 14, 30]
@@ -145,7 +146,10 @@ export const STAGE_SHORT_LABELS: Record<Stage, string> = {
 export const SLIP_RATE = 0.2
 export const MIN_SLIPS = 2
 
-export function slipBudget(blankCount: number, hasReference: boolean): number {
+export function allowedMissCount(
+  blankCount: number,
+  hasReference: boolean,
+): number {
   return (
     Math.max(MIN_SLIPS, Math.ceil(blankCount * SLIP_RATE)) +
     (hasReference ? 1 : 0)
@@ -199,8 +203,8 @@ export function upgradeProgress(
 
   if (!learning) return { kind: 'scheduled', label: STAGE_LABELS[stage] }
 
-  const live = userVerse.streak_date === today
-  const done = live ? userVerse.consecutive_correct : 0
+  const streakIsToday = userVerse.streak_date === today
+  const done = streakIsToday ? userVerse.consecutive_correct : 0
   return {
     kind: 'run',
     done,

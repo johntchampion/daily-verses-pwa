@@ -10,7 +10,6 @@ import {
 } from '../api/client'
 import { AuthContext } from './auth'
 
-/** The persisted session, dropped up front if the JWT is already expired. */
 function initialSession(): { token: string | null; userId: string | null } {
   const token = getToken()
   if (!token || tokenIsExpired(token)) {
@@ -24,10 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState(initialSession)
   const [signedOut, setSignedOut] = useState(false)
 
-  // Any 401 from the API clears the session; the route guard then redirects.
-  // The flag is what sends it to sign-in rather than onboarding: a password
-  // reset elsewhere revokes this token without touching its `exp`, so the guard
-  // can't tell a dead session from a first visit on its own.
+  // `signedOut` sends a revoked session to sign-in rather than onboarding.
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setSession({ token: null, userId: null })
@@ -44,8 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signup = useCallback(async (email: string, password: string, timezone?: string) => {
-    // The server computes day boundaries from this, and the browser knows it
-    // best — unless the user picked one themselves, as onboarding does.
     const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
     const res = await api.signup(email, password, tz)
     storeSession(res.token, res.userId)
@@ -54,9 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const resetPassword = useCallback(async (token: string, password: string) => {
-    // Cleared first: request() attaches the stored bearer token to every call,
-    // and a link belonging to a different account would otherwise go out under
-    // this browser's session.
+    // Cleared first so the reset isn't sent with this browser's token.
     clearSession()
     setSession({ token: null, userId: null })
 

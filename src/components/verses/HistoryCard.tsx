@@ -17,13 +17,7 @@ function formatDay(iso: string): string {
   })
 }
 
-/**
- * Every attempt on this verse — a log, not a scorecard. The API still reports how
- * each one was graded and the database still keeps it, because review scheduling
- * reads it; showing it here would just reintroduce the score the session stopped
- * keeping. What the user gets is the thing that actually moves a verse: how many
- * times they have been through it, and when.
- */
+/** Every attempt on this verse, deliberately shown without grades. */
 export default function HistoryCard({
   detail,
 }: {
@@ -33,8 +27,7 @@ export default function HistoryCard({
 
   const { history } = detail
   const recent = history.attempts.slice(0, RECENT_ATTEMPTS_SHOWN)
-  // Attempts arrive newest first; the block strip reads oldest → newest.
-  const blocks = [...recent].reverse()
+  const oldestFirst = [...recent].reverse()
 
   return (
     <section className='card' aria-label='Attempt history'>
@@ -51,11 +44,11 @@ export default function HistoryCard({
         </span>
       </div>
       <div className='history-blocks' aria-hidden='true'>
-        {blocks.map((attempt) => (
+        {oldestFirst.map((attempt) => (
           <span key={attempt.id} className='history-block' />
         ))}
       </div>
-      {blocks.length > 0 && (
+      {oldestFirst.length > 0 && (
         <div
           className='small muted'
           style={{
@@ -66,15 +59,13 @@ export default function HistoryCard({
             fontSize: '0.72rem',
           }}
         >
-          <span>{formatDay(blocks[0].created_at)}</span>
+          <span>{formatDay(oldestFirst[0].created_at)}</span>
           <span>most recent</span>
         </div>
       )}
       <div style={{ marginTop: 12 }}>
         {recent.map((attempt) => (
           <div key={attempt.id} className='attempt-row'>
-            {/* Typed exercises only happen at mastered, so naming the kind says
-                how far the verse had got without grading the attempt. */}
             <span className='attempt-kind'>
               {attempt.exercise_type === 'tile_fill_blank'
                 ? 'Practiced'

@@ -1,8 +1,6 @@
 import { useEffect, useState, type RefObject } from 'react'
 
-/** Whether the element's content is taller than its box. Watches the element
-    and its children rather than re-measuring per render, so a late web font
-    reflowing the content past the cut-off is caught too. */
+/** Whether the element's content is taller than its box. */
 export function useOverflows(
   ref: RefObject<HTMLElement | null>,
   enabled: boolean,

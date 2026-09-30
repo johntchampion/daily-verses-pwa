@@ -70,8 +70,7 @@
     grid-area: 1 / 1;
 }
 
-/* Both halves need the same duration, delay and easing — they are two marks on
-   one wheel and have to hold a constant distance. */
+/* Both halves must share duration, delay and easing. */
 .complete-roll-out,
 .complete-roll-in {
     animation-duration: 460ms;
@@ -178,7 +177,6 @@
     font-weight: 700;
 }
 
-/* Each block carries its own --enter delay from the markup. */
 @keyframes rise-in {
     from {
         opacity: 0;

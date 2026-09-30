@@ -1,24 +1,11 @@
 /* --- Desktop ------------------------------------------------------------- */
 
-/*
- * Three invariants this block must not break.
- *
- * 1. The document stays the scroller on Practicing and the Library.
- *    useScrollLock freezes `body` and restores with window.scrollTo, so moving
- *    the scroll onto an inner element silently breaks every sheet and alert.
- *    Today is the standing exception — it already scrolls inside .path-scroll.
- * 2. Nothing here may put transform, will-change, contain or filter on
- *    .nav-stack, .nav-layer or .nav-layer-inner — see .nav-transit above. That
- *    now covers .top-nav as well as .tab-bar: both are fixed.
- * 3. Navigation swaps at this breakpoint — the bottom tab bar hides and
- *    .top-nav takes over (top-nav.css). So the shells below have to clear a
- *    fixed bar at the top that didn't exist before, and .shell-tabbed's
- *    padding-bottom is now reserving space for a bar that isn't there.
- *
- * Only the three tab classes and the session widen; .shell itself stays at
- * 480px. No rule in here may introduce an animation: the reduced-motion blocks
- * are above it and would no longer cover it.
- */
+/* Invariants:
+   - The document must stay the scroller (except Today), or useScrollLock
+     breaks every sheet and alert.
+   - No transform, will-change, contain or filter on .nav-stack, .nav-layer
+     or .nav-layer-inner; it would break the fixed .top-nav and .tab-bar.
+   - No animations here: the reduced-motion rules come earlier. */
 
 @media (min-width: 744px) {
     /* --- Desktop: the shared shell ---------------------------------------- */
@@ -27,9 +14,6 @@
         display: none;
     }
 
-    /* Still longhands, but the reason has flipped: padding-bottom is no longer
-       being protected, it is being reset. .shell-tabbed reserves 96px for the
-       tab bar, and with the bar gone that is dead space under every tab screen. */
     .today-shell,
     .practicing-shell,
     .hundred-shell {
@@ -40,10 +24,6 @@
         padding-bottom: calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
     }
 
-    /* The nav bar already carries the wordmark, the streak and the settings
-       button, which is this header's entire contents. Practicing and the
-       Library keep theirs: those hold a page title and the translation tag,
-       which are screen content rather than app chrome. */
     .today-shell .screen-header {
         display: none;
     }
@@ -53,7 +33,6 @@
         font-size: 2rem;
     }
 
-    /* Scoped: .view-sub is shared with the pushed screens, which don't widen. */
     .practicing-shell .view-sub,
     .hundred-shell .view-sub {
         font-size: 0.94rem;
@@ -68,8 +47,7 @@
         margin-top: 22px;
     }
 
-    /* The `border` shorthand is load-bearing — it wipes the mobile divider. Every
-       state keeps the same 2px width and swaps only the colour. */
+    /* The `border` shorthand is load-bearing: it wipes the mobile divider. */
     .hundred-shell .arc-row {
         align-items: flex-start;
         gap: 10px;
@@ -94,10 +72,7 @@
         white-space: nowrap;
     }
 
-    /*
-     * One line of ellipsis becomes two lines of clamp. white-space: normal is
-     * load-bearing — without it there is only ever one line to clamp.
-     */
+    /* white-space: normal is needed for the two-line clamp. */
     .hundred-shell .arc-snippet {
         display: -webkit-box;
         -webkit-box-orient: vertical;
@@ -210,7 +185,7 @@
         margin-top: 0;
     }
 
-    /* width: auto is load-bearing — .btn-ghost is a full-width block button. */
+    /* width: auto overrides .btn-ghost's full width. */
     .practicing-shell .queue-action {
         flex: none;
         width: auto;
@@ -247,14 +222,10 @@
         max-width: 40%;
     }
 
-    /* The skeleton's reference is a percentage width, and a shrink-to-fit head
-       gives it nothing to resolve against. Real rows stay ragged. */
     .practicing-shell .queue-row-head:has(.sk) {
         min-width: 140px;
     }
 
-    /* .sk-text is flex: none, so the snippet placeholder would otherwise run
-       under the arrows. */
     .practicing-shell .queue-row-main>.sk-text {
         flex: 0 1 auto;
         min-width: 0;
@@ -291,8 +262,7 @@
         font-size: 0.94rem;
     }
 
-    /* Both mask declarations move together, and both stops must stay at or under
-       FADE (30) in PathList.tsx. */
+    /* Both stops must stay at or under FADE_PX in PathList.tsx. */
     .today-shell .path-scroll {
         padding: 26px 0;
         mask-image: linear-gradient(180deg,
@@ -307,8 +277,6 @@
                 transparent 100%);
     }
 
-    /* --path-group is the eyebrow's line-height as well as a term in the rail's
-       `top`, so it moves with the font size. */
     .today-shell .path-list {
         --path-circle: 62px;
         --path-gap: 14px;
@@ -338,8 +306,6 @@
         color: var(--ink);
     }
 
-    /* The negative margin is what lets the card have padding: the marker has to
-       stay on the rail, so the card bleeds outwards by what it pads inwards. */
     .today-shell .path-row-current {
         margin: 0 -18px;
         padding: 16px 18px;
@@ -368,9 +334,6 @@
     }
 
     /* --- Desktop: the session --------------------------------------------- */
-
-    /* Scoped to .session-view rather than .shell-full: that class is the
-       onboarding taster too, and it keeps its phone layout. */
 
     .session-view {
         --session-measure: 840px;

@@ -1,8 +1,3 @@
-/**
- * Every "same day" question in the progression model is a calendar-day
- * question in the *user's* profile timezone, not the browser's.
- */
-
 /** `YYYY-MM-DD` for "now" as seen in `timezone`. */
 export function todayInTimezone(timezone: string, now = new Date()): string {
   try {
@@ -14,7 +9,7 @@ export function todayInTimezone(timezone: string, now = new Date()): string {
       day: '2-digit',
     }).format(now)
   } catch {
-    // Unknown timezone on the profile — fall back to UTC, same as the server.
+    // Unknown timezone: fall back to UTC, as the server does.
     return now.toISOString().slice(0, 10)
   }
 }

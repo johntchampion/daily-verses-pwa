@@ -2,7 +2,6 @@ import type { useQueueOrder } from '../../hooks/useQueueOrder'
 
 type Order = ReturnType<typeof useQueueOrder>
 
-/** The two order controls, shared by the Up Next screen and the panel. */
 export default function QueueActions({
   order,
   ids,

@@ -2,34 +2,23 @@ import { useEffect, useRef, type RefObject } from 'react'
 import { CLOSE, SETTLE, type Spring } from '../lib/spring'
 import { useLatest } from './useLatest'
 
-/** Dragged past this share of its own height, letting go dismisses. */
-const DISMISS_RATIO = 0.25
-/** Or thrown at least this fast, however short the throw (px/ms). */
-const DISMISS_VELOCITY = 0.5
-/** How far the panel can be pulled above its resting place before it stops. */
-const RUBBER = 64
-/** Movement before a touch counts as a drag rather than a tap. */
-const SLOP = 4
-/** How stale the last movement can be and still count as a throw (ms). A
-    finger that flicked and then held still let go of something stationary. */
-const THROW_WINDOW = 80
+const DISMISS_DRAG_RATIO = 0.25
+const DISMISS_VELOCITY_PX_PER_MS = 0.5
+const MAX_OVERPULL_PX = 64
+const DRAG_START_THRESHOLD_PX = 4
+const THROW_MAX_AGE_MS = 80
+const MIN_VELOCITY_SAMPLE_MS = 4
 
-/** Whatever a single finger or the mouse is currently doing to the panel. */
 interface Drag {
   active: boolean
-  /** We own the gesture and the panel is following the finger. */
   claimed: boolean
-  /** Handed back to the browser: this one is a scroll, not a drag. */
-  yielded: boolean
-  /** Started inside the scrolling body, which gets first refusal on it. */
-  fromBody: boolean
+  yieldedToScroll: boolean
+  startedInBody: boolean
   startY: number
-  /** Panel offset and finger position at the moment we claimed it. */
-  baseY: number
-  anchorY: number
+  panelYAtClaim: number
+  fingerYAtClaim: number
   lastY: number
   lastAt: number
-  /** px/ms, from the most recent pair of samples. */
   velocity: number
 }
 
@@ -44,11 +33,8 @@ interface Options {
   closingRef: RefObject<boolean>
 }
 
-/**
- * Drag-to-dismiss: the panel follows the finger 1:1, resists the wrong way, and
- * carries a throw's velocity into the spring. The returned ref is true when a
- * drag just happened, so the click it produces can be swallowed.
- */
+/** Drag-to-dismiss with rubber-banding and throw velocity. The returned ref is
+    true right after a drag, so the click it produces can be swallowed. */
 export function useSheetDrag({
   mounted,
   dismissible,
@@ -70,21 +56,20 @@ export function useSheetDrag({
     const drag: Drag = {
       active: false,
       claimed: false,
-      yielded: false,
-      fromBody: false,
+      yieldedToScroll: false,
+      startedInBody: false,
       startY: 0,
-      baseY: 0,
-      anchorY: 0,
+      panelYAtClaim: 0,
+      fingerYAtClaim: 0,
       lastY: 0,
       lastAt: 0,
       velocity: 0,
     }
 
-    /** Asymptotic: pull all you like, it never gives more than RUBBER. */
-    const resist = (y: number) => {
-      const soft = (d: number) => RUBBER * (1 - 1 / (d / RUBBER + 1))
-      if (y < 0) return -soft(-y)
-      return dismissible ? y : soft(y)
+    const rubberBand = (y: number) => {
+      const dampen = (d: number) => MAX_OVERPULL_PX * (1 - 1 / (d / MAX_OVERPULL_PX + 1))
+      if (y < 0) return -dampen(-y)
+      return dismissible ? y : dampen(y)
     }
 
     const begin = (y: number, target: EventTarget | null) => {
@@ -92,9 +77,8 @@ export function useSheetDrag({
       const inBody = !!body && target instanceof Node && body.contains(target)
       drag.active = true
       drag.claimed = false
-      // Content scrolled away from its top owns the gesture outright.
-      drag.yielded = inBody && body.scrollTop > 0
-      drag.fromBody = inBody
+      drag.yieldedToScroll = inBody && body.scrollTop > 0
+      drag.startedInBody = inBody
       drag.startY = y
       drag.lastY = y
       drag.lastAt = performance.now()
@@ -105,23 +89,20 @@ export function useSheetDrag({
     const claim = (y: number) => {
       drag.claimed = true
       draggedRef.current = true
-      // Catch it wherever it is, mid-flight included.
       spring.stop()
-      drag.baseY = spring.value
-      drag.anchorY = y
+      drag.panelYAtClaim = spring.value
+      drag.fingerYAtClaim = y
       heightRef.current = panel.offsetHeight
       panel.style.userSelect = 'none'
     }
 
-    /** True once we're driving the panel, which means eating the event. */
+    /** Returns true when the drag owns the event and it should be prevented. */
     const move = (y: number) => {
-      if (!drag.active || drag.yielded) return false
+      if (!drag.active || drag.yieldedToScroll) return false
 
       const now = performance.now()
       const dt = now - drag.lastAt
-      // Sample over a few milliseconds; dividing by a sub-millisecond gap
-      // turns a stationary finger into a fling.
-      if (dt > 4) {
+      if (dt > MIN_VELOCITY_SAMPLE_MS) {
         drag.velocity = (y - drag.lastY) / dt
         drag.lastY = y
         drag.lastAt = now
@@ -129,16 +110,15 @@ export function useSheetDrag({
 
       if (!drag.claimed) {
         const dy = y - drag.startY
-        if (Math.abs(dy) < SLOP) return false
-        // At the top of the content and pulling up: that's a scroll.
-        if (drag.fromBody && dy < 0) {
-          drag.yielded = true
+        if (Math.abs(dy) < DRAG_START_THRESHOLD_PX) return false
+        if (drag.startedInBody && dy < 0) {
+          drag.yieldedToScroll = true
           return false
         }
         claim(y)
       }
 
-      spring.set(resist(drag.baseY + (y - drag.anchorY)))
+      spring.set(rubberBand(drag.panelYAtClaim + (y - drag.fingerYAtClaim)))
       return true
     }
 
@@ -147,28 +127,26 @@ export function useSheetDrag({
       const claimed = drag.claimed
       drag.active = false
       drag.claimed = false
-      drag.yielded = false
+      drag.yieldedToScroll = false
       if (!claimed) return
 
       panel.style.userSelect = ''
       const h = heightRef.current || panel.offsetHeight
-      const stale = performance.now() - drag.lastAt > THROW_WINDOW
+      const stale = performance.now() - drag.lastAt > THROW_MAX_AGE_MS
       const velocity = stale ? 0 : drag.velocity
-      // The spring works in px/s; the sampler in px/ms.
-      const thrown = velocity * 1000
-      const far = spring.value > h * DISMISS_RATIO
-      const fast = velocity > DISMISS_VELOCITY
+      const velocityPxPerSec = velocity * 1000
+      const far = spring.value > h * DISMISS_DRAG_RATIO
+      const fast = velocity > DISMISS_VELOCITY_PX_PER_MS
       if (dismissible && (far || fast)) {
         closingRef.current = true
-        spring.to(h, thrown, CLOSE)
+        spring.to(h, velocityPxPerSec, CLOSE)
         latestClose.current()
       } else {
-        spring.to(0, thrown, SETTLE)
+        spring.to(0, velocityPxPerSec, SETTLE)
       }
     }
 
     const onTouchStart = (e: TouchEvent) => {
-      // A second finger arriving ends the drag rather than fighting it.
       if (e.touches.length > 1) return end()
       begin(e.touches[0].clientY, e.target)
     }
@@ -191,8 +169,7 @@ export function useSheetDrag({
       window.addEventListener('mouseup', onMouseUp)
     }
 
-    // Native listeners rather than React's: `touchmove` has to be registered
-    // non-passively to be cancelable on iOS.
+    // Native listeners because iOS only lets a non-passive `touchmove` cancel.
     panel.addEventListener('touchstart', onTouchStart, { passive: true })
     panel.addEventListener('touchmove', onTouchMove, { passive: false })
     panel.addEventListener('touchend', end)

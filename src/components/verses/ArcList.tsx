@@ -3,10 +3,8 @@ import type { VerseListItem } from '../../api/types'
 import { Skeleton } from '../Skeleton'
 import { isMemorized } from '../../lib/verses'
 
-/** Roughly a viewport's worth — enough to read as a list, not all hundred. */
 const SKELETON_ROWS = 8
 
-/** Snippet placeholder widths, varied so the list doesn't look printed. */
 const SKELETON_WIDTHS = ['86%', '72%', '92%', '64%', '80%', '88%', '70%', '84%']
 
 function dotClass(verse: VerseListItem): string {
@@ -26,10 +24,6 @@ function StatusChip({ verse }: { verse: VerseListItem }) {
   return null
 }
 
-/**
- * The same row geometry as a real arc row: a dot in its resting colour, the
- * reference, a chip, and the snippet line.
- */
 function ArcRowSkeleton({ width }: { width: string }) {
   return (
     <div className='arc-row'>
@@ -45,7 +39,6 @@ function ArcRowSkeleton({ width }: { width: string }) {
   )
 }
 
-/** Every verse in the arc, in order — one flat list. */
 export default function ArcList({
   verses,
 }: {

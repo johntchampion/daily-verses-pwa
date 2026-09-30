@@ -1,12 +1,7 @@
 import { randomIndex, wordsMatch, wordsMatchExactly } from './exercise'
 
-/** A review exercise blanks every word, so its bank can run past what the
-    three docked rows hold. These are the pure window moves; the caller
-    measures the DOM and decides when to make them. */
-
 export const BANK_ROWS = 3
 
-/** Tiles on screen, plus the ones that didn't fit and await a slot. */
 export interface BankWindow {
   onScreen: number[]
   offScreen: number[]
@@ -20,8 +15,6 @@ function includesSpellingOf(
   return tileIds.some((id) => wordsMatchExactly(labels[id], answer))
 }
 
-/** Position of an exact spelling, or failing that a differently-capitalized
-    variant, which taps accept too. -1 when neither is there. */
 function positionOfBestTile(
   tileIds: number[],
   labels: string[],
@@ -32,12 +25,8 @@ function positionOfBestTile(
   return tileIds.findIndex((id) => wordsMatch(labels[id], answer))
 }
 
-/**
- * Taps accept any capitalization, so the tile tapped for `answer` may not be
- * the one that spells it. Trading their labels keeps the remaining bank
- * matching the remaining blanks — otherwise "I AM WHO I AM" spends its
- * lowercase tile early and has none left for "how I am to be remembered".
- */
+/** When a differently-capitalized tile was tapped, swaps labels with the exact
+    spelling so the remaining tiles still spell the remaining blanks. */
 export function withAnswerSpelling(
   labels: string[],
   tappedId: number,
@@ -55,8 +44,7 @@ export function withAnswerSpelling(
   return traded
 }
 
-/** Keeps `neededAnswers` on screen from the start, so the opening taps don't
-    lean on `replaceTappedTile`'s rescue path — the one that gives it away. */
+/** Trims the bank to `capacity`, swapping in tiles for `neededAnswers`. */
 export function trimToCapacity(
   bank: BankWindow,
   capacity: number,
@@ -66,40 +54,37 @@ export function trimToCapacity(
   const onScreen = bank.onScreen.slice(0, capacity)
   const overflow = bank.onScreen.slice(capacity)
 
-  // Positions already spoken for this pass; a later, lower-priority rescue must
-  // not evict the tile an earlier answer just claimed.
-  const claimed = new Set<number>()
-  let slot = onScreen.length - 1
+  const reservedPositions = new Set<number>()
+  let evictAt = onScreen.length - 1
 
   for (const answer of neededAnswers) {
     const already = onScreen.findIndex(
-      (id, at) => !claimed.has(at) && wordsMatchExactly(labels[id], answer),
+      (id, at) =>
+        !reservedPositions.has(at) && wordsMatchExactly(labels[id], answer),
     )
     if (already !== -1) {
-      claimed.add(already)
+      reservedPositions.add(already)
       continue
     }
 
-    while (slot >= 0 && claimed.has(slot)) slot--
-    if (slot < 0) break
+    while (evictAt >= 0 && reservedPositions.has(evictAt)) evictAt--
+    if (evictAt < 0) break
 
     const rescue = positionOfBestTile(overflow, labels, answer)
     if (rescue === -1) continue
 
-    ;[onScreen[slot], overflow[rescue]] = [overflow[rescue], onScreen[slot]]
-    claimed.add(slot)
-    slot--
+    ;[onScreen[evictAt], overflow[rescue]] = [overflow[rescue], onScreen[evictAt]]
+    reservedPositions.add(evictAt)
+    evictAt--
   }
 
   return { onScreen, offScreen: [...overflow, ...bank.offScreen] }
 }
 
-/** Large enough that a freshly-drawn tile is rarely provably "the" answer;
-    small enough it isn't half the verse. */
 export const LOOKAHEAD_BLANKS = 6
 
-/** Only the immediate next answer is a hard requirement; past it the draw is
-    random among the lookahead, so the new tile isn't reliably the answer. */
+/** Guarantees the next answer stays on screen; otherwise draws at random among
+    upcoming answers so the new tile isn't a giveaway. */
 export function replaceTappedTile(
   bank: BankWindow,
   tappedPosition: number,
@@ -139,8 +124,7 @@ export function showOneMoreTile(bank: BankWindow): BankWindow {
   }
 }
 
-/** The pressed lip falls outside offsetHeight, so the bottom row needs this
-    much extra or `.word-bank`'s `overflow: hidden` clips it. */
+/** The tile's pressed lip hangs below its offsetHeight. */
 export const TILE_SHADOW_HEIGHT = 3
 
 export function heightOfRows(

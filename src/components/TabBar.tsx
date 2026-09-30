@@ -6,7 +6,6 @@ const TABS = [
   { to: '/library', icon: '⌗', label: 'Library' },
 ]
 
-/** Bottom tab bar shared by the three home views. */
 export default function TabBar() {
   return (
     <nav className='tab-bar' aria-label='Main'>

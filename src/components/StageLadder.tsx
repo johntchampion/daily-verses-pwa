@@ -5,8 +5,7 @@ import {
   isLearningStage,
 } from '../lib/exercise'
 
-/** Where a verse sits on the progression. The divider after the third step is
-    the graduation boundary — crossing it is the moment the slot empties. */
+/** Where a verse sits on the progression; the divider marks graduation. */
 export default function StageLadder({ stage }: { stage: Stage }) {
   const current = STAGE_SEQUENCE.indexOf(stage)
 
@@ -19,16 +18,13 @@ export default function StageLadder({ stage }: { stage: Stage }) {
         <span key={step} style={{ display: 'contents' }}>
           {i > 0 && (
             <span className='stage-arrow' aria-hidden='true'>
-              {/* The slotted tiers end at index 2; past it the verse is memorized. */}
-              {i === 3 ? '|' : '›'}
+              {step === 'review' ? '|' : '›'}
             </span>
           )}
           <span
             className={
               i === current
-                ? // Coral is the "in practice" accent and green means memorized,
-                  // so the marker follows whichever side of graduation we're on.
-                  isLearningStage(step)
+                ? isLearningStage(step)
                   ? 'stage-step stage-step-current'
                   : 'stage-step stage-step-active'
                 : i < current

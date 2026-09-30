@@ -2,11 +2,7 @@ import { useState } from 'react'
 import { ApiError, api } from '../../api/client'
 import Alert from '../Alert'
 
-/**
- * Permanent account deletion, re-confirmed with the password since it can't be
- * undone. The API's 401 here is a wrong password, not a dead session, so it
- * surfaces in the alert rather than logging the user out.
- */
+/** Permanent account deletion, confirmed with the password. */
 export default function DeleteAccountAlert({
   open,
   onClose,
@@ -20,8 +16,6 @@ export default function DeleteAccountAlert({
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Cleared as it opens rather than as it closes, so a rejected password
-  // doesn't flicker away underneath the exit animation.
   const [wasOpen, setWasOpen] = useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)

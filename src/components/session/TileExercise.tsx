@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
-import { slipBudget, splitIntoChunks, wordsMatch } from '../../lib/exercise'
+import { allowedMissCount, splitIntoChunks, wordsMatch } from '../../lib/exercise'
 import type { ReferenceStepKind } from '../../lib/reference'
 import {
   useBankKeyboard,
@@ -36,20 +36,9 @@ const REFERENCE_PROMPTS: Record<ReferenceStepKind, string> = {
   verse: 'Tap the verse',
 }
 
-/**
- * Tile exercise: validates on tap. A correct tile fills the next empty blank; a
- * wrong tile shakes and changes nothing.
- *
- * Wrong taps are unlimited and uncounted as far as the user can tell. `misses`
- * is still kept, and still decides the `correct` this reports, because review
- * scheduling reads it — but nothing draws it. Guessing is meant to be free:
- * there is no budget to protect, so the only way through is to try a word.
- *
- * The attempt is recorded from the tap that completes the exercise rather than
- * from Next. Firing it here rather than from an effect makes exactly-once
- * structural — the response re-renders this component, so a render-driven fire
- * would post again on the answer to its own request.
- */
+/** Validates on tap: a correct tile fills the next blank, a wrong one shakes.
+    The attempt is recorded from the completing tap, not an effect, so it can
+    only post once. */
 export default function TileExercise({
   exercise,
   fullText,
@@ -66,14 +55,9 @@ export default function TileExercise({
   )
 
   const [filledBlanks, setFilledBlanks] = useState(0)
-  const [wrongTileId, setWrongTileId] = useState<number | null>(null)
+  const [wrongPick, setWrongPick] = useState<number | null>(null)
   const [misses, setMisses] = useState(0)
-  /** What has been typed to filter the bank. Owned here rather than by
-      `useBankKeyboard` because the bank's fit pass has to be told the bank is
-      being filtered, and it is measured before the keyboard is wired up. */
   const [query, setQuery] = useState('')
-  /** The blank shakes the typing in it: a typed word that was wrong, or Space
-      on one that isn't finished. */
   const [typedWrong, setTypedWrong] = useState(false)
 
   const currentBlankRef = useRef<HTMLSpanElement | null>(null)
@@ -91,9 +75,8 @@ export default function TileExercise({
   const drill = useReferenceDrill(exercise.stage, exercise.reference, textDone)
   const isComplete = textDone && drill.step === null
 
-  // Invisible: it sets the `correct` this reports and nothing else.
-  const budget = slipBudget(blanks.length, drill.hasSteps)
-  const judged = () => misses <= budget
+  const allowedMisses = allowedMissCount(blanks.length, drill.hasSteps)
+  const wasCorrect = () => misses <= allowedMisses
 
   useScrollToTarget({
     filledBlanks,
@@ -108,10 +91,10 @@ export default function TileExercise({
     flash(() => setTypedWrong(false))
   }
 
-  function rejectTap(tileId: number) {
+  function rejectTap(pick: number) {
     setMisses((count) => count + 1)
-    setWrongTileId(tileId)
-    flash(() => setWrongTileId(null))
+    setWrongPick(pick)
+    flash(() => setWrongPick(null))
     if (query !== '') shakeTyping()
   }
 
@@ -125,17 +108,14 @@ export default function TileExercise({
     }
 
     bank.spendTile(tileId, position, answer)
-    setWrongTileId(null)
+    setWrongPick(null)
     setQuery('')
     const nextFilled = filledBlanks + 1
     setFilledBlanks(nextFilled)
 
-    // A correct tap never moves `misses`, so this render's value is final.
-    if (nextFilled >= blanks.length && !drill.hasSteps) onRecord(judged())
+    if (nextFilled >= blanks.length && !drill.hasSteps) onRecord(wasCorrect())
   }
 
-  // `wrongTileId` holds a chip position here rather than a tile id; the two
-  // banks never render together, so they can share it.
   function tapRefChip(choice: string, position: number) {
     if (!drill.step) return
 
@@ -144,9 +124,9 @@ export default function TileExercise({
       return
     }
 
-    setWrongTileId(null)
+    setWrongPick(null)
     setQuery('')
-    if (drill.advance()) onRecord(judged())
+    if (drill.advance()) onRecord(wasCorrect())
   }
 
   const candidates = useMemo<BankCandidate[]>(
@@ -174,9 +154,7 @@ export default function TileExercise({
     candidates,
     query,
     setQuery,
-    // One phase per blank, so placing a word — by any key or a click — puts
-    // the cursor away rather than leaving it on a tile for the next blank.
-    phase: drill.board
+    cursorResetKey: drill.board
       ? `reference-${drill.filled}`
       : `text-${filledBlanks}`,
     enabled: !moving,
@@ -187,9 +165,9 @@ export default function TileExercise({
         tapTile(bank.onScreen[index], index)
       }
     },
-    // Not a miss: nothing was placed, so there is nothing to judge yet.
-    onShort: shakeTyping,
-    onSubmit: isComplete && !moving ? () => onNext(judged()) : null,
+    onIncompleteQuery: shakeTyping,
+    onSubmitWithNothingCued:
+      isComplete && !moving ? () => onNext(wasCorrect()) : null,
   })
 
   return (
@@ -222,8 +200,6 @@ export default function TileExercise({
       </div>
 
       <div className='bank-dock' ref={dockRef}>
-        {/* A live region: this only changes when the drill asks for the next
-            part of the reference. */}
         <p className='bank-label' role='status'>
           {drill.board
             ? REFERENCE_PROMPTS[drill.board.kind]
@@ -240,7 +216,7 @@ export default function TileExercise({
           <ReferenceBank
             board={drill.board}
             isDone={drill.step === null}
-            wrongPosition={wrongTileId}
+            wrongPosition={wrongPick}
             visible={keys.visible}
             cuedPosition={keys.cued}
             matched={query.length}
@@ -252,7 +228,7 @@ export default function TileExercise({
             tileIds={bank.onScreen}
             labels={bank.labels}
             spentTiles={bank.spentTiles}
-            wrongTileId={wrongTileId}
+            wrongTileId={wrongPick}
             visible={keys.visible}
             cuedPosition={keys.cued}
             matched={query.length}
@@ -268,7 +244,7 @@ export default function TileExercise({
           pending={moving}
           disabled={!isComplete}
           style={{ marginTop: 20 }}
-          onClick={() => onNext(judged())}
+          onClick={() => onNext(wasCorrect())}
         />
       </div>
     </div>

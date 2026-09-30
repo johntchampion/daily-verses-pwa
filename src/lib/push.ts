@@ -8,13 +8,10 @@ export function pushSupported(): boolean {
   )
 }
 
-/** Null where the API is absent, so callers never touch `Notification` on a
-    platform that doesn't have it. */
 export function notificationPermission(): NotificationPermission | null {
   return 'Notification' in window ? Notification.permission : null
 }
 
-/** True when the app is running as an installed PWA rather than in a tab. */
 export function isStandalone(): boolean {
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
@@ -30,7 +27,6 @@ export function isIos(): boolean {
   )
 }
 
-/** The VAPID key arrives as base64url text; applicationServerKey wants bytes. */
 export function urlBase64ToUint8Array(base64: string): Uint8Array {
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
   const standard = padded.replace(/-/g, '+').replace(/_/g, '/')
@@ -53,7 +49,10 @@ export class PermissionRefused extends Error {
   }
 }
 
-function sameKey(subscription: PushSubscription, key: Uint8Array): boolean {
+function subscribedWithKey(
+  subscription: PushSubscription,
+  key: Uint8Array,
+): boolean {
   const existing = subscription.options.applicationServerKey
   if (!existing) return false
   const bytes = new Uint8Array(existing)
@@ -62,15 +61,10 @@ function sameKey(subscription: PushSubscription, key: Uint8Array): boolean {
   )
 }
 
-/**
- * Everything this browser needs to receive a push, and nothing about the
- * account preference: permission plus a subscription the server knows about.
- * Called on its own when the preference is already on but this device was never
- * asked, or its subscription went missing.
- */
+/** Asks for permission and subscribes this browser, without touching the
+    account's reminder preference. */
 export async function enableThisDevice(): Promise<void> {
-  // Must run before any await: Safari only honours requestPermission while the
-  // user gesture is still on the stack.
+  // Must come before any other await: Safari needs the user gesture on the stack.
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') throw new PermissionRefused(permission)
 
@@ -82,27 +76,19 @@ export async function enablePush(): Promise<void> {
   await api.updateProfile({ remindersEnabled: true })
 }
 
-/**
- * Reuses an existing subscription only when it was made with the server's
- * current key — one made against a different key produces pushes this server
- * cannot sign, and reusing it blindly is an unexplainable silent failure.
- *
- * Safe to call on every load: `/api/push/subscribe` upserts on the endpoint, so
- * re-posting an unchanged subscription is how a server row that was pruned
- * (a 404/410 from the push service) comes back without the user doing anything.
- */
+/** Replaces a subscription made with a different server key. Safe to call on
+    every load: the server upserts, restoring any row it pruned. */
 export async function subscribeThisBrowser(): Promise<void> {
   const { publicKey } = await api.pushKey()
   const key = urlBase64ToUint8Array(publicKey)
   const registration = await navigator.serviceWorker.ready
 
   let subscription = await registration.pushManager.getSubscription()
-  if (subscription && !sameKey(subscription, key)) {
+  if (subscription && !subscribedWithKey(subscription, key)) {
     await subscription.unsubscribe()
     subscription = null
   }
   subscription ??= await registration.pushManager.subscribe({
-    // Chrome rejects a subscription that reserves the right to push silently.
     userVisibleOnly: true,
     applicationServerKey: key as BufferSource,
   })
@@ -118,8 +104,7 @@ export async function clearDailyReminder(): Promise<void> {
 }
 
 export async function disablePush(): Promise<void> {
-  // Server first: if the browser-side unsubscribe then fails, the half that
-  // matters has already landed.
+  // Server first, so reminders stop even if the browser unsubscribe fails.
   await api.updateProfile({ remindersEnabled: false })
 
   const registration = await navigator.serviceWorker.getRegistration()

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-/** The newest value, readable from handlers that outlive the render that made
-    them — without making them a dependency that re-registers those handlers. */
+/** A ref to the latest value, for handlers that outlive a render. */
 export function useLatest<T>(value: T) {
   const ref = useRef(value)
   useEffect(() => {

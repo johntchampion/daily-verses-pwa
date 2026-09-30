@@ -2,8 +2,7 @@ import type { VerseListItem } from '../../api/types'
 import { Skeleton } from '../Skeleton'
 import { isMemorized } from '../../lib/verses'
 
-/** The tally above the arc. The bar's track renders either way, so only the
-    fills arrive with the data. */
+/** The tally above the arc. */
 export default function HundredStats({
   verses,
 }: {

@@ -13,19 +13,13 @@ import {
   type BankWindow,
 } from '../lib/wordBank'
 
-/**
- * The rolling window of tiles docked at the bottom of a tile exercise.
- *
- * `lib/wordBank.ts` holds the pure moves; this measures the rendered tiles
- * against the three rows the dock shows and decides when to make them.
- */
+/** The tiles docked below a tile exercise, trimmed to fit the dock's rows and
+    rotated in as tiles are used. */
 export function useBankWindow(
   wordBank: string[],
   blanks: BlankSegment[],
   filledBlanks: number,
-  /** A keyboard filter is narrowing the bank, so only the matching tiles have
-      a layout box. See the fit pass below. */
-  frozen: boolean,
+  isFiltered: boolean,
 ) {
   const [labels, setLabels] = useState<string[]>(() => [...wordBank])
   const [bank, setBank] = useState<BankWindow>(() => ({
@@ -46,23 +40,19 @@ export function useBankWindow(
     return () => window.removeEventListener('resize', remeasure)
   }, [])
 
-  // Measure first, then fit: the height can only be read once tiles have been
-  // laid out, and the fit can only be judged against a locked-down height.
   useLayoutEffect(() => {
     const container = bankRef.current
     if (!container) return
     const tiles = Array.from(container.children) as HTMLElement[]
-    // A filtered-out tile is hidden rather than unmounted, so it is still a
-    // child; it just has no box to measure.
-    const shown = tiles.find((tile) => !tile.hidden)
-    if (!shown) return
+    const firstVisibleTile = tiles.find((tile) => !tile.hidden)
+    if (!firstVisibleTile) return
 
     if (bankHeight === null) {
-      setBankHeight(heightOfRows(container, shown))
+      setBankHeight(heightOfRows(container, firstVisibleTile))
       return
     }
 
-    if (frozen) return
+    if (isFiltered) return
 
     const capacity = countTilesInRows(tiles, BANK_ROWS)
     if (capacity < bank.onScreen.length) {
@@ -75,9 +65,8 @@ export function useBankWindow(
     } else if (bank.offScreen.length > 0 && !windowIsFull.current) {
       setBank(showOneMoreTile(bank))
     }
-  }, [bank, bankHeight, blanks, filledBlanks, frozen, labels])
+  }, [bank, bankHeight, blanks, filledBlanks, isFiltered, labels])
 
-  /** Rotates the tapped tile out, or hollows it in place if the bank fits. */
   function spendTile(tileId: number, position: number, answer: string) {
     const availableIds = [...bank.offScreen, ...bank.onScreen].filter(
       (id) => !spentTiles.has(id),

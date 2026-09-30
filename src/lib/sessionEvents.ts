@@ -13,7 +13,6 @@ interface Look {
   icon: string
   iconBg: string
   detailColor: string
-  /** Null where the copy is built from the stages the verse moved between. */
   detail: string | null
 }
 
@@ -34,9 +33,6 @@ const PRESENTATION: Record<SessionEventKind, Look> = {
     ...GREEN,
     detail: 'Mastered — fully memorized',
   },
-  // The three ways the schedule sends a verse back. Reported, because a verse
-  // reappearing in the practice slots needs explaining — but as a verse coming
-  // round again rather than as a loss, and without the ↓ these used to carry.
   lost_mastery: {
     icon: '↺',
     ...AMBER,

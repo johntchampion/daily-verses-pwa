@@ -6,8 +6,6 @@ import {
   type UpgradeProgress,
 } from '../../lib/exercise'
 
-/** The visible line and the spoken one, which says the whole rule rather than
-    the shorthand the width allows for. */
 interface Copy {
   label: string
   spoken: string
@@ -42,27 +40,12 @@ function copyFor(progress: UpgradeProgress): Copy {
         spoken: `Going through this verse ${TIER_ADVANCE_THRESHOLD} times within one day moves it up a tier.`,
       }
 
-    // Unslotted: where it sits, and deliberately nothing about the schedule.
     case 'scheduled':
       return { label: progress.label, spoken: `This verse is ${progress.label}.` }
   }
 }
 
-/**
- * What this verse needs to move up, in the slot the stage used to hold. The stage
- * named where it already sat, which is the one thing the exercise in front of the
- * user already shows.
- *
- * The segments carry the size of the goal — three, from the first repetition,
- * before any of it is earned — and the label names where it leads, so the ladder
- * introduces itself rather than needing to be known. Deliberately borrows the
- * Practicing tab's advance rail: a user meets the same rule in both places.
- *
- * The attempt is recorded the moment the exercise is finished rather than on
- * Next, so this fills in while the user is still looking at the verse they just
- * did. `key` on the segment row replays the fill animation when the count
- * changes — the same trick the slip hearts used for their own beat.
- */
+/** Shows what this verse still needs today to move up a tier. */
 export default function UpgradeMeter({
   exercise,
   today,
@@ -88,6 +71,7 @@ export default function UpgradeMeter({
 
       {progress.kind !== 'scheduled' && (
         <span
+          // Remounts to replay the fill animation when the count changes.
           key={filled}
           className={cx(
             'upgrade-segs',
@@ -111,8 +95,7 @@ export default function UpgradeMeter({
   )
 }
 
-/** The meter's resting shape, for the skeleton: the same markup with nothing
-    counted yet, so the header lands at its final height before data arrives. */
+/** The meter with nothing filled, for loading skeletons. */
 export function UpgradeMeterEmpty() {
   return (
     <span className='upgrade-segs' aria-hidden='true'>

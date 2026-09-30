@@ -7,7 +7,6 @@ import ThemeSheet from './ThemeSheet'
 import { useQueue } from '../../hooks/useQueue'
 import type { QueueVerse } from '../../api/types'
 
-/** Null once the line is empty — QueueList says so itself. */
 function subline(
   ids: string[] | null,
   nextUp: QueueVerse | undefined,
@@ -21,15 +20,12 @@ function subline(
     : waiting
 }
 
-/** The waiting line as a panel under the slot cards, for desktop widths — the
-    Practicing tab mounts this instead of QueueLink. */
+/** The queue as a panel on the desktop Practicing tab. */
 export default function QueuePanel() {
   const q = useQueue()
   const { ids, nextUp } = q.select(!q.queue.pending)
   const sub = subline(ids, nextUp)
 
-  // Nothing to reorder once the line is empty. Held open while ids are still
-  // null so the loading frame keeps its shape.
   const showActions = ids === null || ids.length > 0
 
   return (

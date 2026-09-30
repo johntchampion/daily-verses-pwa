@@ -4,11 +4,8 @@ import { Skeleton } from '../Skeleton'
 import { STAGE_SHORT_LABELS } from '../../lib/exercise'
 import { truncate } from '../../lib/verses'
 
-/** Slot rows to stand in for before the profile says how many are filled. */
 const SKELETON_SLOTS = 3
 
-/** What's in the slots now, so the waiting line has somewhere to lead. The
-    verse list is only for the snippets. */
 export default function QueueSlots({
   slots,
   verses,

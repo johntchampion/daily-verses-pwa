@@ -2,13 +2,8 @@ import type { MeResponse, VerseListItem } from '../../api/types'
 import SlotRow, { SlotRowSkeleton } from '../SlotRow'
 import { todayInTimezone } from '../../lib/dates'
 
-/** Slots to stand in for before the profile says how many are open. */
 const SKELETON_SLOTS = 3
 
-/**
- * The three learning slots, filled or (rarely, once the queue runs dry)
- * empty. The verse list is only for the snippets, so a slot draws without it.
- */
 export default function SlotList({
   profile,
   verses,
@@ -34,8 +29,6 @@ export default function SlotList({
                 slot={slot}
                 verse={verse}
                 snippet={verse ? (textById.get(verse.verseId) ?? null) : null}
-                // Day boundaries follow the profile's timezone, not the
-                // device's.
                 today={todayInTimezone(profile.user.timezone)}
               />
             )

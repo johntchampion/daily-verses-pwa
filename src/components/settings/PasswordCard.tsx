@@ -2,12 +2,7 @@ import { useState } from 'react'
 import { api } from '../../api/client'
 import { messageOf } from '../../lib/errors'
 
-/**
- * Changing a password is a reset like any other, so this only asks for the
- * email to be sent — nothing is typed here, and the address is the one already
- * on the account. Proving control of the mailbox is what a reset is for, and it
- * is the same proof whether or not the old password is to hand.
- */
+/** Emails a password reset link to the account's address. */
 export default function PasswordCard() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -42,8 +37,6 @@ export default function PasswordCard() {
         </p>
       )}
 
-      {/* Nothing on the card changes when this works, so the confirmation has
-          to say so itself. */}
       {sent && (
         <p
           className='small'

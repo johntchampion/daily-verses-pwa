@@ -5,11 +5,9 @@ import ArcList from '../components/verses/ArcList'
 import HundredStats from '../components/verses/HundredStats'
 import { useApi } from '../hooks/useApi'
 
-/** The Library tab: every verse in the arc, in canon order. */
 export default function AllVerses() {
   const verses = useApi(() => api.verses())
-  // Only the desktop nav bar's streak badge needs this, so it stays out of
-  // `loading` and `error`: a failure costs the badge, not the screen.
+  // Only for the desktop nav's streak badge, so it can't fail the screen.
   const me = useApi(() => api.me())
 
   return (

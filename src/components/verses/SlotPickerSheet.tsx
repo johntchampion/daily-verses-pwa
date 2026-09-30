@@ -21,7 +21,6 @@ export default function SlotPickerSheet({
   open: boolean
   reference: string
   slots: SlotVerse[]
-  /** False when the verse is already next in line — there'd be nothing to do. */
   allowQueueFront: boolean
   busy: boolean
   error: string | null

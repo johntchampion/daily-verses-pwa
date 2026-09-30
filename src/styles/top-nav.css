@@ -1,17 +1,8 @@
 /* --- Top navigation bar (desktop/tablet) ---------------------------------- */
 
-/*
- * The desktop counterpart to the bottom tab bar. Both are always rendered; this
- * file and the .tab-bar rule in desktop.css swap them at the one breakpoint the
- * project has. Below it this bar costs a single `display: none`.
- *
- * --top-nav-h is read by desktop.css to pad the tab shells clear of the bar, so
- * it has to stay on :root rather than on .top-nav.
- */
+/* Desktop counterpart to the tab bar. --top-nav-h stays on :root because
+   desktop.css reads it. */
 
-/* Unconditional, though only the desktop rules read it: a custom property that
-   went undefined would invalidate desktop.css's whole padding-top calc rather
-   than just that one term. */
 :root {
     --top-nav-h: 64px;
 }
@@ -28,13 +19,10 @@
         left: 0;
         right: 0;
         background: var(--cream);
-        /* Mirrors the tab bar's border-top, same weight and token. */
         border-bottom: 1.5px solid var(--track);
         z-index: 5;
     }
 
-    /* The inset is padding, not height, so the bar's own ground still fills the
-       notch area on a landscape phone-sized window. */
     .top-nav-inner {
         max-width: 1280px;
         margin: 0 auto;
@@ -65,8 +53,6 @@
         margin-left: 28px;
     }
 
-    /* Not a variant of .tab: that one is a vertical icon-over-label stack, and
-       unwinding it costs more rules than starting here. */
     .top-nav-tab,
     .top-nav-tab:hover {
         padding: 8px 16px;
@@ -75,9 +61,7 @@
         font-weight: 800;
         letter-spacing: 0.01em;
         color: var(--soft);
-        /* Colour only. desktop.css sits below the reduced-motion blocks, but
-           this file sits above them — keep it that way and no rule here needs
-           to be a transform. */
+        /* Colour only: this file comes before the reduced-motion rules. */
         transition: color 160ms ease;
     }
 
@@ -95,8 +79,7 @@
         gap: 12px;
     }
 
-    /* Guarded: an iPad clears this breakpoint in either orientation and would
-       otherwise hold the hover after a tap. */
+    /* Guarded so iPads don't keep hover after a tap. */
     @media (hover: hover) {
         .top-nav-tab:not(.top-nav-tab-active):hover {
             color: var(--ink);

@@ -1,9 +1,4 @@
-/* ---------------------------------------------------------------------------
-   Daily Verses — design system.
-   
-   Every colour lives in a token here: the dark theme is a single palette swap
-   driven by prefers-color-scheme, so a raw hex anywhere below breaks it.
-   --------------------------------------------------------------------------- */
+/* Every colour must be a token here, or the dark theme can't swap it. */
 
 :root {
     color-scheme: light dark;
@@ -69,8 +64,6 @@
         --line-soft: #302a23;
         --track: #332c25;
         --dash: #4a4036;
-        /* Dimmer than --soft, but light enough to clear AA against both the page and
-           card grounds. */
         --locked: #93867a;
         --neutral-wash: #2b251f;
 

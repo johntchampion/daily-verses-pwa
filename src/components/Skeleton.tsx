@@ -3,17 +3,15 @@ import type { CSSProperties } from 'react'
 type Variant = 'block' | 'text' | 'circle' | 'chip'
 
 interface Props {
-  /** Width: a number is px, a string is passed through (`'60%'`, `'8ch'`). */
+  /** px when a number, any CSS length when a string. */
   w?: number | string
-  /** Height: px or CSS. Omit on `text`, which sizes itself off the font. */
+  /** px or CSS length; omit for `text`, which sizes to the font. */
   h?: number | string
   variant?: Variant
   className?: string
   style?: CSSProperties
 }
 
-/** Always hidden from assistive tech: the loading state is announced once per
-    region instead, by the `sr-only` status lines in Screen. */
 export function Skeleton({
   w,
   h,
@@ -33,10 +31,8 @@ export function Skeleton({
   )
 }
 
-/** Widths for the trailing line, so a paragraph ends ragged rather than flush. */
-const LAST_LINE = '62%'
+const LAST_LINE_WIDTH = '62%'
 
-/** `widths` overrides the default full-width-until-last shape. */
 export function SkeletonText({
   lines = 3,
   widths,
@@ -58,7 +54,7 @@ export function SkeletonText({
         <Skeleton
           key={i}
           variant='text'
-          w={widths?.[i] ?? (i === lines - 1 ? LAST_LINE : '100%')}
+          w={widths?.[i] ?? (i === lines - 1 ? LAST_LINE_WIDTH : '100%')}
         />
       ))}
     </span>

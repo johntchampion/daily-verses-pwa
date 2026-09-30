@@ -9,11 +9,8 @@ import TypedExercise from '../components/session/TypedExercise'
 import { useSessionRunner } from '../hooks/useSessionRunner'
 import { cx } from '../lib/cx'
 
-/**
- * The exercise runner's screen. `?practice=1` runs the separate drill instead:
- * one round of each slotted verse, counting toward nothing, for a day whose
- * path is already walked.
- */
+/** The exercise runner. `?practice=1` runs an ungraded drill of the slotted
+    verses instead of the day's plan. */
 export default function Session() {
   const [searchParams] = useSearchParams()
   const practice = searchParams.get('practice') === '1'
@@ -48,9 +45,6 @@ export default function Session() {
       : TypedExercise
 
   return (
-    // The last answer doesn't clear the screen: the session holds its shape and
-    // recedes while the rail closes over it, so the recap arrives as the end of
-    // something rather than after a gap.
     <main
       className={cx(
         'shell stack shell-full session-view',

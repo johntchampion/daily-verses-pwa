@@ -16,13 +16,8 @@ import Signup from './routes/Signup'
 import Today from './routes/Today'
 import VerseDetail from './routes/VerseDetail'
 
-/**
- * No valid JWT → the sign-in screen, or the welcome flow from the root. Once a
- * session has ended under us the fallback is ignored: a revoked token still
- * satisfies tokenIsExpired (which only reads `exp`), so the root would
- * otherwise drop a returning user into onboarding the moment a password reset
- * elsewhere expired their session.
- */
+/** Once signed out, always goes to /login: a revoked token can still look
+    unexpired, and `fallback` would send a returning user to onboarding. */
 function RequireAuth({
   children,
   fallback = '/login',
@@ -37,8 +32,6 @@ function RequireAuth({
   return children
 }
 
-/** The queue has no screen of its own at desktop widths — it is a panel on the
-    Practicing tab there. */
 function QueueRoute() {
   const desktop = useIsDesktop()
   if (desktop) return <Navigate to='/practicing' replace />
@@ -51,8 +44,8 @@ function RedirectIfAuthed({ children }: { children: React.ReactNode }) {
   return children
 }
 
-/** Matched against the location it is handed, not the current one, so a screen
-    animating away keeps rendering itself and its own params. */
+/** Uses the given location, not the current one, so a screen animating away
+    keeps rendering its own route. */
 function AppRoutes({ location }: { location: Location }) {
   return (
     <Routes location={location}>
@@ -88,8 +81,7 @@ function AppRoutes({ location }: { location: Location }) {
           </RedirectIfAuthed>
         }
       />
-      {/* Unguarded on purpose: the emailed link often opens in a browser that
-          is still signed in, and RedirectIfAuthed would bounce it to Today. */}
+      {/* Unguarded: the emailed link may open in a signed-in browser. */}
       <Route path='/reset-password' element={<ResetPassword />} />
       <Route
         path='/'

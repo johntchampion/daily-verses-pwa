@@ -2,16 +2,12 @@ import { Skeleton, SkeletonText } from '../Skeleton'
 import { UpgradeMeterEmpty } from './UpgradeMeter'
 import { BANK_ROWS, TILE_SHADOW_HEIGHT } from '../../lib/wordBank'
 
-/** Tile widths for the word-bank placeholder — varied, so it reads as words. */
 const SKELETON_TILES = [96, 68, 118, 82, 74, 104, 88, 70, 112]
 
-/** A rendered `.tile`'s own height — 12px of padding and 1.5px of border each
-    side around one line of 1.1rem serif — and the row gap `.word-bank` sets. */
+/** Must match a rendered `.tile`'s height and `.word-bank`'s row gap. */
 const SKELETON_TILE_H = 52
 const SKELETON_ROW_GAP = 11
 
-/** The same sum `heightOfRows` measures once real tiles exist, so the dock
-    lands at its final height before there is anything to measure. */
 const SKELETON_BANK_H =
   BANK_ROWS * SKELETON_TILE_H +
   (BANK_ROWS - 1) * SKELETON_ROW_GAP +

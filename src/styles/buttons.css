@@ -40,9 +40,7 @@
     cursor: default;
 }
 
-/* The password-reset screens use a link as their primary action ("Back to sign
-   in", "Send a new link"). Without this, the global a:hover wins on specificity
-   and repaints the label coral — onto its own coral background. */
+/* Stops the global a:hover recolouring links styled as buttons. */
 a.btn:hover {
     color: var(--on-accent);
 }

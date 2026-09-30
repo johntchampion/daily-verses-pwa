@@ -5,19 +5,15 @@ interface Props {
   description: ReactNode
   checked: boolean
   busy?: boolean
-  /** Replaces the switch when this platform or deployment can't do
-      it at all — an explanation is more use than a control that can't work. */
+  /** Shown instead of the switch when it can't work here. */
   unavailable?: ReactNode
-  /** Sits under the switch when it can work, but something needs saying. */
   hint?: ReactNode
   error?: string | null
   onChange: (next: boolean) => void
-  /** Anything that only makes sense once it's on, e.g. a test button. */
   children?: ReactNode
 }
 
-/** One on/off account setting. Saves on flip, so unlike PreferenceCard there
-    is no dirty state and no Save button. */
+/** An on/off account setting that saves as soon as it's flipped. */
 export default function ToggleCard({
   eyebrow,
   description,
@@ -44,8 +40,6 @@ export default function ToggleCard({
         </p>
       ) : (
         <>
-          {/* A real checkbox, visually hidden and restyled, so keyboard
-              operation and screen-reader semantics come for free. */}
           <label className='toggle-row'>
             <input
               type='checkbox'

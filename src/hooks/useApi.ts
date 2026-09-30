@@ -4,27 +4,23 @@ import { messageOf } from '../lib/errors'
 export interface ApiState<T> {
   data: T | null
   loading: boolean
-  /** True until data has ever arrived — a refetch leaves it false, so a screen
-      already showing content never falls back to placeholders. Skeletons key
-      off this, not `loading`. */
+  /** True until data first arrives; unlike `loading`, a refetch leaves it false. */
   pending: boolean
   error: string | null
   refetch: () => void
 }
 
 interface Settled<T> {
-  tick: number
+  fetchCount: number
   data: T | null
   error: string | null
 }
 
 /** Fetch-on-mount; `refetch` covers refreshes after mutations. */
 export function useApi<T>(fetcher: () => Promise<T>): ApiState<T> {
-  const [tick, setTick] = useState(0)
+  const [fetchCount, setFetchCount] = useState(0)
   const [settled, setSettled] = useState<Settled<T> | null>(null)
 
-  // Callers pass inline arrow functions, so the latest goes in a ref and the
-  // fetch effect keys off `tick` alone.
   const fetcherRef = useRef(fetcher)
   useEffect(() => {
     fetcherRef.current = fetcher
@@ -36,12 +32,12 @@ export function useApi<T>(fetcher: () => Promise<T>): ApiState<T> {
     fetcherRef
       .current()
       .then((data) => {
-        if (!cancelled) setSettled({ tick, data, error: null })
+        if (!cancelled) setSettled({ fetchCount, data, error: null })
       })
       .catch((err: unknown) => {
         if (!cancelled) {
           setSettled({
-            tick,
+            fetchCount,
             data: null,
             error: messageOf(err, 'Something went wrong'),
           })
@@ -51,11 +47,11 @@ export function useApi<T>(fetcher: () => Promise<T>): ApiState<T> {
     return () => {
       cancelled = true
     }
-  }, [tick])
+  }, [fetchCount])
 
-  const refetch = useCallback(() => setTick((t) => t + 1), [])
+  const refetch = useCallback(() => setFetchCount((t) => t + 1), [])
 
-  const loading = settled === null || settled.tick !== tick
+  const loading = settled === null || settled.fetchCount !== fetchCount
   const data = settled?.data ?? null
 
   return {
@@ -67,11 +63,7 @@ export function useApi<T>(fetcher: () => Promise<T>): ApiState<T> {
   }
 }
 
-/**
- * Merges the sources a screen needs before it can show anything. A screen that
- * can survive one source failing should leave that source out of the error it
- * passes on and use only `pending` and `refetch` from here.
- */
+/** Combines several sources' pending, error and refetch into one. */
 export function combineApi(...states: ApiState<unknown>[]) {
   return {
     pending: states.some((s) => s.pending),

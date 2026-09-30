@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 
-/** The sliders icon: the Today header on phones, the top nav on desktop. */
 export default function SettingsLink() {
   return (
     <Link to='/settings' className='icon-btn' aria-label='Settings'>

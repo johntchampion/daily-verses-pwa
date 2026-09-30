@@ -5,7 +5,6 @@ import { truncate } from '../../lib/verses'
 
 const SKELETON_ROWS = 6
 
-/** Snippet placeholder widths, varied so the list doesn't look printed. */
 const SKELETON_WIDTHS = ['84%', '68%', '90%', '74%', '62%', '86%']
 
 function QueueChip({ verse }: { verse: QueueVerse }) {
@@ -50,8 +49,6 @@ function QueueRowSkeleton({ index, width }: { index: number; width: string }) {
   )
 }
 
-/** The waiting line, in refill order. The order is edited optimistically
-    upstream, so this renders the ids it is handed, not the fetched order. */
 export default function QueueList({
   ids,
   byId,

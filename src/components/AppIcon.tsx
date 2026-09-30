@@ -1,4 +1,3 @@
-/** The app icon's blank-and-baseline mark, filling its box edge to edge like the favicon. */
 export default function AppIcon({ size = 56 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox='0 0 1024 1024' aria-hidden='true'>

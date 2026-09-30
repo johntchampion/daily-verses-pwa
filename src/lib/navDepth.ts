@@ -1,9 +1,7 @@
-/**
- * Depth rather than history direction, because the two disagree: Settings
- * closes with a forward `<Link to='/'>` that has to play as a pop.
- */
+/** Push vs. pop comes from depth, not history direction: Settings closes with a
+    forward link that must still animate as a pop. */
 const DEPTHS: Array<[RegExp, number]> = [
-  // Tab roots. Switching between them is a swap, not a push.
+  // Tab roots
   [/^\/$/, 0],
   [/^\/practicing\/?$/, 0],
   [/^\/library\/?$/, 0],
@@ -12,7 +10,6 @@ const DEPTHS: Array<[RegExp, number]> = [
   [/^\/verses\/[^/]+\/?$/, 2],
 ]
 
-/** `null` for the screens outside the stack — the auth flow and the session. */
 export function depthOf(pathname: string): number | null {
   for (const [pattern, depth] of DEPTHS) {
     if (pattern.test(pathname)) return depth

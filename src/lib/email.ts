@@ -1,3 +1,2 @@
-/** Deliberately loose: the server is the authority on what it will accept, and
-    this only exists to catch a typo before a round trip. */
+/** Loose on purpose: only catches obvious typos; the server validates. */
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

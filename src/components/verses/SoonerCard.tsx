@@ -1,5 +1,3 @@
-/** The offer to jump the queue. A non-null position means the verse is waiting
-    in it: not memorized, not holding a slot. */
 export default function SoonerCard({
   position,
   disabled,
@@ -7,7 +5,6 @@ export default function SoonerCard({
   onOpen,
 }: {
   position: number | null
-  /** True while an action is in flight, or before the slots are known. */
   disabled: boolean
   error: string | null
   onOpen: () => void

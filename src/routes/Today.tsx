@@ -16,7 +16,6 @@ function heading(path: Path): { head: string; sub: string } {
     }
   }
 
-  // Only the halves the day actually has — never "0 for review".
   const parts: string[] = []
   if (path.reviewCount > 0) parts.push(`${path.reviewCount} for review`)
   if (path.roundCount > 0) {
@@ -64,8 +63,6 @@ export default function Today() {
           <SettingsLink />
         </>
       }
-      // The whole header is hidden at desktop widths — the nav bar carries all
-      // three of these already.
       me={me.data}
       loading={both.pending}
       loadingLabel='Loading today’s path…'

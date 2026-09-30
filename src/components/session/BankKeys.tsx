@@ -1,16 +1,5 @@
-/**
- * The keyboard line under the bank: the legend while nothing is typed, and the
- * filter's readout once something is. The typing itself is drawn in the blank
- * it's headed for, not here.
- *
- * Drawn only where a fine pointer implies a keyboard (`word-bank.css`) — the
- * keys themselves are always live, since there is nothing on a phone that can
- * press them, but a phone shouldn't be told to.
- *
- * A live region, but only for the parts worth hearing: the legend is a visual
- * aid for a sighted user who hasn't noticed the bank is drivable, and a screen
- * reader gets the same tiles by tabbing.
- */
+/** The keyboard legend under the bank, or the filter's status once something
+    is typed. Hidden by CSS on devices without a fine pointer. */
 export default function BankKeys({
   query,
   matches,

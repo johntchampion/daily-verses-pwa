@@ -13,13 +13,10 @@ export default function WordTile({
   label: string
   isSpent: boolean
   isWrong: boolean
-  /** Under the keyboard cursor: Enter picks this one. */
   isCued?: boolean
-  /** Leading characters the keyboard filter matched, tinted so it's visible
-      why this tile survived. */
+  /** Leading characters matched by the keyboard filter. */
   matched?: number
-  /** Filtered out. `hidden` rather than unmounted: the tile keeps its identity,
-      so it doesn't replay its arrival pop every time the filter clears. */
+  /** Hidden rather than unmounted, so it doesn't replay its entrance. */
   isHidden?: boolean
   disabled: boolean
   onTap: () => void

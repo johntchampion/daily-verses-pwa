@@ -8,7 +8,6 @@ function memberSince(iso: string): string {
   })
 }
 
-/** Who you're signed in as. */
 export default function AccountCard({
   user,
 }: {

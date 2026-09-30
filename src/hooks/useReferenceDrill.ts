@@ -3,12 +3,8 @@ import type { Stage } from '../api/types'
 import { usesReferencePhase } from '../lib/exercise'
 import { buildReferenceSteps, type ReferenceStep } from '../lib/reference'
 
-/**
- * The book/chapter/verse drill that follows the verse text.
- *
- * The steps are state rather than a memo: building them shuffles, and
- * recomputing would reorder the chips under the user's thumb.
- */
+/** The book/chapter/verse drill after the verse text. The steps are state, not
+    a memo, so their shuffled order stays stable. */
 export function useReferenceDrill(
   stage: Stage,
   reference: string,
@@ -29,8 +25,7 @@ export function useReferenceDrill(
     board,
     filled,
     hasSteps: steps !== null,
-    /** True when that was the last step, so the caller can act on the drill
-        being finished without duplicating the arithmetic. */
+    /** Returns true when that was the last step. */
     advance: (): boolean => {
       const next = filled + 1
       setFilled(next)

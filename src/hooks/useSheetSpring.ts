@@ -13,11 +13,8 @@ interface Options {
   belowRef: RefObject<SheetLayer | undefined>
 }
 
-/**
- * The panel's transform, written straight to the node — a drag at 120fps has no
- * business re-rendering React. `open` leads and `mounted` trails it until the
- * exit spring comes to rest.
- */
+/** Springs the panel's transform directly on the node, bypassing React renders.
+    `mounted` stays true until the exit animation comes to rest. */
 export function useSheetSpring({
   open,
   onClose,
@@ -27,8 +24,6 @@ export function useSheetSpring({
 }: Options) {
   const [mounted, setMounted] = useState(open)
   const [prevOpen, setPrevOpen] = useState(open)
-  // Read as it opens: the sheets below registered in earlier commits, so the
-  // count is settled and the height is right before the panel is measured.
   const [depth, setDepth] = useState(() => (open ? stackDepth() : 0))
   if (open !== prevOpen) {
     setPrevOpen(open)
@@ -40,10 +35,7 @@ export function useSheetSpring({
 
   const panelRef = useRef<HTMLDivElement>(null)
   const springRef = useRef<ReturnType<typeof createSpring> | null>(null)
-  /** Re-measured at the starts of things: reading it inside the animation
-      would reflow on every tick. */
   const heightRef = useRef(0)
-  /** The spring is on its way off-screen and should unmount when it lands. */
   const closingRef = useRef(false)
 
   const latest = useLatest({ open, onClose, onExited })
@@ -62,7 +54,7 @@ export function useSheetSpring({
       },
       () => {
         if (!closingRef.current) return
-        // Dismissed, but the owner kept us open — a close it declined. Return.
+        // The owner declined the close, so spring back.
         if (latest.current.open) {
           closingRef.current = false
           spring.to(0, 0, SETTLE)
@@ -81,8 +73,6 @@ export function useSheetSpring({
     }
   }, [mounted, latest])
 
-  // Re-targeting a spring that is already moving is continuous, so flipping
-  // `open` mid-drag or mid-flight is safe.
   useEffect(() => {
     const spring = springRef.current
     const panel = panelRef.current
@@ -95,21 +85,17 @@ export function useSheetSpring({
     if (open) {
       if (reducedMotion()) spring.set(0)
       else spring.to(0, undefined, SETTLE)
-      // A frame's grace: the backdrop has to have painted at its starting
-      // opacity for the transition to have something to run from.
-      const lit = requestAnimationFrame(() => {
+      // Wait a frame so the backdrop's fade has a painted start value.
+      const fadeInFrame = requestAnimationFrame(() => {
         overlay.style.opacity = '1'
       })
-      return () => cancelAnimationFrame(lit)
+      return () => cancelAnimationFrame(fadeInFrame)
     }
 
     overlay.style.opacity = '0'
-    // Alongside the exit rather than on unmount, or the card below sits in its
-    // receded state after the sheet that pushed it back is already gone.
     belowRef.current?.cover(false)
     if (reducedMotion()) {
       spring.set(heightRef.current)
-      // A frame later, so the panel paints where it landed before the tree goes.
       const frame = requestAnimationFrame(() => {
         setMounted(false)
         latest.current.onExited?.()

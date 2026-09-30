@@ -13,9 +13,7 @@ export default function VerseBody({
   chunks: VerseChunk[]
   filledBlanks: number
   currentBlankRef: RefObject<HTMLSpanElement | null>
-  /** What the keyboard has typed so far, drawn into the current blank. */
   typed?: string
-  /** The typed word was placed and rejected, or isn't a word yet. */
   typedWrong?: boolean
 }) {
   return (

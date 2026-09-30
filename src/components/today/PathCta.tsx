@@ -3,8 +3,7 @@ import type { MeResponse } from '../../api/types'
 import type { Path } from '../../lib/path'
 import { Skeleton } from '../Skeleton'
 
-/** Leads exactly where the live stop leads, until the plan is finished — then
-    it becomes the way into extra practice, which counts toward nothing. */
+/** Opens the current stop, or ungraded extra practice once the plan is done. */
 export default function PathCta({
   path,
   slots,
@@ -12,7 +11,6 @@ export default function PathCta({
   path: Path | null
   slots: MeResponse['slots'] | null
 }) {
-  // Sized to the button it stands in for, so the settle is small either way.
   if (!path) {
     return (
       <div className='card' style={{ padding: 22, borderRadius: 26 }}>
@@ -27,7 +25,6 @@ export default function PathCta({
     )
   }
 
-  // Nothing due and nothing in a slot: nothing to enter and nothing to drill.
   if (path.total === 0) return null
 
   if (path.complete) {

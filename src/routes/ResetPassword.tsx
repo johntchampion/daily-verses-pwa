@@ -10,8 +10,7 @@ export default function ResetPassword() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
 
-  // Read once, then dropped from the URL below: a spent token has no business
-  // sitting in history, in a referrer, or in a back-button resubmit.
+  // Read once, then removed from the URL so it doesn't linger in history.
   const [token] = useState(() => params.get('token') ?? '')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -19,7 +18,6 @@ export default function ResetPassword() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    // Replace just the history without navigating or altering any other state.
     if (token) window.history.replaceState(null, '', '/reset-password')
   }, [token])
 
@@ -44,8 +42,6 @@ export default function ResetPassword() {
     }
   }
 
-  // A link that arrived mangled, or the page opened directly. Said up front
-  // rather than after they have typed a password twice.
   if (!token) {
     return (
       <main className='auth-shell'>

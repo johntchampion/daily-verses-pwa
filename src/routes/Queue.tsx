@@ -13,9 +13,7 @@ import { combineApi, useApi } from '../hooks/useApi'
 import { useBack } from '../hooks/useBack'
 import { useQueue } from '../hooks/useQueue'
 
-/** Four states for the lead paragraph: pending, an order to describe, or an
-    empty line or failure that still deserves a line saying what the screen is. */
-function lede(
+function introText(
   pending: boolean,
   data: QueueResponse | null,
   customized: boolean,
@@ -28,30 +26,19 @@ function lede(
     : 'Default order — the arc, front to back. Nudge any verse up to practice it sooner.'
 }
 
-/**
- * The practice queue: everything not memorized and not in a slot, in the order
- * it will enter them. Nothing here touches the slots directly — they refill
- * themselves as verses finish or get swapped out.
- *
- * Mobile only — QueueRoute in App.tsx sends desktop widths to the Practicing
- * tab, where the same line is a panel.
- */
+/** The practice queue, in the order verses will enter the slots. Mobile only;
+    desktop shows it as a panel on the Practicing tab. */
 export default function Queue() {
   const back = useBack()
   const me = useApi(() => api.me())
-  // Only for the snippets on the in-slot lines — those verses aren't in the
-  // queue payload, so their text has to come from the verse list.
+  // Only for the text of the slotted verses, which the queue doesn't include.
   const verses = useApi(() => api.verses())
   const q = useQueue()
   const all = combineApi(me, q.queue, verses)
 
-  // Hold every child to its skeleton until all three requests have settled, so
-  // the slots, waiting line and actions don't pop in one at a time.
-  const ready = !all.pending
-  const { ids, nextUp } = q.select(ready)
+  const allLoaded = !all.pending
+  const { ids, nextUp } = q.select(allLoaded)
 
-  // Nothing to reorder once the line is empty. Held open while ids are still
-  // null so the loading frame keeps its shape.
   const showActions = ids === null || ids.length > 0
 
   return (
@@ -59,11 +46,11 @@ export default function Queue() {
       leading={<BackButton onClick={back} label='Back' />}
       title={<h1>Up Next</h1>}
       trailing={<TranslationTag code={q.queue.data?.translation ?? null} />}
-      sub={lede(all.pending, q.queue.data, q.order.customized)}
+      sub={introText(all.pending, q.queue.data, q.order.customized)}
       subStyle={{ marginTop: 10 }}
       loading={all.pending}
       loadingLabel='Loading your queue…'
-      // The verse list only carries snippets, so its failure isn't the screen's.
+      // The verse list only supplies snippets, so its failure isn't fatal.
       error={me.error ?? q.queue.error}
       onRetry={all.refetch}
     >
@@ -76,8 +63,8 @@ export default function Queue() {
       )}
 
       <QueueSlots
-        slots={ready ? (me.data?.slots ?? null) : null}
-        verses={ready ? (verses.data?.verses ?? null) : null}
+        slots={allLoaded ? (me.data?.slots ?? null) : null}
+        verses={allLoaded ? (verses.data?.verses ?? null) : null}
       />
 
       <div className='eyebrow queue-waiting-label'>Waiting in line</div>
@@ -91,7 +78,7 @@ export default function Queue() {
         </p>
       )}
 
-      {ready && q.queue.data && (
+      {allLoaded && q.queue.data && (
         <ThemeSheet
           open={q.themeSheet}
           themes={q.queue.data.themes}

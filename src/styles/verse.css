@@ -130,8 +130,6 @@
     flex-wrap: wrap;
     gap: 0 8px;
     min-width: 0;
-    /* The phase scrolls this line to `block: 'start'`, which would otherwise
-       put it flush against the top edge with the card's own top cropped off. */
     scroll-margin-top: 40px;
 }
 

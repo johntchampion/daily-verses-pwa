@@ -3,21 +3,15 @@ import { api } from '../api/client'
 import type { QueueResponse } from '../api/types'
 import { messageOf } from '../lib/errors'
 
-/**
- * The queue's editable order. Arrows update local state right away and persist
- * in the background; a failed save surfaces an error rather than reverting.
- */
+/** The queue's editable order, updated optimistically and saved in the
+    background. */
 export function useQueueOrder(data: QueueResponse | null, refresh: () => void) {
   const [ids, setIds] = useState<string[] | null>(null)
-  // Mirrors data.customized, but flips true the moment an arrow move is
-  // submitted rather than waiting on a refetch — otherwise "Restore default
-  // order" stays disabled until something else refreshes the screen.
+  // Set optimistically so "Restore default order" enables right away.
   const [customized, setCustomized] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  // Re-seed whenever a fresh queue arrives, per React's you-might-not-need-an-
-  // effect guidance.
   const [seeded, setSeeded] = useState(data)
   if (data !== seeded) {
     setSeeded(data)

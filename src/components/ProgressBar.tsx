@@ -1,4 +1,3 @@
-/** Session-level progress: position in today's queue. */
 export default function ProgressBar({ done, total }: { done: number; total: number }) {
   const pct = total > 0 ? Math.min(100, (done / total) * 100) : 0
   return (

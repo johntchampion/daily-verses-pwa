@@ -2,12 +2,8 @@ import { Link } from 'react-router-dom'
 import ProgressBar from '../ProgressBar'
 import { Skeleton } from '../Skeleton'
 
-/**
- * The runner's top row. The bar and the count deliberately take separate
- * numbers: `answered` moves the instant an exercise is recorded, which is now
- * before the card is swapped, while `position` names the exercise in hand. One
- * number can't do both jobs any more without reading a card ahead of itself.
- */
+/** `answered` updates as soon as an exercise is recorded; `position` is the
+    exercise on screen. */
 export default function SessionHeader({
   answered,
   position,

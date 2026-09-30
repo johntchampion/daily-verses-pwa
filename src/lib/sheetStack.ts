@@ -1,14 +1,8 @@
 export interface SheetLayer {
   overlay: HTMLElement
-  /** Recede, because another sheet has just opened over this one. */
   cover: (covered: boolean) => void
 }
 
-/**
- * Every mounted sheet, deepest first. Sheets portal to the body, so `inert` on
- * the app root says nothing about them: a sheet opened over another has to
- * silence the one it covers itself, and only the top of the stack owns Escape.
- */
 const stack: SheetLayer[] = []
 
 export const stackDepth = () => stack.length

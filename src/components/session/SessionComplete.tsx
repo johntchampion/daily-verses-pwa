@@ -2,9 +2,8 @@ import { type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { SessionEvent } from '../../lib/sessionEvents'
 
-/** Rows enter in turn, capped so a long list can't push the exit off the end. */
-const ROW_STEP = 60
-const ROW_CAP = 6
+const ROW_STAGGER_MS = 60
+const MAX_STAGGERED_ROWS = 6
 const ROWS_AT = 420
 
 const enter = (ms: number) => ({ '--enter': `${ms}ms` }) as CSSProperties
@@ -25,12 +24,11 @@ export default function SessionComplete({
   verses: number
   events: SessionEvent[]
 }) {
-  // Recording the day is what moved the streak, so we arrived one lower. Null
-  // when this session moved nothing — a day already kept has no turn to show.
-  const previous =
+  // Null when this session didn't record the day, so the streak didn't move.
+  const streakBefore =
     recorded && streak !== null && streak >= 1 ? streak - 1 : null
 
-  const tail = ROWS_AT + Math.min(events.length, ROW_CAP) * ROW_STEP
+  const tail = ROWS_AT + Math.min(events.length, MAX_STAGGERED_ROWS) * ROW_STAGGER_MS
 
   return (
     <main className='complete-screen'>
@@ -42,18 +40,16 @@ export default function SessionComplete({
             role='img'
             aria-label={`${streak} day streak`}
           >
-            {previous === null ? (
+            {streakBefore === null ? (
               <span className='complete-circle-count' aria-hidden='true'>
                 {streak}
               </span>
             ) : (
-              /* Both numbers stay stacked in one grid cell, so the ring is
-                 never empty mid-turn. */
               <span
                 className='complete-circle-count complete-roll'
                 aria-hidden='true'
               >
-                <span className='complete-roll-out'>{previous}</span>
+                <span className='complete-roll-out'>{streakBefore}</span>
                 <span className='complete-roll-in'>{streak}</span>
               </span>
             )}
@@ -77,7 +73,7 @@ export default function SessionComplete({
             <div
               key={i}
               className='complete-event complete-rise'
-              style={enter(ROWS_AT + Math.min(i, ROW_CAP - 1) * ROW_STEP)}
+              style={enter(ROWS_AT + Math.min(i, MAX_STAGGERED_ROWS - 1) * ROW_STAGGER_MS)}
             >
               <span
                 className='complete-event-icon'

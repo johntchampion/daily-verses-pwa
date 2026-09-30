@@ -20,8 +20,7 @@ export default defineConfig([
     },
   },
   {
-    // The service worker runs off the main thread: no window, no document, and
-    // a `self` that is a ServiceWorkerGlobalScope.
+    // The service worker has no window or document.
     files: ['src/sw.ts'],
     languageOptions: {
       globals: globals.serviceworker,
