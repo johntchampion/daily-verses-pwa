@@ -7,6 +7,9 @@ export default function WordBank({
   labels,
   spentTiles,
   wrongTileId,
+  visible,
+  cuedPosition,
+  matched,
   disabled,
   height,
   bankRef,
@@ -16,6 +19,9 @@ export default function WordBank({
   labels: string[]
   spentTiles: ReadonlySet<number>
   wrongTileId: number | null
+  visible: ReadonlySet<number>
+  cuedPosition: number | null
+  matched: number
   disabled: boolean
   height: number | null
   bankRef: RefObject<HTMLDivElement | null>
@@ -39,6 +45,9 @@ export default function WordBank({
             label={labels[tileId]}
             isSpent={isSpent}
             isWrong={wrongTileId === tileId}
+            isCued={cuedPosition === position}
+            matched={matched}
+            isHidden={!visible.has(position)}
             disabled={isSpent || disabled}
             onTap={() => onTap(tileId, position)}
           />

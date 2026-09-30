@@ -7,6 +7,9 @@ export default function ReferenceBank({
   board,
   isDone,
   wrongPosition,
+  visible,
+  cuedPosition,
+  matched,
   minHeight,
   onTap,
 }: {
@@ -14,6 +17,9 @@ export default function ReferenceBank({
   /** Past the last step: the board stays up, frozen, with the answer spent. */
   isDone: boolean
   wrongPosition: number | null
+  visible: ReadonlySet<number>
+  cuedPosition: number | null
+  matched: number
   minHeight: number | null
   onTap: (choice: string, position: number) => void
 }) {
@@ -32,6 +38,9 @@ export default function ReferenceBank({
           label={choice}
           isSpent={isDone && choice === board.answer}
           isWrong={wrongPosition === position}
+          isCued={cuedPosition === position}
+          matched={matched}
+          isHidden={!visible.has(position)}
           disabled={isDone}
           onTap={() => onTap(choice, position)}
         />

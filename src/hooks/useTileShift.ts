@@ -90,6 +90,8 @@ export function useTileShift(
     const moves: Move[] = []
 
     tiles.forEach((tile, at) => {
+      if (tile.hidden) return
+
       // offsetLeft/offsetTop read the settled layout, unlike a bounding rect,
       // which a shift still in flight would skew.
       const spot = { left: tile.offsetLeft, top: tile.offsetTop }

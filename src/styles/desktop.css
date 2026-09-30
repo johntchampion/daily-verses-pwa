@@ -486,10 +486,21 @@
     }
 
     .session-view .tile {
+        --tile-lip: 4px;
+
         padding: 12px 22px;
         border-radius: 18px;
         font-size: 1.1rem;
-        box-shadow: 0 4px 0 var(--tile-shadow);
+    }
+
+    @media (pointer: fine) {
+        .session-view .bank-keys {
+            margin-top: 34px;
+        }
+
+        .session-view .word-bank {
+            margin-top: 12px;
+        }
     }
 
     .session-view .tile-used {
@@ -510,8 +521,6 @@
 
     /* --- Desktop: hover --------------------------------------------------- */
 
-    /* Guarded on a real pointer: an iPad clears this breakpoint in either
-       orientation and would otherwise hold the hover after a tap. */
     @media (hover: hover) {
 
         .hundred-shell .arc-row:hover,
@@ -520,8 +529,7 @@
             border-color: var(--coral-line);
         }
 
-        /* .tile-wrong is excluded: a hover would outrank its coral flash. */
-        .session-view .tile:not(:disabled):not(.tile-wrong):hover {
+        .session-view .tile:not(:disabled):not(.tile-wrong):not(.tile-cued):hover {
             border-color: var(--coral-line);
         }
     }
