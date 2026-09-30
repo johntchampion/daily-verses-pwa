@@ -140,7 +140,7 @@
     display: none;
 }
 
-@media (pointer: fine) {
+@media (pointer: fine) and (min-width: 744px) {
     .bank-keys {
         display: flex;
         flex-wrap: wrap;

@@ -1,5 +1,6 @@
 /** The keyboard legend under the bank, or the filter's status once something
-    is typed. Hidden by CSS on devices without a fine pointer. */
+    is typed. Hidden by CSS below the desktop breakpoint and on devices
+    without a fine pointer. */
 export default function BankKeys({
   query,
   matches,
