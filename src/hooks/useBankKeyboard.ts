@@ -11,6 +11,7 @@ import {
   isFilterKey,
   matchesQuery,
   rowStep,
+  spaceAction,
   type Arrow,
 } from '../lib/bankKeyboard'
 import { useLatest } from './useLatest'
@@ -43,8 +44,9 @@ function resolveCued(
 }
 
 /**
- * Arrows move a cursor, typing filters the bank, Enter picks. Listens on
- * `window` so the bank never needs focus.
+ * Arrows move a cursor, typing filters the bank, Enter picks the cued tile and
+ * Space the one the query spells out. Listens on `window` so the bank never
+ * needs focus.
  *
  * `query` is owned by the caller because `useBankWindow` needs it first.
  */
@@ -56,16 +58,20 @@ export function useBankKeyboard({
   enabled,
   dockRef,
   onPick,
+  onShort,
   onSubmit,
 }: {
   candidates: BankCandidate[]
   query: string
   setQuery: Dispatch<SetStateAction<string>>
-  /** Changes when the board is replaced; the cursor is scoped to it. */
+  /** Changes when a blank is filled or the board replaced; the cursor is
+      scoped to it. */
   phase: string
   enabled: boolean
   dockRef: RefObject<HTMLElement | null>
   onPick: (index: number) => void
+  /** Space on a query that spells no whole tile — only the start of one. */
+  onShort: () => void
   /** Enter with nothing cued. */
   onSubmit: (() => void) | null
 }): BankKeyboard {
@@ -105,6 +111,7 @@ export function useBankKeyboard({
     phase,
     setQuery,
     onPick,
+    onShort,
     onSubmit,
     dockRef,
   })
@@ -173,6 +180,7 @@ export function useBankKeyboard({
         cursorAt,
         phase,
         onPick,
+        onShort,
         onSubmit,
         candidates,
       } = latest.current
@@ -181,8 +189,8 @@ export function useBankKeyboard({
         if (event.repeat) return
         if (cued !== null) {
           event.preventDefault()
-          // Only an arrowed cursor survives a pick; a filter cue leaves with
-          // the query.
+          // An arrowed cursor survives a wrong pick, for another try from
+          // where it is; a right one moves `phase` on and drops it.
           if (cursorAt !== null) setCursor({ phase, at: cued })
           onPick(cued)
         } else if (onSubmit) {
@@ -214,9 +222,21 @@ export function useBankKeyboard({
         return
       }
 
-      // Space can continue a query (book names) but not start one.
-      if (event.key === ' ' && query === '') {
+      // Space places the word typed, the way it would end a word in a text
+      // box. It continues a book name ("1 Samuel") instead where one does, and
+      // never starts a query.
+      if (event.key === ' ') {
         event.preventDefault()
+        if (query === '' || event.repeat) return
+        const action = spaceAction(candidates, query)
+        if (action.kind === 'place') {
+          setCursor(null)
+          onPick(action.index)
+        } else if (action.kind === 'short') {
+          onShort()
+        } else {
+          setQuery(query + ' ')
+        }
         return
       }
       if (!isFilterKey(event.key)) return

@@ -72,6 +72,9 @@ export default function TileExercise({
       `useBankKeyboard` because the bank's fit pass has to be told the bank is
       being filtered, and it is measured before the keyboard is wired up. */
   const [query, setQuery] = useState('')
+  /** The blank shakes the typing in it: a typed word that was wrong, or Space
+      on one that isn't finished. */
+  const [typedWrong, setTypedWrong] = useState(false)
 
   const currentBlankRef = useRef<HTMLSpanElement | null>(null)
   const dockRef = useRef<HTMLDivElement | null>(null)
@@ -100,10 +103,16 @@ export default function TileExercise({
     dockRef,
   })
 
+  function shakeTyping() {
+    setTypedWrong(true)
+    flash(() => setTypedWrong(false))
+  }
+
   function rejectTap(tileId: number) {
     setMisses((count) => count + 1)
     setWrongTileId(tileId)
     flash(() => setWrongTileId(null))
+    if (query !== '') shakeTyping()
   }
 
   function tapTile(tileId: number, position: number) {
@@ -165,7 +174,11 @@ export default function TileExercise({
     candidates,
     query,
     setQuery,
-    phase: drill.board ? `reference-${drill.filled}` : 'text',
+    // One phase per blank, so placing a word — by any key or a click — puts
+    // the cursor away rather than leaving it on a tile for the next blank.
+    phase: drill.board
+      ? `reference-${drill.filled}`
+      : `text-${filledBlanks}`,
     enabled: !moving,
     dockRef,
     onPick: (index) => {
@@ -174,6 +187,8 @@ export default function TileExercise({
         tapTile(bank.onScreen[index], index)
       }
     },
+    // Not a miss: nothing was placed, so there is nothing to judge yet.
+    onShort: shakeTyping,
     onSubmit: isComplete && !moving ? () => onNext(judged()) : null,
   })
 
@@ -186,7 +201,12 @@ export default function TileExercise({
       <div className='verse-card exercise-rise'>
         <div className='verse-card-head'>
           {drill.phase ? (
-            <ReferenceLine steps={drill.phase} filled={drill.filled} />
+            <ReferenceLine
+              steps={drill.phase}
+              filled={drill.filled}
+              typed={drill.board ? query : ''}
+              typedWrong={typedWrong}
+            />
           ) : (
             <p className='verse-ref'>{exercise.reference}</p>
           )}
@@ -196,6 +216,8 @@ export default function TileExercise({
           chunks={chunks}
           filledBlanks={filledBlanks}
           currentBlankRef={currentBlankRef}
+          typed={drill.board ? '' : query}
+          typedWrong={typedWrong}
         />
       </div>
 

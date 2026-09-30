@@ -78,3 +78,34 @@ export function rowStep(
 
   return null
 }
+
+/**
+ * What Space does to a query: place the tile it spells out (`index`), carry on
+ * into a multi-word label like "1 Samuel" (`extend`), or nothing — the query
+ * is only the start of a word (`short`).
+ *
+ * A whole word wins over extending it, so "Song" with a "Song of Songs" in the
+ * bank would place "Song" if there were one; there never is, since word tiles
+ * hold one word and book names don't prefix each other at a word boundary.
+ */
+export type SpaceAction =
+  | { kind: 'place'; index: number }
+  | { kind: 'extend' }
+  | { kind: 'short' }
+
+export function spaceAction(
+  candidates: { label: string; disabled: boolean }[],
+  query: string,
+): SpaceAction {
+  const index = candidates.findIndex(
+    (candidate) =>
+      !candidate.disabled && canon(candidate.label) === canon(query),
+  )
+  if (index !== -1) return { kind: 'place', index }
+
+  const continues = candidates.some(
+    (candidate) =>
+      !candidate.disabled && matchesQuery(candidate.label, `${query} `),
+  )
+  return continues ? { kind: 'extend' } : { kind: 'short' }
+}

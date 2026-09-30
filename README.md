@@ -148,15 +148,23 @@ backend tokenizer changes, `lib/exercise.ts` must change with it.**
   part. Arrows move a cursor over the bank, typing narrows it to the tiles whose
   word _starts with_ what was typed, Enter places the cued tile, Esc clears the
   filter, and Enter on a finished exercise is Next. The reference drill shares
-  the cursor, so a book name is two letters and a Return. Four things about it
+  the cursor, so a book name is two letters and a Return. Five things about it
   are deliberate:
+  - **Typing goes into the blank, and Space places it.** The query is drawn in
+    the current blank, laid over the invisible answer that sizes it, so typing a
+    verse reads like writing it out. Space places the tile the query spells out
+    in full — a wrong word is a wrong pick like any other — and shakes the blank,
+    without counting a miss, when the query is only the start of a word. Where
+    a book name goes on past a space ("1 Samuel"), Space continues it instead.
   - **Nothing is highlighted until the user asks for it.** A cursor comes only
     from an arrow; a query cues its first match on its own, but that cue lives
     and dies with the query rather than settling into a cursor — so typing a
     word and pressing Enter doesn't strand a highlight on whichever tile
     happened to replace it. Escape, or backspacing back to nothing, puts the
-    highlight away. Only a cursor the user steered survives a pick, which is
-    what lets arrowing keep its place from one blank to the next.
+    highlight away. A cursor is scoped to its blank: it survives a wrong
+    pick, so the next try starts from where it is, but filling the blank —
+    by Enter, Space or a click — puts it away, so the next blank starts with
+    nothing outlined.
   - The listener is on `window`, not on a focused element. Clicking the bank to
     give it focus would reintroduce exactly the pointer trip this removes.
     Nothing is gated on a breakpoint either — a phone has no arrow keys, so the

@@ -1,19 +1,37 @@
+import { cx } from '../../lib/cx'
 import type { ReferenceStep } from '../../lib/reference'
+import TypedBlank from './TypedBlank'
 
 /** Placeholder for a slot with nothing in it; the CSS gives it its width. */
 const EMPTY = ' '
 
-function RefSlot({ step, state }: { step: ReferenceStep; state: SlotState }) {
+function RefSlot({
+  step,
+  state,
+  typed,
+  typedWrong,
+}: {
+  step: ReferenceStep
+  state: SlotState
+  typed: string
+  typedWrong: boolean
+}) {
   if (state === 'filled') {
     return <span className='blank-filled ref-slot'>{step.answer}</span>
   }
 
+  const isCurrent = state === 'current'
   return (
     <span
-      className={`blank ref-slot ref-${step.kind}${state === 'current' ? ' blank-current' : ''}`}
+      className={cx(
+        'blank ref-slot',
+        `ref-${step.kind}`,
+        isCurrent && 'blank-current',
+        isCurrent && typedWrong && 'blank-wrong',
+      )}
       aria-label={`${step.kind} blank`}
     >
-      {EMPTY}
+      {isCurrent ? <TypedBlank sizer={EMPTY} typed={typed} /> : EMPTY}
     </span>
   )
 }
@@ -24,20 +42,34 @@ type SlotState = 'filled' | 'current' | 'empty'
 export default function ReferenceLine({
   steps,
   filled,
+  typed = '',
+  typedWrong = false,
 }: {
   steps: ReferenceStep[]
   filled: number
+  /** What the keyboard has typed so far, drawn into the current slot. */
+  typed?: string
+  typedWrong?: boolean
 }) {
   const stateOf = (at: number): SlotState =>
     at < filled ? 'filled' : at === filled ? 'current' : 'empty'
 
+  const slot = (at: number) => (
+    <RefSlot
+      step={steps[at]}
+      state={stateOf(at)}
+      typed={typed}
+      typedWrong={typedWrong}
+    />
+  )
+
   return (
     <p className='verse-ref ref-line'>
-      <RefSlot step={steps[0]} state={stateOf(0)} />
+      {slot(0)}
       <span className='ref-locus'>
-        <RefSlot step={steps[1]} state={stateOf(1)} />
+        {slot(1)}
         <span aria-hidden='true'>:</span>
-        <RefSlot step={steps[2]} state={stateOf(2)} />
+        {slot(2)}
       </span>
     </p>
   )
