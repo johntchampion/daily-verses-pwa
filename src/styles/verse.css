@@ -70,6 +70,26 @@
     border-radius: 9px 9px 0 0;
 }
 
+.blank-stack {
+    display: inline-grid;
+}
+
+.blank-stack>* {
+    grid-area: 1 / 1;
+}
+
+.blank-sizer {
+    visibility: hidden;
+}
+
+.blank-typed {
+    color: var(--coral-text);
+}
+
+.blank-wrong {
+    animation: shake 380ms ease;
+}
+
 .blank-filled {
     display: inline-block;
     background: var(--green-wash);
@@ -133,4 +153,3 @@
     align-items: baseline;
     white-space: nowrap;
 }
-

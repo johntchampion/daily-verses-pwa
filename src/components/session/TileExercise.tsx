@@ -3,10 +3,15 @@ import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
 import { slipBudget, splitIntoChunks, wordsMatch } from '../../lib/exercise'
 import type { ReferenceStepKind } from '../../lib/reference'
+import {
+  useBankKeyboard,
+  type BankCandidate,
+} from '../../hooks/useBankKeyboard'
 import { useBankWindow } from '../../hooks/useBankWindow'
 import { useFlashTimers } from '../../hooks/useFlashTimers'
 import { useReferenceDrill } from '../../hooks/useReferenceDrill'
 import { useScrollToTarget } from '../../hooks/useScrollToTarget'
+import BankKeys from './BankKeys'
 import NextButton from './NextButton'
 import ReferenceBank from './ReferenceBank'
 import ReferenceLine from './ReferenceLine'
@@ -63,6 +68,13 @@ export default function TileExercise({
   const [filledBlanks, setFilledBlanks] = useState(0)
   const [wrongTileId, setWrongTileId] = useState<number | null>(null)
   const [misses, setMisses] = useState(0)
+  /** What has been typed to filter the bank. Owned here rather than by
+      `useBankKeyboard` because the bank's fit pass has to be told the bank is
+      being filtered, and it is measured before the keyboard is wired up. */
+  const [query, setQuery] = useState('')
+  /** The blank shakes the typing in it: a typed word that was wrong, or Space
+      on one that isn't finished. */
+  const [typedWrong, setTypedWrong] = useState(false)
 
   const currentBlankRef = useRef<HTMLSpanElement | null>(null)
   const dockRef = useRef<HTMLDivElement | null>(null)
@@ -70,7 +82,12 @@ export default function TileExercise({
 
   const textDone = filledBlanks >= blanks.length
 
-  const bank = useBankWindow(exercise.wordBank, blanks, filledBlanks)
+  const bank = useBankWindow(
+    exercise.wordBank,
+    blanks,
+    filledBlanks,
+    query !== '',
+  )
   const drill = useReferenceDrill(exercise.stage, exercise.reference, textDone)
   const isComplete = textDone && drill.step === null
 
@@ -86,10 +103,16 @@ export default function TileExercise({
     dockRef,
   })
 
+  function shakeTyping() {
+    setTypedWrong(true)
+    flash(() => setTypedWrong(false))
+  }
+
   function rejectTap(tileId: number) {
     setMisses((count) => count + 1)
     setWrongTileId(tileId)
     flash(() => setWrongTileId(null))
+    if (query !== '') shakeTyping()
   }
 
   function tapTile(tileId: number, position: number) {
@@ -103,6 +126,7 @@ export default function TileExercise({
 
     bank.spendTile(tileId, position, answer)
     setWrongTileId(null)
+    setQuery('')
     const nextFilled = filledBlanks + 1
     setFilledBlanks(nextFilled)
 
@@ -121,8 +145,52 @@ export default function TileExercise({
     }
 
     setWrongTileId(null)
+    setQuery('')
     if (drill.advance()) onRecord(judged())
   }
+
+  const candidates = useMemo<BankCandidate[]>(
+    () =>
+      drill.board
+        ? drill.board.choices.map((choice) => ({
+            label: choice,
+            disabled: drill.step === null,
+          }))
+        : bank.onScreen.map((tileId) => ({
+            label: bank.labels[tileId],
+            disabled: textDone || bank.spentTiles.has(tileId),
+          })),
+    [
+      bank.labels,
+      bank.onScreen,
+      bank.spentTiles,
+      drill.board,
+      drill.step,
+      textDone,
+    ],
+  )
+
+  const keys = useBankKeyboard({
+    candidates,
+    query,
+    setQuery,
+    // One phase per blank, so placing a word — by any key or a click — puts
+    // the cursor away rather than leaving it on a tile for the next blank.
+    phase: drill.board
+      ? `reference-${drill.filled}`
+      : `text-${filledBlanks}`,
+    enabled: !moving,
+    dockRef,
+    onPick: (index) => {
+      if (drill.board) tapRefChip(drill.board.choices[index], index)
+      else if (index < bank.onScreen.length) {
+        tapTile(bank.onScreen[index], index)
+      }
+    },
+    // Not a miss: nothing was placed, so there is nothing to judge yet.
+    onShort: shakeTyping,
+    onSubmit: isComplete && !moving ? () => onNext(judged()) : null,
+  })
 
   return (
     <div className='exercise-pane'>
@@ -133,7 +201,12 @@ export default function TileExercise({
       <div className='verse-card exercise-rise'>
         <div className='verse-card-head'>
           {drill.phase ? (
-            <ReferenceLine steps={drill.phase} filled={drill.filled} />
+            <ReferenceLine
+              steps={drill.phase}
+              filled={drill.filled}
+              typed={drill.board ? query : ''}
+              typedWrong={typedWrong}
+            />
           ) : (
             <p className='verse-ref'>{exercise.reference}</p>
           )}
@@ -143,6 +216,8 @@ export default function TileExercise({
           chunks={chunks}
           filledBlanks={filledBlanks}
           currentBlankRef={currentBlankRef}
+          typed={drill.board ? '' : query}
+          typedWrong={typedWrong}
         />
       </div>
 
@@ -155,11 +230,20 @@ export default function TileExercise({
             : 'Tap the missing words'}
         </p>
 
+        <BankKeys
+          query={query}
+          matches={keys.visible.size}
+          isDone={isComplete}
+        />
+
         {drill.board ? (
           <ReferenceBank
             board={drill.board}
             isDone={drill.step === null}
             wrongPosition={wrongTileId}
+            visible={keys.visible}
+            cuedPosition={keys.cued}
+            matched={query.length}
             minHeight={bank.bankHeight}
             onTap={tapRefChip}
           />
@@ -169,6 +253,9 @@ export default function TileExercise({
             labels={bank.labels}
             spentTiles={bank.spentTiles}
             wrongTileId={wrongTileId}
+            visible={keys.visible}
+            cuedPosition={keys.cued}
+            matched={query.length}
             disabled={textDone}
             height={bank.bankHeight}
             bankRef={bank.bankRef}

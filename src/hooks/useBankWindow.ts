@@ -23,6 +23,9 @@ export function useBankWindow(
   wordBank: string[],
   blanks: BlankSegment[],
   filledBlanks: number,
+  /** A keyboard filter is narrowing the bank, so only the matching tiles have
+      a layout box. See the fit pass below. */
+  frozen: boolean,
 ) {
   const [labels, setLabels] = useState<string[]>(() => [...wordBank])
   const [bank, setBank] = useState<BankWindow>(() => ({
@@ -49,12 +52,17 @@ export function useBankWindow(
     const container = bankRef.current
     if (!container) return
     const tiles = Array.from(container.children) as HTMLElement[]
-    if (tiles.length === 0) return
+    // A filtered-out tile is hidden rather than unmounted, so it is still a
+    // child; it just has no box to measure.
+    const shown = tiles.find((tile) => !tile.hidden)
+    if (!shown) return
 
     if (bankHeight === null) {
-      setBankHeight(heightOfRows(container, tiles[0]))
+      setBankHeight(heightOfRows(container, shown))
       return
     }
+
+    if (frozen) return
 
     const capacity = countTilesInRows(tiles, BANK_ROWS)
     if (capacity < bank.onScreen.length) {
@@ -67,7 +75,7 @@ export function useBankWindow(
     } else if (bank.offScreen.length > 0 && !windowIsFull.current) {
       setBank(showOneMoreTile(bank))
     }
-  }, [bank, bankHeight, blanks, filledBlanks, labels])
+  }, [bank, bankHeight, blanks, filledBlanks, frozen, labels])
 
   /** Rotates the tapped tile out, or hollows it in place if the bank fits. */
   function spendTile(tileId: number, position: number, answer: string) {

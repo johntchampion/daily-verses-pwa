@@ -1,14 +1,22 @@
 import type { RefObject } from 'react'
+import { cx } from '../../lib/cx'
 import type { VerseChunk } from '../../lib/exercise'
+import TypedBlank from './TypedBlank'
 
 export default function VerseBody({
   chunks,
   filledBlanks,
   currentBlankRef,
+  typed = '',
+  typedWrong = false,
 }: {
   chunks: VerseChunk[]
   filledBlanks: number
   currentBlankRef: RefObject<HTMLSpanElement | null>
+  /** What the keyboard has typed so far, drawn into the current blank. */
+  typed?: string
+  /** The typed word was placed and rejected, or isn't a word yet. */
+  typedWrong?: boolean
 }) {
   return (
     <p className='verse-text'>
@@ -45,10 +53,18 @@ export default function VerseBody({
               {chunk.blank.punctBefore}
               <span
                 ref={isCurrent ? currentBlankRef : undefined}
-                className={isCurrent ? 'blank blank-current' : 'blank'}
+                className={cx(
+                  'blank',
+                  isCurrent && 'blank-current',
+                  isCurrent && typedWrong && 'blank-wrong',
+                )}
                 aria-label='blank'
               >
-                {chunk.blank.answer}
+                {isCurrent ? (
+                  <TypedBlank sizer={chunk.blank.answer} typed={typed} />
+                ) : (
+                  chunk.blank.answer
+                )}
               </span>
               {chunk.blank.punctAfter}
             </span>
