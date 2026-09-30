@@ -443,6 +443,7 @@
     .session-view .word-bank {
         gap: 12px;
         max-width: var(--bank-measure);
+        padding-bottom: 4px;
         margin-top: 40px;
         margin-bottom: auto;
         margin-inline: auto;

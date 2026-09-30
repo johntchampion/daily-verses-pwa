@@ -72,8 +72,10 @@ export function trimToCapacity(
 
     const rescue = positionOfBestTile(overflow, labels, answer)
     if (rescue === -1) continue
-
-    ;[onScreen[evictAt], overflow[rescue]] = [overflow[rescue], onScreen[evictAt]]
+    ;[onScreen[evictAt], overflow[rescue]] = [
+      overflow[rescue],
+      onScreen[evictAt],
+    ]
     reservedPositions.add(evictAt)
     evictAt--
   }
@@ -124,18 +126,19 @@ export function showOneMoreTile(bank: BankWindow): BankWindow {
   }
 }
 
-/** The tile's pressed lip hangs below its offsetHeight. */
+/** The tile's pressed lip hangs below its box; the bank pads for it. */
 export const TILE_SHADOW_HEIGHT = 3
 
 export function heightOfRows(
   container: HTMLElement,
   tile: HTMLElement,
 ): number {
-  const rowGap = parseFloat(getComputedStyle(container).rowGap) || 0
-  return (
-    BANK_ROWS * tile.offsetHeight +
-    (BANK_ROWS - 1) * rowGap +
-    TILE_SHADOW_HEIGHT
+  const { rowGap, paddingBottom } = getComputedStyle(container)
+  const tileHeight = parseFloat(getComputedStyle(tile).height)
+  return Math.ceil(
+    BANK_ROWS * tileHeight +
+      (BANK_ROWS - 1) * (parseFloat(rowGap) || 0) +
+      (parseFloat(paddingBottom) || 0),
   )
 }
 
