@@ -264,7 +264,8 @@
 
     /* Both stops must stay at or under FADE_PX in PathList.tsx. */
     .today-shell .path-scroll {
-        padding: 26px 0;
+        margin: 0 -18px;
+        padding: 26px 18px;
         mask-image: linear-gradient(180deg,
                 transparent 0,
                 #000 26px,
