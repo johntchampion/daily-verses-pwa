@@ -19,6 +19,7 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
     return (
       <Link
         to={`/verses/${verse.verseId}`}
+        state={{ from: '/practicing' }}
         className='slot-card'
         style={{ color: 'inherit' }}
       >

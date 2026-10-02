@@ -42,6 +42,7 @@ export default function QueueSlots({
             <Link
               key={slot.userVerseId}
               to={`/verses/${slot.verseId}`}
+              state={{ from: '/practicing' }}
               className='queue-slot-row'
             >
               <span className='queue-slot-dot' aria-hidden='true' />

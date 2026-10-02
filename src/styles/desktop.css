@@ -334,6 +334,128 @@
         box-shadow: 0 4px 0 var(--coral-deep);
     }
 
+    /* --- Desktop: stack screens (Settings, verse detail) ------------------ */
+
+    .shell-stacked {
+        padding-top: calc(env(safe-area-inset-top) + var(--top-nav-h) + 30px);
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .shell-stacked .screen-header h1 {
+        font-size: 2rem;
+    }
+
+    .shell-stacked .back-btn {
+        width: auto;
+        height: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px 8px 13px;
+        border-radius: 999px;
+        font-size: 0.92rem;
+    }
+
+    .shell-stacked .back-text {
+        display: inline;
+        color: var(--ink);
+    }
+
+    /* --- Desktop: Settings ------------------------------------------------ */
+
+    .settings-shell {
+        max-width: 760px;
+        gap: 18px;
+    }
+
+    .settings-shell .back-btn {
+        display: none;
+    }
+
+    .settings-shell .card {
+        padding: 24px 26px;
+    }
+
+    .settings-shell .card .btn,
+    .settings-shell .card .btn-ghost {
+        align-self: flex-start;
+        width: auto;
+        padding: 13px 26px;
+        font-size: 0.95rem;
+        border-radius: 16px;
+    }
+
+    .settings-shell .card .btn {
+        box-shadow: 0 4px 0 var(--coral-deep);
+    }
+
+    .settings-shell .card .btn:disabled {
+        box-shadow: none;
+    }
+
+    .settings-shell .settings-exits {
+        flex-direction: row;
+        gap: 12px;
+        margin-top: 6px;
+        padding-top: 22px;
+        border-top: 1.5px solid var(--line);
+    }
+
+    .settings-shell .settings-exits .btn-ghost {
+        width: auto;
+        padding: 11px 22px;
+        border-radius: 14px;
+    }
+
+    /* --- Desktop: verse detail -------------------------------------------- */
+
+    .verse-shell {
+        max-width: 840px;
+    }
+
+    .verse-shell .verse-shell-title {
+        display: none;
+    }
+
+    .verse-shell .verse-layout {
+        gap: 28px;
+        margin-top: 10px;
+    }
+
+    .verse-shell .verse-card {
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: 0;
+    }
+
+    .verse-shell .verse-ref {
+        font-size: 0.95rem;
+    }
+
+    .verse-shell .verse-text {
+        font-size: 1.8rem;
+        line-height: 1.6;
+    }
+
+    .verse-shell .card {
+        padding: 22px 24px;
+    }
+
+    @media (min-width: 1024px) {
+        .verse-shell {
+            max-width: 1280px;
+        }
+
+        .verse-shell .verse-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+            align-items: start;
+            gap: 48px;
+        }
+    }
+
     /* --- Desktop: the session --------------------------------------------- */
 
     .session-view {

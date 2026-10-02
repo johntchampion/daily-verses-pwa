@@ -30,7 +30,7 @@ export default function VerseCard({
         <p className='verse-ref'>{verse.reference}</p>
         {verse.text && <TranslationTag code={translation} />}
       </div>
-      <p className='verse-text' style={{ lineHeight: 1.7 }}>
+      <p className='verse-text verse-text-detail'>
         {verse.text}
       </p>
       {themes.length > 0 && (

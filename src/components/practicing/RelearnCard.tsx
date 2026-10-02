@@ -24,7 +24,11 @@ export default function RelearnCard({
       <ul className='relearn-list'>
         {relearning.map((verse) => (
           <li key={verse.id}>
-            <Link to={`/verses/${verse.id}`} className='relearn-ref'>
+            <Link
+              to={`/verses/${verse.id}`}
+              state={{ from: '/practicing' }}
+              className='relearn-ref'
+            >
               {verse.reference}
             </Link>
           </li>

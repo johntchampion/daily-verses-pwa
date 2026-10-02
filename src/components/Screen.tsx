@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { MeResponse } from '../api/types'
+import type { TabPath } from '../lib/origin'
 import Alert from './Alert'
 import TabBar from './TabBar'
 import TopNav from './TopNav'
@@ -10,7 +11,7 @@ type Layout = 'plain' | 'stack' | 'tabbed'
 
 const SHELL: Record<Layout, string> = {
   plain: 'shell',
-  stack: 'shell stack',
+  stack: 'shell stack shell-stacked',
   tabbed: 'shell shell-tabbed',
 }
 
@@ -23,6 +24,7 @@ interface Props {
   trailing?: ReactNode
   sub?: ReactNode
   me?: MeResponse | null
+  tab?: TabPath | null
   subStyle?: CSSProperties
 
   loading?: boolean
@@ -44,6 +46,7 @@ export default function Screen({
   sub,
   subStyle,
   me = null,
+  tab = null,
   loading = false,
   loadingLabel,
   error = null,
@@ -97,34 +100,45 @@ export default function Screen({
     </main>
   )
 
-  if (layout !== 'tabbed') return main
+  if (layout === 'plain') return main
   return (
     <>
-      <TopNav me={me} />
+      <TopNav me={me} activeTab={tab} />
       {main}
-      <TabBar />
+      {layout === 'tabbed' && <TabBar />}
     </>
   )
 }
 
+/** `text` names the destination; only desktop shows it. */
 export function BackButton({
   onClick,
   label,
+  text,
 }: {
   onClick: () => void
   label: string
+  text?: string
 }) {
   return (
-    <button className='icon-btn' aria-label={label} onClick={onClick}>
-      ←
+    <button className='icon-btn back-btn' aria-label={label} onClick={onClick}>
+      ←{text && <span className='back-text'>{text}</span>}
     </button>
   )
 }
 
-export function BackLink({ to, label }: { to: string; label: string }) {
+export function BackLink({
+  to,
+  label,
+  text,
+}: {
+  to: string
+  label: string
+  text?: string
+}) {
   return (
-    <Link to={to} className='icon-btn' aria-label={label}>
-      ←
+    <Link to={to} className='icon-btn back-btn' aria-label={label}>
+      ←{text && <span className='back-text'>{text}</span>}
     </Link>
   )
 }

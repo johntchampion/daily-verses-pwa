@@ -10,6 +10,22 @@
     padding: calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + var(--screen-bottom-gap));
 }
 
+/* Desktop changes screens in place rather than pushing them; this fade is
+   all that marks opening a verse. Settings appears instantly, like a tab.
+   Only opacity and transform, so the fixed .top-nav stays put. */
+@media (min-width: 744px) {
+    .verse-shell {
+        animation: screen-enter 200ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+    }
+}
+
+@keyframes screen-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
 .screen-header {
     display: flex;
     align-items: center;
@@ -46,6 +62,10 @@
     place-items: center;
 }
 
+.back-text {
+    display: none;
+}
+
 .eyebrow {
     font-size: 0.72rem;
     font-weight: 800;
@@ -61,4 +81,3 @@
 .small {
     font-size: 0.85rem;
 }
-

@@ -1,5 +1,9 @@
 /* --- History -------------------------------------------------------------- */
 
+.verse-side:empty {
+    display: none;
+}
+
 .stat-tiles {
     display: flex;
     gap: 8px;

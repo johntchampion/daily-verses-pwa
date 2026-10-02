@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import Screen, { BackButton } from '../components/Screen'
 import HistoryCard from '../components/verses/HistoryCard'
@@ -11,10 +11,12 @@ import { useApi } from '../hooks/useApi'
 import { useBack } from '../hooks/useBack'
 import { todayInTimezone } from '../lib/dates'
 import { messageOf } from '../lib/errors'
+import { originOf, tabLabel } from '../lib/origin'
 
 export default function VerseDetail() {
   const { id } = useParams<{ id: string }>()
   const back = useBack()
+  const origin = originOf(useLocation().state)
   const detail = useApi(() => api.verse(id ?? ''))
   const me = useApi(() => api.me())
 
@@ -51,9 +53,21 @@ export default function VerseDetail() {
   return (
     <Screen
       layout='stack'
-      leading={<BackButton onClick={back} label='Back to verses' />}
+      className='verse-shell'
+      me={me.data}
+      tab={origin}
+      leading={
+        <BackButton
+          onClick={back}
+          label={origin ? `Back to ${tabLabel(origin)}` : 'Back to verses'}
+          text={origin ? tabLabel(origin) : 'Back'}
+        />
+      }
       title={
-        <span className='small muted' style={{ fontWeight: 800 }}>
+        <span
+          className='small muted verse-shell-title'
+          style={{ fontWeight: 800 }}
+        >
           Verses
         </span>
       }
@@ -71,15 +85,19 @@ export default function VerseDetail() {
         </button>
       }
     >
-      <VerseCard detail={data} />
-      <SoonerCard
-        position={data?.queuePosition ?? null}
-        disabled={actionBusy || me.pending}
-        error={actionError}
-        onOpen={() => setSlotSheet(true)}
-      />
-      <ProgressCard detail={data} today={today} />
-      <HistoryCard detail={data} />
+      <div className='stack verse-layout'>
+        <VerseCard detail={data} />
+        <div className='stack verse-side'>
+          <SoonerCard
+            position={data?.queuePosition ?? null}
+            disabled={actionBusy || me.pending}
+            error={actionError}
+            onOpen={() => setSlotSheet(true)}
+          />
+          <ProgressCard detail={data} today={today} />
+          <HistoryCard detail={data} />
+        </div>
+      </div>
 
       {data && (
         <SlotPickerSheet

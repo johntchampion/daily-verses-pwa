@@ -71,6 +71,12 @@
         background: var(--coral-wash);
     }
 
+    .top-nav .icon-btn-active {
+        color: var(--coral-text);
+        background: var(--coral-wash);
+        border-color: var(--coral-line);
+    }
+
     .top-nav-actions {
         margin-left: auto;
         flex: none;

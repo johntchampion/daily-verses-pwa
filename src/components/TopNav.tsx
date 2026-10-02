@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import type { MeResponse } from '../api/types'
+import type { TabPath } from '../lib/origin'
 import AppMark from './AppMark'
 import SettingsLink from './SettingsLink'
 import StreakChip from './StreakChip'
@@ -10,7 +11,13 @@ const TABS = [
   { to: '/library', label: 'Library' },
 ]
 
-export default function TopNav({ me }: { me: MeResponse | null }) {
+export default function TopNav({
+  me,
+  activeTab = null,
+}: {
+  me: MeResponse | null
+  activeTab?: TabPath | null
+}) {
   return (
     <nav className='top-nav' aria-label='Main'>
       <div className='top-nav-inner'>
@@ -26,7 +33,9 @@ export default function TopNav({ me }: { me: MeResponse | null }) {
               to={to}
               end
               className={({ isActive }) =>
-                isActive ? 'top-nav-tab top-nav-tab-active' : 'top-nav-tab'
+                isActive || to === activeTab
+                  ? 'top-nav-tab top-nav-tab-active'
+                  : 'top-nav-tab'
               }
             >
               {label}

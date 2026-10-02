@@ -51,6 +51,7 @@ export default function ArcList({
             <Link
               key={verse.id}
               to={`/verses/${verse.id}`}
+              state={{ from: '/library' }}
               className='arc-row'
               style={{ color: 'inherit' }}
             >

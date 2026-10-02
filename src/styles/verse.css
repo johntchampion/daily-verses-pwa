@@ -51,6 +51,10 @@
     text-wrap: pretty;
 }
 
+.verse-text-detail {
+    line-height: 1.7;
+}
+
 .blank-group {
     white-space: nowrap;
 }

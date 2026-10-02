@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import Screen, { BackLink } from '../components/Screen'
 import AccountCard from '../components/settings/AccountCard'
@@ -11,11 +11,13 @@ import { useAuth } from '../context/auth'
 import { useApi } from '../hooks/useApi'
 import { usePreference } from '../hooks/usePreference'
 import { usePushReminders } from '../hooks/usePushReminders'
+import { originOf, tabLabel } from '../lib/origin'
 import { timezoneOptions } from '../lib/timezones'
 
 export default function Settings() {
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const origin = originOf(useLocation().state) ?? '/'
   const me = useApi(() => api.me())
   const catalog = useApi(() => api.translations())
 
@@ -57,7 +59,15 @@ export default function Settings() {
   return (
     <Screen
       layout='stack'
-      leading={<BackLink to='/' label='Back to home' />}
+      className='settings-shell'
+      me={me.data}
+      leading={
+        <BackLink
+          to={origin}
+          label={`Back to ${tabLabel(origin)}`}
+          text={tabLabel(origin)}
+        />
+      }
       title={<h1>Settings</h1>}
       loading={me.pending}
       loadingLabel='Loading settings…'
@@ -131,21 +141,23 @@ export default function Settings() {
 
       <PasswordCard />
 
-      <button
-        className='btn-ghost'
-        onClick={signOut}
-        style={{ color: 'var(--coral-text)' }}
-      >
-        Sign out
-      </button>
+      <div className='stack settings-exits'>
+        <button
+          className='btn-ghost'
+          onClick={signOut}
+          style={{ color: 'var(--coral-text)' }}
+        >
+          Sign out
+        </button>
 
-      <button
-        className='btn-ghost'
-        onClick={() => setDeleteOpen(true)}
-        style={{ color: 'var(--coral-text)' }}
-      >
-        Delete account
-      </button>
+        <button
+          className='btn-ghost'
+          onClick={() => setDeleteOpen(true)}
+          style={{ color: 'var(--coral-text)' }}
+        >
+          Delete account
+        </button>
+      </div>
 
       <DeleteAccountAlert
         open={deleteOpen}

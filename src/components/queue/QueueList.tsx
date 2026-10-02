@@ -87,7 +87,11 @@ export default function QueueList({
             <span className='queue-num' aria-hidden='true'>
               {index + 1}
             </span>
-            <Link to={`/verses/${id}`} className='queue-row-main'>
+            <Link
+              to={`/verses/${id}`}
+              state={{ from: '/practicing' }}
+              className='queue-row-main'
+            >
               <span className='queue-row-head'>
                 <span className='queue-ref'>{verse.reference}</span>
                 <QueueChip verse={verse} />

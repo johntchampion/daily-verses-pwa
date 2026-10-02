@@ -8,10 +8,15 @@ import {
 } from 'react'
 import { useLocation, useNavigationType, type Location } from 'react-router-dom'
 import { clearAppNavigation, isAppNavigation } from '../hooks/useBack'
+import { isDesktop } from '../hooks/useIsDesktop'
 import { useScreenTransition } from '../hooks/useScreenTransition'
 import { reducedMotion } from '../lib/motion'
 import { directionFor, type Direction } from '../lib/navDepth'
-import { rememberScroll, recallScroll, restoreScroll } from '../lib/scrollMemory'
+import {
+  rememberScroll,
+  recallScroll,
+  restoreScroll,
+} from '../lib/scrollMemory'
 
 interface Layer {
   key: string
@@ -55,7 +60,8 @@ export default function NavStack({
       direction !== null &&
       !isRedirect &&
       !browserAlreadyAnimatedBack &&
-      !reducedMotion()
+      !reducedMotion() &&
+      !isDesktop()
 
     if (animate) {
       setLayers([leaving, arriving])

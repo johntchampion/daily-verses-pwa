@@ -9,10 +9,9 @@ function subscribe(onChange: () => void) {
   return () => mql.removeEventListener('change', onChange)
 }
 
+/** For decisions made during render, where a subscription can't help. */
+export const isDesktop = () => window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+
 export function useIsDesktop(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(DESKTOP_MEDIA_QUERY).matches,
-    () => false,
-  )
+  return useSyncExternalStore(subscribe, isDesktop, () => false)
 }
