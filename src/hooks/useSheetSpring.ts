@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { reducedMotion } from '../lib/motion'
+import type { SheetPresentation } from '../lib/sheetPresentation'
 import { stackDepth, type SheetLayer } from '../lib/sheetStack'
 import { CLOSE, SETTLE, createSpring } from '../lib/spring'
 import { useLatest } from './useLatest'
@@ -11,9 +12,10 @@ interface Options {
   onExited?: () => void
   overlayRef: RefObject<HTMLDivElement | null>
   belowRef: RefObject<SheetLayer | undefined>
+  presentation: SheetPresentation
 }
 
-/** Springs the panel's transform directly on the node, bypassing React renders.
+/** Springs the panel directly on the node, bypassing React renders.
     `mounted` stays true until the exit animation comes to rest. */
 export function useSheetSpring({
   open,
@@ -21,6 +23,7 @@ export function useSheetSpring({
   onExited,
   overlayRef,
   belowRef,
+  presentation,
 }: Options) {
   const [mounted, setMounted] = useState(open)
   const [prevOpen, setPrevOpen] = useState(open)
@@ -35,10 +38,10 @@ export function useSheetSpring({
 
   const panelRef = useRef<HTMLDivElement>(null)
   const springRef = useRef<ReturnType<typeof createSpring> | null>(null)
-  const heightRef = useRef(0)
+  const closedOffsetRef = useRef(0)
   const closingRef = useRef(false)
 
-  const latest = useLatest({ open, onClose, onExited })
+  const latest = useLatest({ open, onClose, onExited, presentation })
 
   useScrollLock(mounted)
 
@@ -47,11 +50,9 @@ export function useSheetSpring({
     const panel = panelRef.current
     if (!panel) return
 
-    heightRef.current = panel.offsetHeight
+    closedOffsetRef.current = latest.current.presentation.closedOffset(panel)
     const spring = createSpring(
-      (y) => {
-        panel.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`
-      },
+      (offset) => latest.current.presentation.applyOffset(panel, offset),
       () => {
         if (!closingRef.current) return
         // The owner declined the close, so spring back.
@@ -65,7 +66,7 @@ export function useSheetSpring({
       },
     )
     springRef.current = spring
-    spring.set(heightRef.current)
+    spring.set(closedOffsetRef.current)
 
     return () => {
       spring.stop()
@@ -79,7 +80,7 @@ export function useSheetSpring({
     const overlay = overlayRef.current
     if (!mounted || !spring || !panel || !overlay) return
 
-    heightRef.current = panel.offsetHeight
+    closedOffsetRef.current = latest.current.presentation.closedOffset(panel)
     closingRef.current = !open
 
     if (open) {
@@ -95,15 +96,15 @@ export function useSheetSpring({
     overlay.style.opacity = '0'
     belowRef.current?.cover(false)
     if (reducedMotion()) {
-      spring.set(heightRef.current)
+      spring.set(closedOffsetRef.current)
       const frame = requestAnimationFrame(() => {
         setMounted(false)
         latest.current.onExited?.()
       })
       return () => cancelAnimationFrame(frame)
     }
-    spring.to(heightRef.current, undefined, CLOSE)
+    spring.to(closedOffsetRef.current, undefined, CLOSE)
   }, [open, mounted, overlayRef, belowRef, latest])
 
-  return { mounted, depth, panelRef, springRef, heightRef, closingRef }
+  return { mounted, depth, panelRef, springRef, closedOffsetRef, closingRef }
 }

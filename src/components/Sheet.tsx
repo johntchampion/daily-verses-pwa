@@ -1,7 +1,9 @@
 import { useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cx } from '../lib/cx'
+import { bottomSheet, centeredDialog } from '../lib/sheetPresentation'
 import type { SheetLayer } from '../lib/sheetStack'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useOverflows } from '../hooks/useOverflows'
 import { useSheetDrag } from '../hooks/useSheetDrag'
 import { useSheetSpring } from '../hooks/useSheetSpring'
@@ -20,7 +22,7 @@ interface Props {
 }
 
 /** Bottom sheet over a dimmed backdrop, dismissed by dragging down, tapping
-    outside or pressing Escape. */
+    outside or pressing Escape. On desktop it is a centered dialog instead. */
 export default function Sheet({
   open,
   label,
@@ -36,8 +38,19 @@ export default function Sheet({
   const belowRef = useRef<SheetLayer | undefined>(undefined)
   const pointerDownOnBackdrop = useRef(false)
 
-  const { mounted, depth, panelRef, springRef, heightRef, closingRef } =
-    useSheetSpring({ open, onClose, onExited, overlayRef, belowRef })
+  const desktop = useIsDesktop()
+  const draggable = !desktop
+  const showsGrip = dismissible && draggable
+
+  const { mounted, depth, panelRef, springRef, closedOffsetRef, closingRef } =
+    useSheetSpring({
+      open,
+      onClose,
+      onExited,
+      overlayRef,
+      belowRef,
+      presentation: desktop ? centeredDialog : bottomSheet,
+    })
 
   const covered = useSheetStack({
     mounted,
@@ -52,12 +65,13 @@ export default function Sheet({
 
   const draggedRef = useSheetDrag({
     mounted,
+    enabled: draggable,
     dismissible,
     onClose,
     panelRef,
     bodyRef,
     springRef,
-    heightRef,
+    closedOffsetRef,
     closingRef,
   })
 
@@ -77,20 +91,18 @@ export default function Sheet({
       }}
     >
       {/* The spring owns the panel's transform, so receding needs a wrapper. */}
-      <div className={covered ? 'sheet-riser sheet-riser-back' : 'sheet-riser'}>
+      <div
+        className={covered ? 'sheet-riser sheet-riser-back' : 'sheet-riser'}
+        style={{ '--sheet-depth': depth } as React.CSSProperties}
+      >
         <div
-          className={cx('sheet', `sheet-${size}`, !dismissible && 'sheet-plain')}
+          className={cx('sheet', `sheet-${size}`, !showsGrip && 'sheet-plain')}
           ref={panelRef}
           role='dialog'
           aria-modal='true'
           aria-label={label}
           tabIndex={-1}
-          style={
-            {
-              transform: 'translate3d(0, 100%, 0)',
-              '--sheet-depth': depth,
-            } as React.CSSProperties
-          }
+          style={{ transform: 'translate3d(0, 100%, 0)' }}
           onClickCapture={(e) => {
             if (!draggedRef.current) return
             draggedRef.current = false
@@ -98,7 +110,7 @@ export default function Sheet({
             e.preventDefault()
           }}
         >
-          {dismissible && (
+          {showsGrip && (
             <div className='sheet-grip' aria-hidden='true'>
               <span className='sheet-handle' />
             </div>

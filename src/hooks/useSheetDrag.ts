@@ -24,12 +24,13 @@ interface Drag {
 
 interface Options {
   mounted: boolean
+  enabled: boolean
   dismissible: boolean
   onClose: () => void
   panelRef: RefObject<HTMLDivElement | null>
   bodyRef: RefObject<HTMLDivElement | null>
   springRef: RefObject<Spring | null>
-  heightRef: RefObject<number>
+  closedOffsetRef: RefObject<number>
   closingRef: RefObject<boolean>
 }
 
@@ -37,12 +38,13 @@ interface Options {
     true right after a drag, so the click it produces can be swallowed. */
 export function useSheetDrag({
   mounted,
+  enabled,
   dismissible,
   onClose,
   panelRef,
   bodyRef,
   springRef,
-  heightRef,
+  closedOffsetRef,
   closingRef,
 }: Options) {
   const draggedRef = useRef(false)
@@ -51,7 +53,7 @@ export function useSheetDrag({
   useEffect(() => {
     const panel = panelRef.current
     const spring = springRef.current
-    if (!mounted || !panel || !spring) return
+    if (!mounted || !enabled || !panel || !spring) return
 
     const drag: Drag = {
       active: false,
@@ -92,7 +94,7 @@ export function useSheetDrag({
       spring.stop()
       drag.panelYAtClaim = spring.value
       drag.fingerYAtClaim = y
-      heightRef.current = panel.offsetHeight
+      closedOffsetRef.current = panel.offsetHeight
       panel.style.userSelect = 'none'
     }
 
@@ -131,7 +133,7 @@ export function useSheetDrag({
       if (!claimed) return
 
       panel.style.userSelect = ''
-      const h = heightRef.current || panel.offsetHeight
+      const h = closedOffsetRef.current || panel.offsetHeight
       const stale = performance.now() - drag.lastAt > THROW_MAX_AGE_MS
       const velocity = stale ? 0 : drag.velocity
       const velocityPxPerSec = velocity * 1000
@@ -187,11 +189,12 @@ export function useSheetDrag({
     }
   }, [
     mounted,
+    enabled,
     dismissible,
     panelRef,
     bodyRef,
     springRef,
-    heightRef,
+    closedOffsetRef,
     closingRef,
     latestClose,
   ])

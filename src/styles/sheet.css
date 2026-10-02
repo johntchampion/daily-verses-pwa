@@ -128,6 +128,62 @@
     border-top: 1.5px solid var(--line-soft);
 }
 
+/* Must match the breakpoint in useIsDesktop.ts, which picks the dialog's
+   spring presentation. */
+@media (min-width: 744px) {
+    .sheet-overlay {
+        align-items: center;
+        padding: 40px;
+    }
+
+    .sheet-riser {
+        --dialog-drop: calc(var(--sheet-depth, 0) * 18px);
+
+        max-width: 480px;
+        max-height: 100%;
+        transform: translateY(var(--dialog-drop));
+    }
+
+    .sheet-riser-back {
+        transform: translateY(calc(var(--dialog-drop) - 28px)) scale(0.94);
+    }
+
+    .sheet {
+        max-width: none;
+        border-radius: 26px;
+        box-shadow: 0 24px 60px rgba(43, 37, 33, 0.28);
+        overflow: hidden;
+    }
+
+    .sheet::after {
+        display: none;
+    }
+
+    .sheet-auto {
+        max-height: min(calc(85dvh - var(--sheet-step)), 720px);
+    }
+
+    .sheet-tall {
+        height: min(calc(85dvh - var(--sheet-step)), 720px);
+    }
+
+    .sheet-full {
+        height: min(calc(90dvh - var(--sheet-step)), 860px);
+    }
+
+    .sheet-plain {
+        padding-top: 26px;
+    }
+
+    .sheet-body {
+        padding-inline: 26px;
+    }
+
+    .sheet-footer {
+        padding: 14px 26px 22px;
+    }
+}
+
 .sheet-title {
     font-family: var(--serif);
     font-size: 1.35rem;
