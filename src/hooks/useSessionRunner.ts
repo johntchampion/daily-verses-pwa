@@ -243,6 +243,7 @@ export function useSessionRunner(practice: boolean) {
   }
 
   const recorded = queue[index]?.recorded === true
+  const nextTapped = moving || phase === 'wrapping' || phase === 'done'
 
   return {
     phase,
@@ -257,7 +258,7 @@ export function useSessionRunner(practice: boolean) {
     saving: moving && !recorded,
     error,
     clearError: () => setError(null),
-    answered: alreadyDone + index + (recorded ? 1 : 0),
+    answered: alreadyDone + index + (nextTapped ? 1 : 0),
     position: Math.min(alreadyDone + index + 1, dayTotal),
     dayTotal,
     dayVerses,

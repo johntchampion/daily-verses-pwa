@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import ProgressBar from '../ProgressBar'
 import { Skeleton } from '../Skeleton'
 
-/** `answered` updates as soon as an exercise is recorded; `position` is the
-    exercise on screen. */
+/** `answered` updates once Next is tapped; `position` is the exercise on
+    screen. */
 export default function SessionHeader({
   answered,
   position,
