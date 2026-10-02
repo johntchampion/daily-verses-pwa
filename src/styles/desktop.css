@@ -334,6 +334,13 @@
         box-shadow: 0 4px 0 var(--coral-deep);
     }
 
+    .today-shell .path-dock {
+        width: 100%;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     /* --- Desktop: stack screens (Settings, verse detail) ------------------ */
 
     .shell-stacked {
