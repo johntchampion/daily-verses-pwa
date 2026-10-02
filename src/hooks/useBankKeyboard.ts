@@ -226,14 +226,7 @@ export function useBankKeyboard({
       if (!isFilterKey(event.key)) return
 
       event.preventDefault()
-      setQuery((current) => {
-        const next = current + event.key
-        const anyTileMatches = candidates.some(
-          (candidate) =>
-            !candidate.disabled && startsWithQuery(candidate.label, next),
-        )
-        return anyTileMatches ? next : current
-      })
+      setQuery((current) => current + event.key)
     }
 
     window.addEventListener('keydown', onKeyDown)
