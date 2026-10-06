@@ -8,7 +8,8 @@ import QueuePanel from '../components/queue/QueuePanel'
 import { combineApi, useApi } from '../hooks/useApi'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 
-/** The learning slots, then the queue: a link on mobile, a panel on desktop. */
+/** The learning slots and the queue: stacked with a queue link on mobile,
+    side by side with a queue panel on desktop. */
 export default function Practicing() {
   const desktop = useIsDesktop()
   const me = useApi(() => api.me())
@@ -33,9 +34,21 @@ export default function Practicing() {
       error={me.error}
       onRetry={all.refetch}
     >
-      <SlotList profile={profile} verses={verseList} />
-      {desktop ? <QueuePanel /> : <QueueLink verses={verseList} />}
-      <RelearnCard verses={verseList} />
+      {desktop ? (
+        <div className='practicing-columns'>
+          <div className='practicing-slots-column'>
+            <SlotList profile={profile} verses={verseList} />
+            <RelearnCard verses={verseList} />
+          </div>
+          <QueuePanel />
+        </div>
+      ) : (
+        <>
+          <SlotList profile={profile} verses={verseList} />
+          <QueueLink verses={verseList} />
+          <RelearnCard verses={verseList} />
+        </>
+      )}
     </Screen>
   )
 }

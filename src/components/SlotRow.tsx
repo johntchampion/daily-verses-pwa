@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { SlotVerse } from '../api/types'
 import { Skeleton, SkeletonText } from './Skeleton'
 import { truncate } from '../lib/verses'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { STAGE_LABELS, TIER_ADVANCE_THRESHOLD } from '../lib/exercise'
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export default function SlotRow({ slot, verse, snippet, today }: Props) {
+  const desktop = useIsDesktop()
+
   if (verse) {
     const live = verse.streakDate === today
     const run = live ? verse.consecutiveCorrect : 0
@@ -30,7 +33,7 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
           <span className='chip chip-active'>{STAGE_LABELS[verse.stage]}</span>
         </div>
         {snippet && (
-          <p className='slot-snippet'>&ldquo;{truncate(snippet)}&rdquo;</p>
+          <p className='slot-snippet'>&ldquo;{desktop ? snippet : truncate(snippet)}&rdquo;</p>
         )}
 
         {verse.tierChangeUsedToday ? (
