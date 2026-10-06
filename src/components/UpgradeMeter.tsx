@@ -1,44 +1,6 @@
 import { cx } from '../lib/cx'
 import { TIER_ADVANCE_THRESHOLD, type UpgradeProgress } from '../lib/exercise'
-
-interface Copy {
-  label: string
-  spoken: string
-}
-
-function copyFor(progress: UpgradeProgress): Copy {
-  switch (progress.kind) {
-    case 'run': {
-      const { done, needed, total, target } = progress
-
-      return {
-        label: `${needed}${done === 0 ? '' : ' more'} today → ${target}`,
-        spoken: `${done} of ${total} times through this verse today. ${needed} more, all within today, moves it up to ${target}.`,
-      }
-    }
-
-    case 'moved':
-      return progress.graduated
-        ? {
-            label: 'Graduated · now in review',
-            spoken:
-              'This verse graduated out of practice today. It comes back on a review schedule from here.',
-          }
-        : {
-            label: `Moved up to ${progress.landed}`,
-            spoken: `This verse moved up to ${progress.landed} today. It can move again tomorrow.`,
-          }
-
-    case 'rule':
-      return {
-        label: `${TIER_ADVANCE_THRESHOLD} times today moves it up`,
-        spoken: `Going through this verse ${TIER_ADVANCE_THRESHOLD} times within one day moves it up a tier.`,
-      }
-
-    case 'scheduled':
-      return { label: progress.label, spoken: `This verse is ${progress.label}.` }
-  }
-}
+import { upgradeMeterCopy } from '../lib/upgradeMeterCopy'
 
 /** Shows what a verse still needs today to move up a tier. */
 export default function UpgradeMeter({
@@ -46,7 +8,7 @@ export default function UpgradeMeter({
 }: {
   progress: UpgradeProgress
 }) {
-  const { label, spoken } = copyFor(progress)
+  const { label, spoken } = upgradeMeterCopy(progress)
 
   const filled =
     progress.kind === 'run'
@@ -62,23 +24,16 @@ export default function UpgradeMeter({
       </span>
 
       {progress.kind !== 'scheduled' && (
-        <span
+        <MeterSegments
           // Remounts to replay the fill animation when the count changes.
           key={filled}
+          count={TIER_ADVANCE_THRESHOLD}
+          filled={filled}
           className={cx(
-            'upgrade-segs',
             progress.kind === 'moved' && 'upgrade-segs-moved',
             filled > 0 && 'upgrade-segs-fill',
           )}
-          aria-hidden='true'
-        >
-          {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
-            <span
-              key={i}
-              className={cx('upgrade-seg', i < filled && 'upgrade-seg-filled')}
-            />
-          ))}
-        </span>
+        />
       )}
       <span className='upgrade-label' aria-hidden='true'>
         {label}
@@ -89,10 +44,26 @@ export default function UpgradeMeter({
 
 /** The meter with nothing filled, for loading skeletons. */
 export function UpgradeMeterEmpty() {
+  return <MeterSegments count={TIER_ADVANCE_THRESHOLD} filled={0} />
+}
+
+/** A row of skewed segments, the first `filled` of them lit. */
+export function MeterSegments({
+  count,
+  filled,
+  className,
+}: {
+  count: number
+  filled: number
+  className?: string
+}) {
   return (
-    <span className='upgrade-segs' aria-hidden='true'>
-      {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
-        <span key={i} className='upgrade-seg' />
+    <span className={cx('upgrade-segs', className)} aria-hidden='true'>
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className={cx('upgrade-seg', i < filled && 'upgrade-seg-filled')}
+        />
       ))}
     </span>
   )

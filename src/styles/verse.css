@@ -155,3 +155,7 @@
     align-items: baseline;
     white-space: nowrap;
 }
+
+.verse-side:empty {
+    display: none;
+}

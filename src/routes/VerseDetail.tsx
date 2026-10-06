@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import Screen, { BackButton } from '../components/Screen'
-import HistoryCard from '../components/verses/HistoryCard'
 import ProgressCard from '../components/verses/ProgressCard'
 import SlotPickerSheet from '../components/verses/SlotPickerSheet'
 import SoonerCard from '../components/verses/SoonerCard'
@@ -95,7 +94,6 @@ export default function VerseDetail() {
             onOpen={() => setSlotSheet(true)}
           />
           <ProgressCard detail={data} today={today} />
-          <HistoryCard detail={data} />
         </div>
       </div>
 
