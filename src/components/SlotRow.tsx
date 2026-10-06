@@ -3,7 +3,8 @@ import type { SlotVerse } from '../api/types'
 import { Skeleton, SkeletonText } from './Skeleton'
 import { truncate } from '../lib/verses'
 import { useIsDesktop } from '../hooks/useIsDesktop'
-import { STAGE_LABELS, TIER_ADVANCE_THRESHOLD } from '../lib/exercise'
+import UpgradeMeter, { UpgradeMeterEmpty } from './UpgradeMeter'
+import { STAGE_LABELS, slotUpgradeProgress } from '../lib/exercise'
 
 interface Props {
   slot: number
@@ -16,9 +17,6 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
   const desktop = useIsDesktop()
 
   if (verse) {
-    const live = verse.streakDate === today
-    const run = live ? verse.consecutiveCorrect : 0
-
     return (
       <Link
         to={`/verses/${verse.verseId}`}
@@ -36,30 +34,9 @@ export default function SlotRow({ slot, verse, snippet, today }: Props) {
           <p className='slot-snippet'>&ldquo;{desktop ? snippet : truncate(snippet)}&rdquo;</p>
         )}
 
-        {verse.tierChangeUsedToday ? (
-          <div className='advance-row'>
-            <span className='advance-label'>
-              Moved up today · next one tomorrow
-            </span>
-          </div>
-        ) : (
-          <div
-            className='advance-row'
-            aria-label={`${run} of ${TIER_ADVANCE_THRESHOLD} times through this verse today`}
-          >
-            {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
-              <span
-                key={i}
-                className={
-                  i < run ? 'advance-seg advance-seg-filled' : 'advance-seg'
-                }
-              />
-            ))}
-            <span className='advance-label'>
-              {run} / {TIER_ADVANCE_THRESHOLD} today to move up
-            </span>
-          </div>
-        )}
+        <div className='slot-upgrade'>
+          <UpgradeMeter progress={slotUpgradeProgress(verse, today)} />
+        </div>
       </Link>
     )
   }
@@ -86,11 +63,11 @@ export function SlotRowSkeleton() {
       <p className='slot-snippet' aria-hidden='true'>
         <SkeletonText lines={2} widths={['100%', '54%']} />
       </p>
-      <div className='advance-row'>
-        {Array.from({ length: TIER_ADVANCE_THRESHOLD }, (_, i) => (
-          <span key={i} className='advance-seg' />
-        ))}
-        <Skeleton variant='text' w={104} h={10} style={{ margin: 0 }} />
+      <div className='slot-upgrade'>
+        <span className='upgrade-meter'>
+          <UpgradeMeterEmpty />
+          <Skeleton variant='text' w={104} h={10} style={{ margin: 0 }} />
+        </span>
       </div>
     </div>
   )

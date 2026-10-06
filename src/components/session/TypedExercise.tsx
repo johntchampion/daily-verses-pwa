@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
-import { normalizeTypedText, usesReferencePhase } from '../../lib/exercise'
+import {
+  normalizeTypedText,
+  upgradeProgress,
+  usesReferencePhase,
+} from '../../lib/exercise'
 import { referencesMatch } from '../../lib/reference'
 import NextButton from './NextButton'
 import TypedResult, {
@@ -9,7 +13,7 @@ import TypedResult, {
   type TypedOutcome,
 } from './TypedResult'
 import ReferencePrompt from './ReferencePrompt'
-import UpgradeMeter from './UpgradeMeter'
+import UpgradeMeter from '../UpgradeMeter'
 
 interface Props {
   exercise: SessionExercise
@@ -90,7 +94,7 @@ export default function TypedExercise({
   return (
     <div className='stack exercise-rise'>
       <div className='chip-row'>
-        <UpgradeMeter exercise={exercise} today={today} />
+        <UpgradeMeter progress={upgradeProgress(exercise.userVerse, today)} />
       </div>
 
       <div className='verse-card'>

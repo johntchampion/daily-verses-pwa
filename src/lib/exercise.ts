@@ -1,4 +1,4 @@
-import type { Stage, UserVerse } from '../api/types'
+import type { SlotVerse, Stage, UserVerse } from '../api/types'
 
 export const BLANK = '____'
 
@@ -181,19 +181,21 @@ export type UpgradeProgress =
   | { kind: 'rule' }
   | { kind: 'scheduled'; label: string }
 
+interface DailyRun {
+  stage: Stage
+  attemptsToday: number
+  movedUpToday: boolean
+}
+
 /** Must mirror the service's `advance()` in `domain/progression.ts`. */
-export function upgradeProgress(
-  userVerse: UserVerse,
-  today: string | null,
-): UpgradeProgress {
-  const { stage } = userVerse
+function progressFromDailyRun({
+  stage,
+  attemptsToday,
+  movedUpToday,
+}: DailyRun): UpgradeProgress {
   const learning = isLearningStage(stage)
 
-  if (today === null) {
-    return learning ? { kind: 'rule' } : { kind: 'scheduled', label: STAGE_LABELS[stage] }
-  }
-
-  if (userVerse.last_upgrade_date === today) {
+  if (movedUpToday) {
     return {
       kind: 'moved',
       landed: learning ? STAGE_SHORT_LABELS[stage] : STAGE_LABELS[stage],
@@ -203,13 +205,43 @@ export function upgradeProgress(
 
   if (!learning) return { kind: 'scheduled', label: STAGE_LABELS[stage] }
 
-  const streakIsToday = userVerse.streak_date === today
-  const done = streakIsToday ? userVerse.consecutive_correct : 0
   return {
     kind: 'run',
-    done,
-    needed: Math.max(1, TIER_ADVANCE_THRESHOLD - done),
+    done: attemptsToday,
+    needed: Math.max(1, TIER_ADVANCE_THRESHOLD - attemptsToday),
     total: TIER_ADVANCE_THRESHOLD,
     target: STAGE_SHORT_LABELS[nextLearningStage(stage) ?? 'review'],
   }
+}
+
+export function upgradeProgress(
+  userVerse: UserVerse,
+  today: string | null,
+): UpgradeProgress {
+  const { stage } = userVerse
+
+  if (today === null) {
+    return isLearningStage(stage)
+      ? { kind: 'rule' }
+      : { kind: 'scheduled', label: STAGE_LABELS[stage] }
+  }
+
+  return progressFromDailyRun({
+    stage,
+    attemptsToday:
+      userVerse.streak_date === today ? userVerse.consecutive_correct : 0,
+    movedUpToday: userVerse.last_upgrade_date === today,
+  })
+}
+
+export function slotUpgradeProgress(
+  slotVerse: SlotVerse,
+  today: string,
+): UpgradeProgress {
+  return progressFromDailyRun({
+    stage: slotVerse.stage,
+    attemptsToday:
+      slotVerse.streakDate === today ? slotVerse.consecutiveCorrect : 0,
+    movedUpToday: slotVerse.tierChangeUsedToday,
+  })
 }
