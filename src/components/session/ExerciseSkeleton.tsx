@@ -1,5 +1,5 @@
 import { Skeleton, SkeletonText } from '../Skeleton'
-import { UpgradeMeterEmpty } from './UpgradeMeter'
+import { UpgradeMeterEmpty } from '../UpgradeMeter'
 import { BANK_ROWS, TILE_SHADOW_HEIGHT } from '../../lib/wordBank'
 
 const SKELETON_TILES = [96, 68, 118, 82, 74, 104, 88, 70, 112]

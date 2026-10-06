@@ -1,10 +1,5 @@
-import type { SessionExercise } from '../../api/types'
-import { cx } from '../../lib/cx'
-import {
-  TIER_ADVANCE_THRESHOLD,
-  upgradeProgress,
-  type UpgradeProgress,
-} from '../../lib/exercise'
+import { cx } from '../lib/cx'
+import { TIER_ADVANCE_THRESHOLD, type UpgradeProgress } from '../lib/exercise'
 
 interface Copy {
   label: string
@@ -45,15 +40,12 @@ function copyFor(progress: UpgradeProgress): Copy {
   }
 }
 
-/** Shows what this verse still needs today to move up a tier. */
+/** Shows what a verse still needs today to move up a tier. */
 export default function UpgradeMeter({
-  exercise,
-  today,
+  progress,
 }: {
-  exercise: SessionExercise
-  today: string | null
+  progress: UpgradeProgress
 }) {
-  const progress = upgradeProgress(exercise.userVerse, today)
   const { label, spoken } = copyFor(progress)
 
   const filled =

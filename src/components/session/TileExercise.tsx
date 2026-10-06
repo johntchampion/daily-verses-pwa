@@ -1,7 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 import type { SessionExercise } from '../../api/types'
 import TranslationTag from '../TranslationTag'
-import { allowedMissCount, splitIntoChunks, wordsMatch } from '../../lib/exercise'
+import {
+  allowedMissCount,
+  splitIntoChunks,
+  upgradeProgress,
+  wordsMatch,
+} from '../../lib/exercise'
 import type { ReferenceStepKind } from '../../lib/reference'
 import {
   useBankKeyboard,
@@ -15,7 +20,7 @@ import BankKeys from './BankKeys'
 import NextButton from './NextButton'
 import ReferenceBank from './ReferenceBank'
 import ReferenceLine from './ReferenceLine'
-import UpgradeMeter from './UpgradeMeter'
+import UpgradeMeter from '../UpgradeMeter'
 import VerseBody from './VerseBody'
 import WordBank from './WordBank'
 
@@ -173,7 +178,7 @@ export default function TileExercise({
   return (
     <div className='exercise-pane'>
       <div className='chip-row exercise-rise'>
-        <UpgradeMeter exercise={exercise} today={today} />
+        <UpgradeMeter progress={upgradeProgress(exercise.userVerse, today)} />
       </div>
 
       <div className='verse-card exercise-rise'>

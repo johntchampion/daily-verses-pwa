@@ -118,29 +118,8 @@
     text-wrap: pretty;
 }
 
-.advance-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.slot-upgrade {
     margin-top: 12px;
-}
-
-.advance-seg {
-    height: 8px;
-    flex: 1;
-    border-radius: 99px;
-    background: var(--track);
-}
-
-.advance-seg-filled {
-    background: var(--amber);
-}
-
-.advance-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--soft);
-    flex: none;
 }
 
 .slot-empty {
