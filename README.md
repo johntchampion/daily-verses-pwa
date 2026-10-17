@@ -37,8 +37,9 @@ npm run dev                                              # http://localhost:5173
 ```
 
 The API has no CORS middleware, and none is needed: the Vite dev server
-proxies `/api` and `/auth` to `localhost:3000` (see `vite.config.ts`), so the
-client always talks same-origin. A production deployment should keep that
+proxies `/api` and `/auth` to the backend (see `vite.config.ts`), so the
+client always talks same-origin. The backend defaults to `http://localhost:3000`;
+set `BACKEND_URL` to point the proxy somewhere else. A production deployment should keep that
 arrangement (serve `dist/` and the API behind one origin).
 
 Other scripts:
