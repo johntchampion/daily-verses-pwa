@@ -42,7 +42,7 @@ export default function Signup() {
       </div>
       <h1 className='auth-title'>Hide the word in your heart.</h1>
       <p className='muted' style={{ fontWeight: 600, marginBottom: 26 }}>
-        A few minutes a day, three verses at a time, one hundred in all.
+        A few minutes a day, three verses at a time.
       </p>
       <form className='stack' onSubmit={onSubmit} noValidate>
         <div className='field'>

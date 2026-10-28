@@ -1,7 +1,7 @@
 # Daily Verses — Progressive Web App
 
 A mobile-first, installable PWA for daily scripture memorization. Users work
-through a fixed bank of 100 verses, three at a time: new verses are drilled
+through a curated bank of verses, three at a time: new verses are drilled
 with fill-in-the-blank exercises at increasing blank density, then graduate
 into a spaced-repetition review schedule.
 
