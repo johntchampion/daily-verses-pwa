@@ -15,7 +15,7 @@ export default function AhaStep({ onContinue }: { onContinue: () => void }) {
         </h1>
         <p className='complete-sub' style={{ textWrap: 'pretty' }}>
           That&rsquo;s all it takes — a few minutes a day. Keep going, and
-          you&rsquo;ll know all 100 by heart.
+          you&rsquo;ll know verse after verse by heart.
         </p>
 
         <div className='onboard-how'>

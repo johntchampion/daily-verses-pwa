@@ -12,7 +12,7 @@ export default function HookStep({
       <p className='onboard-brand'>Daily Verses</p>
       <h1 className='onboard-title'>Memorize Bible Verses Every Day</h1>
       <p className='onboard-sub'>
-        A curated path through 100 verses behind core Christian doctrine.
+        A curated path through the verses behind core Christian doctrine.
       </p>
       <div style={{ marginTop: 26 }}>
         <TasterVerse filled={0} showCurrent={false} />
